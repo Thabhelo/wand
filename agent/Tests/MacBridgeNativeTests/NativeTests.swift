@@ -121,3 +121,14 @@ final class LiveReadOnlyTests: XCTestCase {
         // Do not print or persist actual app names or other state payload contents.
     }
 }
+
+final class NowPlayingTests: XCTestCase {
+    @MainActor func testMetadataIsBoundedAndRequiresKnownSource() {
+        XCTAssertEqual(NowPlayingReader.normalized(title: "Track", artist: "Artist", source: "Browser"), .null)
+        XCTAssertEqual(NowPlayingReader.normalized(title: nil, artist: "Artist", source: "Music"), .null)
+        XCTAssertEqual(NowPlayingReader.normalized(title: "", artist: "Artist", source: "Spotify"), .null)
+        let state = NowPlayingReader.normalized(title: String(repeating: "a", count: 700), artist: "Artist", source: "Music")
+        XCTAssertEqual(state["title"]?.string?.count, 500)
+        XCTAssertEqual(state["source_app"]?.string, "Music")
+    }
+}

@@ -81,3 +81,7 @@ Do not claim first physical-device connector, guaranteed featuring, verified pla
 - The agent adds a public X-Wand-Device-ID upgrade header for routing; it grants no access. The existing hello token must match that device.
 - Auth0 remains free-plan compatible, fail-closed until a real tenant/client is configured. No password auth or test-token bypass is deployed.
 - Web controls require confirmed results, name the target in high-risk confirmations, disable offline controls and keep only action names in session history.
+
+- 2026-09-20: Expose the actual relay OpenAPI at `/openapi.json`; omit invented OAuth endpoints while configuration is absent.
+- 2026-09-20: Now-playing reads must use already-running, already-authorized apps; get_state must never open a permission dialog or launch a player.
+- 2026-09-20: Recover interrupted enrollment by cancelling with the existing Keychain bootstrap token before allowing a new enrollment.

@@ -76,7 +76,11 @@ import MacBridgeNative
                 try? await Task.sleep(for: .milliseconds(250))
             }
         }
-        if pending { status = RevocationState.warning } else { connect() }
+        if pending { status = RevocationState.warning }
+        else if token == nil, try secrets.read(account: "bootstrap-token") != nil {
+            // Recover a crash after redemption without discarding revocation credentials.
+            cancelPairing()
+        } else { connect() }
     }
     func origin() throws -> URL {
         guard let u = URL(string: relay), u.scheme == "https", u.host != nil, u.user == nil, u.password == nil,
@@ -114,6 +118,9 @@ import MacBridgeNative
     func continuePairing() { if let url = pairingURL() { NSWorkspace.shared.open(url) } }
     func pair() {
         guard !pending, token == nil, !pairing else { return }
+        do {
+            if try secrets.read(account: "bootstrap-token") != nil { cancelPairing(); return }
+        } catch { status = safeError(error); return }
         guard (try? origin()) != nil else { status = "Online setup is not available in this build yet. Local controls still work."; return }
         pairing = true
         worker?.cancel(); generation &+= 1
@@ -123,7 +130,7 @@ import MacBridgeNative
                 _ = try origin(); UserDefaults.standard.set(relay, forKey: "relay")
                 while !Task.isCancelled && generation == captured {
                     status = "Requesting a pairing code…"
-                    let enrollment = try await request("v1/pairing/code", body: .object(["device_name": .string(Host.current().localizedName ?? "Mac"), "kind": .string("mac"), "agent_version": .string("0.9.0")]))
+                    let enrollment = try await request("v1/pairing/code", body: .object(["device_name": .string(Host.current().localizedName ?? "Mac"), "kind": .string("mac"), "agent_version": .string("0.9.1")]))
                     guard !Task.isCancelled, generation == captured else { return }
                     try validator.validate("PairingCodeResponse", enrollment)
                     guard let bootstrap = enrollment["bootstrap_token"]?.string, let expiryText = enrollment["expires_at"]?.string,
@@ -138,9 +145,11 @@ import MacBridgeNative
                             let redeemed = try await request("v1/pairing/redeem", body: .object(["device_token": .string(candidate)]), bearer: bootstrap)
                             try validator.validate("PairingRedeemResponse", redeemed)
                             guard !Task.isCancelled, generation == captured else { return }
+                            guard redeemed["device_id"]?.string == deviceID else { throw ContractError(code: "device_identity_mismatch") }
+                            // Persist public routing identity before promoting the secret.
+                            UserDefaults.standard.set(deviceID, forKey: "device-id")
                             try secrets.write(candidate, account: "device-token")
                             try secrets.delete(account: "pending-device-token"); try secrets.delete(account: "bootstrap-token")
-                            UserDefaults.standard.set(deviceID, forKey: "device-id")
                             token = candidate; code = ""; pairing = false; connect(); return
                         } catch let e as ContractError where e.code == "pairing_expired" { break
                         } catch let e as ContractError where e.code == "pairing_pending" {
@@ -198,7 +207,7 @@ import MacBridgeNative
         let ws = session.webSocketTask(with: request); ws.maximumMessageSize = 65536
         socket = ws; ws.resume(); status = "Connecting…"
         guard let token else { return }
-        try await send(envelope("hello", ["device_token": .string(token), "agent_version": .string("0.9.0"), "device_name": .string(Host.current().localizedName ?? "Mac"), "macos_version": .string(ProcessInfo.processInfo.operatingSystemVersionString.prefix(40).description)]))
+        try await send(envelope("hello", ["device_token": .string(token), "agent_version": .string("0.9.1"), "device_name": .string(Host.current().localizedName ?? "Mac"), "macos_version": .string(ProcessInfo.processInfo.operatingSystemVersionString.prefix(40).description)]))
         try await send(envelope("heartbeat"))
         let readinessTimeout = Task {
             do { try await Task.sleep(for: .seconds(10)) } catch { return }
@@ -297,7 +306,7 @@ import MacBridgeNative
         Task {
             defer { readingState = false }
             let (code, result) = await localCommand(.object(["action": .string("get_state"), "params": .object([:])]))
-            if code == 200 { deviceState = result; lastCommand = "Read this Mac — succeeded" }
+            if code == 200 { deviceState = result; lastCommand = "Mac status updated" }
             else { deviceState = nil; lastCommand = friendlyError(result["error"]?["code"]?.string ?? "action_failed") }
             screenState = LockStateReader.read()
         }

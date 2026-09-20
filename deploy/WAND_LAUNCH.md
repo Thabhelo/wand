@@ -15,3 +15,10 @@ Mac source adds X-Wand-Device-ID routing header, preserving hello authentication
 
 ## Still not a finished MVP
 Real Auth0 login and cloud pairing, physical Mac command acceptance, Muse connector authorization/registration, lock/sleep/pinned-tabs/Focus OS work, Apple signing/notarization, real demo and reviewer acceptance remain. No end-to-end Muse-to-Mac success is claimed.
+
+## 0.9.1 implementation update
+- Public relay OpenAPI discovery endpoint added. Account authorization remains unconfigured.
+- Native now-playing reader added for already-running, already-authorized Music/Spotify; it never prompts during a state read. Positive media playback still needs app-permission testing.
+- Interrupted enrollment credentials are retained for cancellation on restart/retry, redeemed identity is verified, and public device identity persists before token promotion.
+- Twenty cloud tests and nine native tests pass, including a real read-only state request; this is not physical-action acceptance or Muse end-to-end validation.
+- Signing inventory returned zero valid code-signing identities. Public notarization remains blocked on owner setup.

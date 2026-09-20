@@ -13,3 +13,5 @@ Run npm exec wrangler -- d1 migrations apply wand-registry --remote, then npm ru
 See ../contracts/TRANSPORT.md for the device routing header. No offline queue or reconnect replay. Ownership and heartbeat freshness are checked before dispatch. Cloud command/audit records contain no raw params or state. Alarms purge commands/audits after 90 days; hourly cleanup expires pairing records. Account deletion revokes all tokens before socket closure and active-record purge. Provider recovery backups/Time Travel are not erased by row deletion; restoration needs deletion replay before service resumes.
 
 Auth0 is not configured yet. Tests with fake devices do not prove physical Mac actions or Muse integration. Verify real sign-in, Mac pairing and connector authorization before declaring the product complete.
+
+Public connector discovery is served at https://api.getwand.app/openapi.json. It uses the deployed origin and configured OAuth issuer, with no placeholder authorization URL. `x-wand-auth-configured` is false until sign-in is configured; publishing the spec does not activate sign-in or establish Muse acceptance.

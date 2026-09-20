@@ -61,7 +61,7 @@ import MacBridgeCore
                 }
             }
             return .object(["screen_locked": .bool(false), "frontmost_app": NSWorkspace.shared.frontmostApplication?.localizedName.map { JSON.string(String($0.prefix(160))) } ?? .null,
-                            "now_playing": .null, "battery": battery, "running_apps": .array(apps.map(JSON.string))])
+                            "now_playing": await NowPlayingReader.read(), "battery": battery, "running_apps": .array(apps.map(JSON.string))])
         case "lock_screen": throw ContractError(code: "lock_api_unverified")
         case "close_browser_tabs": throw ContractError(code: "pinned_tab_detection_unverified")
         case "toggle_do_not_disturb": throw ContractError(code: "focus_api_unverified")

@@ -1,5 +1,6 @@
 import {DurableObject} from 'cloudflare:workers';
 import {authenticate} from './auth.js';
+import {publicSpec} from './openapi.js';
 import {Failure,body,envelope,failure,hash,id,json,stamp,token} from './common.js';
 export {Device} from './device.js';
 export class RateLimit extends DurableObject{
@@ -15,6 +16,7 @@ async function revoke(env,did){await env.DB.batch([env.DB.prepare('UPDATE device
 async function publicDevice(env,d){const state=await env.DEVICES.getByName(d.id).presence();return {device_id:d.id,name:d.name,kind:d.kind,online:state.online,last_seen:state.last_seen||d.last_seen}}
 export default{
  async fetch(request,env){try{const url=new URL(request.url),path=url.pathname,method=request.method,ip=request.headers.get('CF-Connecting-IP')||'local';
+  if(path==='/openapi.json'&&method==='GET')return json(publicSpec(env));
   if(path==='/healthz'&&method==='GET')return json({status:'ok'});
   if(path==='/config'&&method==='GET')return json({domain:env.AUTH0_DOMAIN,clientId:env.AUTH0_WEB_CLIENT_ID,audience:env.AUTH0_AUDIENCE});
   if(path==='/v1/ws/device'){
