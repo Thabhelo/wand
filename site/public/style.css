@@ -24,3 +24,14 @@
 @media(prefers-reduced-motion:reduce){.signal-wave i,.footer-signal i{animation:none!important}.computer,.wand-object,.floating-note,.message-note{transition:none!important}}
 /* Contain the decorative orbit on narrow screens without horizontal scrolling. */
 .hero{overflow:clip}
+/* Airy footer, consistent with the page's warm paper background. */
+.site-footer{background:#eeefe5;color:var(--ink);border-top:1px solid var(--line)}
+.site-footer p,.site-footer .footer-bottom{color:#687362}
+.footer-word{font-weight:400;letter-spacing:-.075em;color:#53634d}
+.footer-button{background:var(--ink);color:#fff}
+.footer-button:hover{background:#3b4b36}
+.footer-signal{opacity:.08}
+.footer-signal i{background:#809568}
+.site-footer .footer-bottom{border-top-color:#cfd6c5}
+.footer-bottom a:hover{color:#26362d}
+.site-footer a:focus-visible{outline-color:#799b31}
