@@ -1,0 +1,7 @@
+.venv
+agent
+.git
+dist
+__pycache__
+*.sqlite3*
+.env*

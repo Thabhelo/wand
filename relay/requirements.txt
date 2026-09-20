@@ -1,0 +1,4 @@
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+PyJWT[crypto]==2.14.0
+jsonschema[format]==4.26.0

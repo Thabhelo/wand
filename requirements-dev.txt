@@ -1,0 +1,5 @@
+jsonschema[format]==4.26.0
+
+websockets==17.0.1
+-r relay/requirements.txt
+httpx==0.28.1

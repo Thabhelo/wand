@@ -1,0 +1,59 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "wand-relay",
+	"main": "src/index.js",
+	"compatibility_date": "2026-09-20",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"routes": [
+		{
+			"pattern": "api.getwand.app",
+			"custom_domain": true
+		}
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "DEVICES",
+				"class_name": "Device"
+			},
+			{
+				"name": "LIMITS",
+				"class_name": "RateLimit"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"Device",
+				"RateLimit"
+			]
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "wand-registry",
+			"migrations_dir": "migrations",
+			"database_id": "3d4aa9ec-bbf7-4d39-810b-43116d0b812e"
+		}
+	],
+	"vars": {
+		"AUTH0_DOMAIN": "",
+		"AUTH0_ISSUER": "",
+		"AUTH0_AUDIENCE": "https://api.getwand.app",
+		"AUTH0_WEB_CLIENT_ID": "",
+		"AUTH0_ALLOWED_CLIENT_IDS": ""
+	},
+	"triggers": {
+		"crons": [
+			"0 * * * *"
+		]
+	},
+	"observability": {
+		"enabled": false
+	}
+}

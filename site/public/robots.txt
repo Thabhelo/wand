@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://getwand.app/sitemap.xml

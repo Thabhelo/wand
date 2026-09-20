@@ -1,0 +1,277 @@
+{
+  "name": "MacBridge",
+  "version": "0.3.0",
+  "format_status": "MacBridge internal manifest; Meta import format not yet verified",
+  "openapi": "openapi.json",
+  "operator_instructions": "OPERATOR.md",
+  "actions": [
+    {
+      "name": "lock_screen",
+      "description": "Lock this Mac immediately, succeeding if already locked; remote unlock is impossible.",
+      "risk": "high",
+      "approval": "always",
+      "params": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "sleep_mac",
+      "description": "Put this Mac to sleep; it may become unreachable.",
+      "risk": "medium",
+      "approval": "never",
+      "params": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "media_play_pause",
+      "description": "Toggle playback in the active supported Music or Spotify player.",
+      "risk": "low",
+      "approval": "never",
+      "params": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "media_next",
+      "description": "Skip to the next track in the active supported player.",
+      "risk": "low",
+      "approval": "never",
+      "params": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "media_previous",
+      "description": "Return to the previous track in the active supported player.",
+      "risk": "low",
+      "approval": "never",
+      "params": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "set_volume",
+      "description": "Set the system output volume from zero to one hundred.",
+      "risk": "low",
+      "approval": "never",
+      "params": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "level"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "mute",
+      "description": "Mute system audio output.",
+      "risk": "low",
+      "approval": "never",
+      "params": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "unmute",
+      "description": "Unmute system audio output.",
+      "risk": "low",
+      "approval": "never",
+      "params": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "close_browser_tabs",
+      "description": "Close tabs in the named browser after explicit confirmation, preserving pinned tabs by default.",
+      "risk": "medium",
+      "approval": "always",
+      "params": {
+        "type": "object",
+        "properties": {
+          "browser": {
+            "enum": [
+              "safari",
+              "chrome"
+            ]
+          },
+          "keep_pinned": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "browser"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "quit_app",
+      "description": "Ask the identified app to quit gracefully after explicit confirmation.",
+      "risk": "high",
+      "approval": "always",
+      "params": {
+        "type": "object",
+        "properties": {
+          "app_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "bundle_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$"
+          }
+        },
+        "required": [],
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "required": [
+              "app_name"
+            ]
+          },
+          {
+            "required": [
+              "bundle_id"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "open_app",
+      "description": "Open the identified installed application.",
+      "risk": "medium",
+      "approval": "never",
+      "params": {
+        "type": "object",
+        "properties": {
+          "app_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "bundle_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$"
+          }
+        },
+        "required": [],
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "required": [
+              "app_name"
+            ]
+          },
+          {
+            "required": [
+              "bundle_id"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "open_url",
+      "description": "Open an HTTP or HTTPS URL in the default browser.",
+      "risk": "medium",
+      "approval": "never",
+      "params": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https?://[^\\s/]+[^\\s]*(?![\\s\\S])",
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "run_shortcut",
+      "description": "Run an exactly named locally allowlisted Shortcut after confirmation.",
+      "risk": "high",
+      "approval": "always",
+      "params": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "toggle_do_not_disturb",
+      "description": "Set Do Not Disturb to the requested enabled state.",
+      "risk": "low",
+      "approval": "never",
+      "params": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "get_state",
+      "description": "Read minimal device state; a locked Mac reveals only that it is locked.",
+      "risk": "low",
+      "approval": "never",
+      "params": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,4610 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MacBridge Relay",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/healthz": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_healthz_get",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/pairing/code": {
+      "post": {
+        "summary": "Code",
+        "operationId": "code_v1_pairing_code_post",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairingCodeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairingCodeRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pairing/preview": {
+      "post": {
+        "summary": "Preview",
+        "operationId": "preview_v1_pairing_preview_post",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairingPreviewResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "userOAuth": [
+              "macbridge:control"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairingClaimRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pairing/claim": {
+      "post": {
+        "summary": "Claim",
+        "operationId": "claim_v1_pairing_claim_post",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairingClaimResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "userOAuth": [
+              "macbridge:control"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairingClaimRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pairing/cancel": {
+      "post": {
+        "summary": "Cancel Enrollment",
+        "operationId": "cancel_enrollment_v1_pairing_cancel_post",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairingCancelResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deviceBootstrap": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairingCancelRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/pairing/redeem": {
+      "post": {
+        "summary": "Redeem",
+        "operationId": "redeem_v1_pairing_redeem_post",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairingRedeemResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "deviceBootstrap": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairingRedeemRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/devices": {
+      "get": {
+        "summary": "Devices",
+        "operationId": "devices_v1_devices_get",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "userOAuth": [
+              "macbridge:control"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/devices/{did}": {
+      "patch": {
+        "summary": "Rename",
+        "operationId": "rename_v1_devices__did__patch",
+        "parameters": [
+          {
+            "name": "did",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Did"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Device"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "userOAuth": [
+              "macbridge:control"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameDeviceRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove",
+        "operationId": "remove_v1_devices__did__delete",
+        "parameters": [
+          {
+            "name": "did",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Did"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevocationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "userOAuth": [
+              "macbridge:control"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/account": {
+      "delete": {
+        "summary": "Delete Account",
+        "operationId": "delete_account_v1_account_delete",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountDeletionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "userOAuth": [
+              "macbridge:control"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/commands": {
+      "post": {
+        "summary": "Commands",
+        "operationId": "commands_v1_commands_post",
+        "responses": {
+          "202": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "userOAuth": [
+              "macbridge:control"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/commands/{cid}": {
+      "get": {
+        "summary": "Status",
+        "operationId": "status_v1_commands__cid__get",
+        "parameters": [
+          {
+            "name": "cid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Actionable error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "userOAuth": [
+              "macbridge:control"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActionCatalog": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "enum": [
+                "lock_screen",
+                "sleep_mac",
+                "media_play_pause",
+                "media_next",
+                "media_previous",
+                "set_volume",
+                "mute",
+                "unmute",
+                "close_browser_tabs",
+                "quit_app",
+                "open_app",
+                "open_url",
+                "run_shortcut",
+                "toggle_do_not_disturb",
+                "get_state"
+              ]
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "risk": {
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            "approval": {
+              "enum": [
+                "never",
+                "on_high_risk",
+                "always"
+              ]
+            },
+            "params": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "name",
+            "description",
+            "risk",
+            "approval",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        "minItems": 15,
+        "maxItems": 15
+      },
+      "CommandRequest": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "lock_screen"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "sleep_mac"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "media_play_pause"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "media_next"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "media_previous"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "set_volume"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "level": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "level"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "mute"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "unmute"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "close_browser_tabs"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "browser": {
+                    "enum": [
+                      "safari",
+                      "chrome"
+                    ]
+                  },
+                  "keep_pinned": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                },
+                "required": [
+                  "browser"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "quit_app"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "app_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "bundle_id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$"
+                  }
+                },
+                "required": [],
+                "additionalProperties": false,
+                "oneOf": [
+                  {
+                    "required": [
+                      "app_name"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "bundle_id"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "open_app"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "app_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "bundle_id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$"
+                  }
+                },
+                "required": [],
+                "additionalProperties": false,
+                "oneOf": [
+                  {
+                    "required": [
+                      "app_name"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "bundle_id"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "open_url"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^https?://[^\\s/]+[^\\s]*(?![\\s\\S])",
+                    "maxLength": 2048
+                  }
+                },
+                "required": [
+                  "url"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "run_shortcut"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "toggle_do_not_disturb"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "enabled"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "get_state"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "LocalCommandRequest": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "lock_screen"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "sleep_mac"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "media_play_pause"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "media_next"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "media_previous"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "set_volume"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "level": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "level"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "mute"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "unmute"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "close_browser_tabs"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "browser": {
+                    "enum": [
+                      "safari",
+                      "chrome"
+                    ]
+                  },
+                  "keep_pinned": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                },
+                "required": [
+                  "browser"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "quit_app"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "app_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "bundle_id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$"
+                  }
+                },
+                "required": [],
+                "additionalProperties": false,
+                "oneOf": [
+                  {
+                    "required": [
+                      "app_name"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "bundle_id"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "open_app"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "app_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "bundle_id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$"
+                  }
+                },
+                "required": [],
+                "additionalProperties": false,
+                "oneOf": [
+                  {
+                    "required": [
+                      "app_name"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "bundle_id"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "open_url"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^https?://[^\\s/]+[^\\s]*(?![\\s\\S])",
+                    "maxLength": 2048
+                  }
+                },
+                "required": [
+                  "url"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "run_shortcut"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "toggle_do_not_disturb"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "enabled"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "get_state"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "const": "ok"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "AccountDeletionResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "const": "deleted"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "ErrorDetail": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "last_seen": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "Device": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "kind": {
+            "const": "mac"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "last_seen": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "device_id",
+          "name",
+          "kind",
+          "online",
+          "last_seen"
+        ],
+        "additionalProperties": false
+      },
+      "DeviceList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Device"
+        }
+      },
+      "CommandAccepted": {
+        "type": "object",
+        "properties": {
+          "command_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "const": "dispatched"
+          }
+        },
+        "required": [
+          "command_id",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "State": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "screen_locked": {
+                "const": true
+              }
+            },
+            "required": [
+              "screen_locked"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "screen_locked": {
+                "const": false
+              },
+              "frontmost_app": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "now_playing": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "artist": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "source_app": {
+                        "enum": [
+                          "Music",
+                          "Spotify"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "title",
+                      "artist",
+                      "source_app"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "battery": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "percent": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "charging": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "percent",
+                      "charging"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "running_apps": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "maxItems": 512
+              }
+            },
+            "required": [
+              "screen_locked",
+              "frontmost_app",
+              "now_playing",
+              "battery",
+              "running_apps"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "LockResult": {
+        "type": "object",
+        "properties": {
+          "already_locked": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "already_locked"
+        ],
+        "additionalProperties": false
+      },
+      "ActionResult": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": false
+          },
+          {
+            "$ref": "#/components/schemas/State"
+          },
+          {
+            "$ref": "#/components/schemas/LockResult"
+          }
+        ]
+      },
+      "CommandStatus": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "status": {
+                "enum": [
+                  "dispatched",
+                  "delivered"
+                ]
+              }
+            },
+            "required": [
+              "command_id",
+              "status"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "status": {
+                "const": "succeeded"
+              },
+              "result": {
+                "$ref": "#/components/schemas/ActionResult"
+              }
+            },
+            "required": [
+              "command_id",
+              "status",
+              "result"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "status": {
+                "const": "failed"
+              },
+              "error": {
+                "$ref": "#/components/schemas/ErrorDetail"
+              }
+            },
+            "required": [
+              "command_id",
+              "status",
+              "error"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "PairingCodeRequest": {
+        "type": "object",
+        "properties": {
+          "device_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "kind": {
+            "const": "mac"
+          },
+          "agent_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "device_name",
+          "kind",
+          "agent_version"
+        ],
+        "additionalProperties": false
+      },
+      "PairingCodeResponse": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$"
+          },
+          "bootstrap_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "device_id",
+          "code",
+          "bootstrap_token",
+          "expires_at"
+        ],
+        "additionalProperties": false
+      },
+      "PairingClaimRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "additionalProperties": false
+      },
+      "PairingClaimResponse": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "const": "claimed"
+          }
+        },
+        "required": [
+          "device_id",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "PairingRedeemRequest": {
+        "type": "object",
+        "properties": {
+          "device_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          }
+        },
+        "required": [
+          "device_token"
+        ],
+        "additionalProperties": false
+      },
+      "PairingRedeemResponse": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "const": "paired"
+          }
+        },
+        "required": [
+          "device_id",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "RenameDeviceRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "RevocationResponse": {
+        "type": "object",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "const": "revoked"
+          }
+        },
+        "required": [
+          "device_id",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "Hello": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "const": 1
+          },
+          "type": {
+            "const": "hello"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "device_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "agent_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "device_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "macos_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "v",
+          "type",
+          "id",
+          "ts",
+          "device_token",
+          "agent_version",
+          "device_name",
+          "macos_version"
+        ],
+        "additionalProperties": false
+      },
+      "PairingCancelRequest": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "PairingCancelResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "const": "cancelled"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "Ready": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "const": 1
+          },
+          "type": {
+            "const": "ready"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "v",
+          "type",
+          "id",
+          "ts",
+          "device_id"
+        ],
+        "additionalProperties": false
+      },
+      "PairingPreviewResponse": {
+        "type": "object",
+        "properties": {
+          "device_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "device_name",
+          "expires_at"
+        ],
+        "additionalProperties": false
+      },
+      "Heartbeat": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "const": 1
+          },
+          "type": {
+            "const": "heartbeat"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "v",
+          "type",
+          "id",
+          "ts"
+        ],
+        "additionalProperties": false
+      },
+      "RevokeSelf": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "const": 1
+          },
+          "type": {
+            "const": "revoke_self"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "v",
+          "type",
+          "id",
+          "ts"
+        ],
+        "additionalProperties": false
+      },
+      "Delivered": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "const": 1
+          },
+          "type": {
+            "const": "delivered"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "command_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "v",
+          "type",
+          "id",
+          "ts",
+          "command_id"
+        ],
+        "additionalProperties": false
+      },
+      "Result": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "result"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ok": {
+                "const": true
+              },
+              "data": {
+                "$ref": "#/components/schemas/ActionResult"
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "ok",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "result"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ok": {
+                "const": false
+              },
+              "error_code": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "ok",
+              "error_code"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "Command": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "lock_screen"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "sleep_mac"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "media_play_pause"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "media_next"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "media_previous"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "set_volume"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "level": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "level"
+                ],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "mute"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "unmute"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "close_browser_tabs"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "browser": {
+                    "enum": [
+                      "safari",
+                      "chrome"
+                    ]
+                  },
+                  "keep_pinned": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                },
+                "required": [
+                  "browser"
+                ],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "quit_app"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "app_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "bundle_id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$"
+                  }
+                },
+                "required": [],
+                "additionalProperties": false,
+                "oneOf": [
+                  {
+                    "required": [
+                      "app_name"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "bundle_id"
+                    ]
+                  }
+                ]
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "open_app"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "app_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "bundle_id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$"
+                  }
+                },
+                "required": [],
+                "additionalProperties": false,
+                "oneOf": [
+                  {
+                    "required": [
+                      "app_name"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "bundle_id"
+                    ]
+                  }
+                ]
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "open_url"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^https?://[^\\s/]+[^\\s]*(?![\\s\\S])",
+                    "maxLength": 2048
+                  }
+                },
+                "required": [
+                  "url"
+                ],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "run_shortcut"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "toggle_do_not_disturb"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "enabled"
+                ],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "get_state"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "Revoke": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "const": 1
+          },
+          "type": {
+            "const": "revoke"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "v",
+          "type",
+          "id",
+          "ts",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "Bye": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "const": 1
+          },
+          "type": {
+            "const": "bye"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "v",
+          "type",
+          "id",
+          "ts",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "DeviceMessage": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Hello"
+          },
+          {
+            "$ref": "#/components/schemas/Heartbeat"
+          },
+          {
+            "$ref": "#/components/schemas/Delivered"
+          },
+          {
+            "$ref": "#/components/schemas/Result"
+          },
+          {
+            "$ref": "#/components/schemas/RevokeSelf"
+          },
+          {
+            "$ref": "#/components/schemas/Bye"
+          }
+        ]
+      },
+      "RelayMessage": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Command"
+          },
+          {
+            "$ref": "#/components/schemas/Ready"
+          },
+          {
+            "$ref": "#/components/schemas/Revoke"
+          },
+          {
+            "$ref": "#/components/schemas/Bye"
+          }
+        ]
+      },
+      "AuthorizationContext": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "oauth_client_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "allowed_actions": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "lock_screen",
+                "sleep_mac",
+                "media_play_pause",
+                "media_next",
+                "media_previous",
+                "set_volume",
+                "mute",
+                "unmute",
+                "close_browser_tabs",
+                "quit_app",
+                "open_app",
+                "open_url",
+                "run_shortcut",
+                "toggle_do_not_disturb",
+                "get_state"
+              ]
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "user_id",
+          "oauth_client_id",
+          "allowed_actions"
+        ],
+        "additionalProperties": false
+      },
+      "LocalLogEntry": {
+        "type": "object",
+        "properties": {
+          "command_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action": {
+            "enum": [
+              "lock_screen",
+              "sleep_mac",
+              "media_play_pause",
+              "media_next",
+              "media_previous",
+              "set_volume",
+              "mute",
+              "unmute",
+              "close_browser_tabs",
+              "quit_app",
+              "open_app",
+              "open_url",
+              "run_shortcut",
+              "toggle_do_not_disturb",
+              "get_state"
+            ]
+          },
+          "params": {
+            "type": "object"
+          },
+          "outcome": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "command_id",
+          "action",
+          "params",
+          "outcome",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "UserRow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "auth_subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "email": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 320
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "auth_subject",
+          "email",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "DeviceRow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kind": {
+            "const": "mac"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "agent_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "last_seen_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "kind",
+          "name",
+          "agent_version",
+          "online",
+          "last_seen_at",
+          "created_at",
+          "revoked_at"
+        ],
+        "additionalProperties": false
+      },
+      "DeviceTokenRow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "token_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "device_id",
+          "token_hash",
+          "created_at",
+          "revoked_at"
+        ],
+        "additionalProperties": false
+      },
+      "PairingCodeRow": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$"
+          },
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bootstrap_token_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "claimed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "redeemed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "device_id",
+          "bootstrap_token_hash",
+          "expires_at",
+          "claimed_at",
+          "redeemed_at"
+        ],
+        "additionalProperties": false
+      },
+      "CommandRow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "oauth_client_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "action": {
+            "enum": [
+              "lock_screen",
+              "sleep_mac",
+              "media_play_pause",
+              "media_next",
+              "media_previous",
+              "set_volume",
+              "mute",
+              "unmute",
+              "close_browser_tabs",
+              "quit_app",
+              "open_app",
+              "open_url",
+              "run_shortcut",
+              "toggle_do_not_disturb",
+              "get_state"
+            ]
+          },
+          "params_json": {
+            "type": "object",
+            "properties": {
+              "redacted": {
+                "const": true
+              }
+            },
+            "required": [
+              "redacted"
+            ],
+            "additionalProperties": false
+          },
+          "status": {
+            "enum": [
+              "dispatched",
+              "delivered",
+              "succeeded",
+              "failed"
+            ]
+          },
+          "result_json": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActionResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error_json": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "device_id",
+          "user_id",
+          "oauth_client_id",
+          "action",
+          "params_json",
+          "status",
+          "result_json",
+          "error_json",
+          "created_at",
+          "expires_at"
+        ],
+        "additionalProperties": false
+      },
+      "AuditLogRow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "command_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "oauth_client_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "action": {
+            "enum": [
+              "lock_screen",
+              "sleep_mac",
+              "media_play_pause",
+              "media_next",
+              "media_previous",
+              "set_volume",
+              "mute",
+              "unmute",
+              "close_browser_tabs",
+              "quit_app",
+              "open_app",
+              "open_url",
+              "run_shortcut",
+              "toggle_do_not_disturb",
+              "get_state"
+            ]
+          },
+          "params_json": {
+            "type": "object",
+            "properties": {
+              "redacted": {
+                "const": true
+              }
+            },
+            "required": [
+              "redacted"
+            ],
+            "additionalProperties": false
+          },
+          "result_summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "ip": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 45
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "device_id",
+          "command_id",
+          "oauth_client_id",
+          "action",
+          "params_json",
+          "result_summary",
+          "ip",
+          "created_at"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "userOAuth": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://YOUR_AUTH0_DOMAIN/authorize",
+            "tokenUrl": "https://YOUR_AUTH0_DOMAIN/oauth/token",
+            "scopes": {
+              "macbridge:control": "Control linked devices"
+            }
+          }
+        }
+      },
+      "deviceBootstrap": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://YOUR_RELAY_DOMAIN",
+      "description": "Replace with the deployed HTTPS origin"
+    }
+  ]
+}

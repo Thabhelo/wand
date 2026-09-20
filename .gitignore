@@ -1,0 +1,21 @@
+.venv/
+__pycache__/
+.env
+.env.*
+!.env.example
+.build/
+.DS_Store
+*.sqlite*
+dist/
+
+node_modules/
+.wrangler/
+.dev.vars
+
+# Local credentials and signing material
+.dev.vars.*
+*.p12
+*.p8
+*.key
+*.pem
+*.log

@@ -1,0 +1,16 @@
+{
+  "name": "wand-website",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "node --test tests/*.test.mjs",
+    "prepare:assets": "node scripts/sync-dashboard.mjs",
+    "predev": "npm run prepare:assets",
+    "predeploy": "npm run prepare:assets"
+  },
+  "devDependencies": {
+    "wrangler": "^4.135.0"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "wand-relay-cloudflare",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build:contracts": "node scripts/contracts.mjs",
+    "test": "vitest run",
+    "deploy": "npm run build:contracts && wrangler deploy"
+  },
+  "dependencies": {
+    "jose": "^6.1.0"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "vitest": "^4.1.0",
+    "wrangler": "^4.135.0",
+    "@cloudflare/vitest-plugin": "latest"
+  }
+}

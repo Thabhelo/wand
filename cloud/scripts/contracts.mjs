@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import Ajv from 'ajv/dist/2020.js';
+import addFormats from 'ajv-formats';
+import standaloneCode from 'ajv/dist/standalone/index.js';
+const schema=JSON.parse(fs.readFileSync(new URL('../../contracts/v1.schema.json',import.meta.url)));
+const ajv=new Ajv({strict:false,code:{source:true,esm:true}});addFormats(ajv);
+ajv.addSchema(schema,'protocol');
+const names=['PairingCodeRequest','PairingClaimRequest','PairingRedeemRequest','PairingCancelRequest','RenameDeviceRequest','CommandRequest','DeviceMessage','State','LockResult','ActionResult'];
+const validators=Object.fromEntries(names.map(name=>[name,`protocol#/$defs/${name}`]));
+fs.writeFileSync(new URL('../src/contracts.js',import.meta.url),standaloneCode(ajv,validators));

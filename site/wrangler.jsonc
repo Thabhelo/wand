@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wand-website",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-20",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "routes": [
+    {
+      "pattern": "getwand.app",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.getwand.app",
+      "custom_domain": true
+    },
+    {
+      "pattern": "app.getwand.app",
+      "custom_domain": true
+    }
+  ],
+  "vars": {
+    "RELAY_ORIGIN": "https://api.getwand.app"
+  },
+  "observability": {
+    "enabled": false
+  }
+}

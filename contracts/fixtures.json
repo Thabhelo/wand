@@ -1,0 +1,894 @@
+[
+  {
+    "name": "lock_screen",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "lock_screen",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "lock_screen-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "lock_screen",
+      "params": {
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "sleep_mac",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "sleep_mac",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "sleep_mac-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "sleep_mac",
+      "params": {
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "media_play_pause",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "media_play_pause",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "media_play_pause-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "media_play_pause",
+      "params": {
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "media_next",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "media_next",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "media_next-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "media_next",
+      "params": {
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "media_previous",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "media_previous",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "media_previous-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "media_previous",
+      "params": {
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "set_volume",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "set_volume",
+      "params": {
+        "level": 50
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "set_volume-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "set_volume",
+      "params": {
+        "level": 50,
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "mute",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "mute",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "mute-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "mute",
+      "params": {
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "unmute",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "unmute",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "unmute-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "unmute",
+      "params": {
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "close_browser_tabs",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "close_browser_tabs",
+      "params": {
+        "browser": "safari"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "close_browser_tabs-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "close_browser_tabs",
+      "params": {
+        "browser": "safari",
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "quit_app",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "quit_app",
+      "params": {
+        "bundle_id": "com.apple.Music"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "quit_app-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "quit_app",
+      "params": {
+        "bundle_id": "com.apple.Music",
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "open_app",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "open_app",
+      "params": {
+        "app_name": "Music"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "open_app-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "open_app",
+      "params": {
+        "app_name": "Music",
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "open_url",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "open_url",
+      "params": {
+        "url": "https://example.com"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "open_url-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "open_url",
+      "params": {
+        "url": "https://example.com",
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "run_shortcut",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "run_shortcut",
+      "params": {
+        "name": "My routine"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "run_shortcut-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "run_shortcut",
+      "params": {
+        "name": "My routine",
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "toggle_do_not_disturb",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "toggle_do_not_disturb",
+      "params": {
+        "enabled": true
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "toggle_do_not_disturb-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "toggle_do_not_disturb",
+      "params": {
+        "enabled": true,
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "get_state",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "get_state",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "get_state-extra-param",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "get_state",
+      "params": {
+        "shell": "touch /tmp/should-never-exist"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-volume--1",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "set_volume",
+      "params": {
+        "level": -1
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-volume-101",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "set_volume",
+      "params": {
+        "level": 101
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-volume-True",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "set_volume",
+      "params": {
+        "level": true
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-volume-50",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "set_volume",
+      "params": {
+        "level": "50"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-volume-0.1",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "set_volume",
+      "params": {
+        "level": 0.1
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-url-'file:///etc/passwd'",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "open_url",
+      "params": {
+        "url": "file:///etc/passwd"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-url-'javascript:alert(1)'",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "open_url",
+      "params": {
+        "url": "javascript:alert(1)"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-url-'https://'",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "open_url",
+      "params": {
+        "url": "https://"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-url-'https://example.com\\n'",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "open_url",
+      "params": {
+        "url": "https://example.com\n"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-url-'https://example.com/a b'",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "open_url",
+      "params": {
+        "url": "https://example.com/a b"
+      },
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "unlock",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "unlock",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "shell",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "shell",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "screenshot",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "screenshot",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "type_text",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "type_text",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-envelope-v",
+    "model": "RelayMessage",
+    "value": {
+      "v": 2,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "lock_screen",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-envelope-id",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "bad",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "lock_screen",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-envelope-ts",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "bad",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "lock_screen",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-envelope-extra",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "lock_screen",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z",
+      "extra": true
+    },
+    "valid": false
+  },
+  {
+    "name": "bad-envelope-encrypted_payload",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "command",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "command_id": "11111111-1111-4111-8111-111111111111",
+      "action": "lock_screen",
+      "params": {},
+      "expires_at": "2026-09-20T12:00:00Z",
+      "encrypted_payload": "ciphertext"
+    },
+    "valid": false
+  },
+  {
+    "name": "result-{'screen_locked': True}",
+    "model": "ActionResult",
+    "value": {
+      "screen_locked": true
+    },
+    "valid": true
+  },
+  {
+    "name": "result-{'already_locked': True}",
+    "model": "ActionResult",
+    "value": {
+      "already_locked": true
+    },
+    "valid": true
+  },
+  {
+    "name": "result-{'already_locked': False}",
+    "model": "ActionResult",
+    "value": {
+      "already_locked": false
+    },
+    "valid": true
+  },
+  {
+    "name": "result-{}",
+    "model": "ActionResult",
+    "value": {},
+    "valid": true
+  },
+  {
+    "name": "locked-leak",
+    "model": "ActionResult",
+    "value": {
+      "screen_locked": true,
+      "frontmost_app": "Private"
+    },
+    "valid": false
+  },
+  {
+    "name": "revoke-self",
+    "model": "DeviceMessage",
+    "value": {
+      "v": 1,
+      "type": "revoke_self",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z"
+    },
+    "valid": true
+  },
+  {
+    "name": "revoke-self-wrong-direction",
+    "model": "RelayMessage",
+    "value": {
+      "v": 1,
+      "type": "revoke_self",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z"
+    },
+    "valid": false
+  },
+  {
+    "name": "revoke-self-target",
+    "model": "DeviceMessage",
+    "value": {
+      "v": 1,
+      "type": "revoke_self",
+      "id": "11111111-1111-4111-8111-111111111111",
+      "ts": "2026-09-20T12:00:00Z",
+      "device_id": "1"
+    },
+    "valid": false
+  },
+  {
+    "name": "scope-request-forgery",
+    "model": "CommandRequest",
+    "value": {
+      "device_id": "11111111-1111-4111-8111-111111111111",
+      "action": "lock_screen",
+      "params": {},
+      "oauth_client_id": "other"
+    },
+    "valid": false
+  }
+]
