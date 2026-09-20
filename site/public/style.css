@@ -6,7 +6,6 @@
 /* Keep the central message balanced without the removed side captions. */
 .manifesto{justify-content:center}
 
-/* Keep the clip's full frame at every screen size. */
-.hero{gap:36px;grid-template-columns:1fr 1.12fr}.hero-copy,.hero-film{min-width:0}.hero-film{overflow:hidden;border-radius:28px;background:#eeeee9;box-shadow:0 24px 65px -35px #454c3540}.hero-film video{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:contain}.hero-film video:focus-visible{outline:3px solid #799b31;outline-offset:-3px}
-@media(max-width:900px){.hero{gap:24px}}
-@media(max-width:650px){.hero{grid-template-columns:1fr;gap:34px;padding-bottom:44px}.hero-film{border-radius:20px}}
+/* Blend the silent animation into the setup section. */
+.how-intro{min-width:0}.muse-motion{margin:0 -20px -15px;pointer-events:none;mix-blend-mode:multiply;mask-image:radial-gradient(ellipse 65% 65% at center,#000 55%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 65% 65% at center,#000 55%,transparent 100%)}.muse-motion video{display:block;width:100%;height:auto;aspect-ratio:16/9}.how ol{align-self:center}
+@media(max-width:650px){.muse-motion{max-width:360px;margin:-5px auto 25px}}

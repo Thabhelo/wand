@@ -5,6 +5,7 @@ const film=document.querySelector('#muse-film');
 if(film){
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   film.muted=true;
+  film.addEventListener('contextmenu',event=>event.preventDefault());
   if(!reducedMotion.matches&&!navigator.connection?.saveData)film.play().catch(()=>{});
   reducedMotion.addEventListener('change',event=>{if(event.matches)film.pause()});
   let resumeWhenVisible=false;
