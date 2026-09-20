@@ -35,3 +35,13 @@
 .site-footer .footer-bottom{border-top-color:#cfd6c5}
 .footer-bottom a:hover{color:#26362d}
 .site-footer a:focus-visible{outline-color:#799b31}
+/* A full first screen, with a floating glass navigation capsule. */
+.home .glass-nav{position:fixed;z-index:30;top:24px;left:50%;transform:translateX(-50%);width:calc(100% - 64px);max-width:1160px;height:76px;margin:0;padding:0 28px;border-radius:999px;border:1px solid #ffffffb3;background:rgba(250,251,244,.76);backdrop-filter:blur(22px) saturate(135%);-webkit-backdrop-filter:blur(22px) saturate(135%);box-shadow:0 8px 35px #35402b0b,inset 0 1px 0 #ffffffde;gap:24px}
+.glass-nav nav{gap:28px}.glass-nav .nav-connect{background:#ffffff65;border-color:#d5ddca;padding:12px 20px}.glass-nav .nav-connect:hover{background:#fff9}
+.home .hero{min-height:100vh;min-height:100svh;min-height:100dvh;padding:144px 54px 72px;gap:48px;align-content:center;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.home .hero-copy{min-width:0;max-width:555px}.home .hero h1{margin:0 0 32px;font-size:clamp(48px,5.4vw,76px);line-height:1.13}.home .intro{margin:0 0 38px;max-width:510px;line-height:1.9}.home .actions{flex-wrap:wrap;row-gap:22px}.home .magic-scene{min-width:0}
+@media(min-width:1500px){.home .hero{gap:64px}.home .intro{font-size:17px}}
+@media(max-width:900px){.home .glass-nav{width:calc(100% - 40px);top:18px;padding:0 22px;height:70px}.home .hero{padding:128px 30px 60px;gap:16px}.home .hero h1{font-size:clamp(42px,5.8vw,54px);letter-spacing:-2.8px}.home .intro{font-size:15px}}
+@media(max-width:650px){.home .glass-nav{top:12px;width:calc(100% - 24px);height:64px;padding:0 17px;gap:12px}.glass-nav .brand{font-size:25px}.glass-nav .brand img{width:28px;height:28px}.glass-nav .nav-connect{font-size:12px;padding:10px 13px;white-space:nowrap}.home .hero{grid-template-columns:minmax(0,1fr);padding:116px 24px 48px;gap:20px;align-content:center}.home .hero h1{font-size:clamp(40px,10vw,58px);letter-spacing:-2.4px;margin-bottom:24px}.home .intro{line-height:1.8;margin-bottom:28px}.home .magic-scene{height:390px;margin:-10px -15px -18px;transform:scale(.82);transform-origin:center}.home .actions{gap:20px}.home .actions .button{padding:16px 22px}}
+@media(max-width:360px){.home .hero{padding-left:20px;padding-right:20px}.home .magic-scene{transform:scale(.72);margin-left:-25px;margin-right:-25px}.home .actions{gap:18px}.home .actions .button{padding:15px 18px;font-size:12px}.home .actions .text-link{font-size:12px}}
+@media(prefers-reduced-transparency:reduce){.home .glass-nav{background:#f5f5ed;backdrop-filter:none;-webkit-backdrop-filter:none}}
