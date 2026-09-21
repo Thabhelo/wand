@@ -12,11 +12,12 @@ import MacBridgeCore
         if action == "desktop_stop" { desktop.stop(); return .object([:]) }
         if let guarded = try CommandGate.lockedResult(action: action, locked: LockStateReader.read().locked) { return guarded }
         let result = try await execute(action: action, params: params, shortcuts: shortcuts)
-        if action == "get_state", let guarded = try CommandGate.lockedResult(action: action, locked: LockStateReader.read().locked) { return guarded }
+        if ["get_state", "list_apps"].contains(action), let guarded = try CommandGate.lockedResult(action: action, locked: LockStateReader.read().locked) { return guarded }
         return result
     }
     public func execute(action: String, params: JSON, shortcuts: [String]) async throws -> JSON {
         switch action {
+        case "list_apps": return await AppInventory.page(offset: Int(params["offset"]?.number ?? 0))
         case "desktop_observe": return try await desktop.observe(params)
         case "desktop_act": return try desktop.act(params)
         case "desktop_stop": desktop.stop()
@@ -24,10 +25,10 @@ import MacBridgeCore
             guard let text = params["url"]?.string, let url = URL(string: text), ["https", "http"].contains(url.scheme?.lowercased() ?? ""), url.host != nil else { throw ContractError(code: "invalid_url") }
             guard NSWorkspace.shared.open(url) else { throw ContractError(code: "action_failed") }
         case "open_app":
-            let url = try applicationURL(params)
+            let url = try await applicationURL(params)
             _ = try await NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
         case "quit_app":
-            let url = try applicationURL(params)
+            let url = try await applicationURL(params)
             guard let id = Bundle(url: url)?.bundleIdentifier else { throw ContractError(code: "app_not_found") }
             let apps = NSRunningApplication.runningApplications(withBundleIdentifier: id)
             guard !apps.isEmpty else { return .object([:]) }
@@ -78,14 +79,10 @@ import MacBridgeCore
         }
         return .object([:])
     }
-    private func applicationURL(_ params: JSON) throws -> URL {
+    private func applicationURL(_ params: JSON) async throws -> URL {
         if let id = params["bundle_id"]?.string, let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: id) { return url }
         if let name = params["app_name"]?.string {
-            // Resolve only installed application bundles; names cannot become paths or scripts.
-            let matches = ["/Applications", "/System/Applications", "/System/Applications/Utilities"].flatMap { folder -> [URL] in
-                (try? FileManager.default.contentsOfDirectory(at: URL(fileURLWithPath: folder), includingPropertiesForKeys: nil)) ?? []
-            }.filter { $0.pathExtension == "app" && $0.deletingPathExtension().lastPathComponent == name }
-            if matches.count == 1 { return matches[0] }
+            return try await AppInventory.resolve(name: name)
         }
         throw ContractError(code: "app_not_found_or_ambiguous")
     }

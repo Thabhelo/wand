@@ -13,7 +13,15 @@ class ContractTests(unittest.TestCase):
     def test_schema_and_catalog(self):
         Draft202012Validator.check_schema(SCHEMA)
         validate('ActionCatalog',ACTIONS)
-        self.assertEqual(len({a['name'] for a in ACTIONS}),18)
+        self.assertEqual(len({a['name'] for a in ACTIONS}),19)
+    def test_app_list_contract(self):
+        validate('CommandRequest',command('list_apps',{'offset':100}))
+        result={'apps':[{'name':'Editor','bundle_id':'com.example.editor','last_opened':None,'running':False}],'next_offset':None}
+        validate('AppList',result)
+        validate('ActionResult',result)
+        self.rejects('CommandRequest',command('list_apps',{'offset':-1}))
+        self.rejects('AppList',{**result,'path':'/Applications/Editor.app'})
+        self.rejects('AppList',{**result,'apps':result['apps']*101})
     def test_all_valid_actions(self):
         params={'desktop_observe':{'bundle_id':'com.apple.finder'},'desktop_act':{'snapshot_id':str(uuid4()),'operation':'key','key':'tab'},'set_volume':{'level':50},'close_browser_tabs':{'browser':'safari'},'quit_app':{'bundle_id':'com.apple.Music'},'open_app':{'app_name':'Music'},'open_url':{'url':'https://example.com'},'run_shortcut':{'name':'My routine'},'toggle_do_not_disturb':{'enabled':True}}
         for action in ACTIONS:

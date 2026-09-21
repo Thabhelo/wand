@@ -11,6 +11,7 @@
     "predeploy": "npm run prepare:assets"
   },
   "devDependencies": {
+    "jsdom": "^27.0.1",
     "wrangler": "^4.135.0"
   }
 }

@@ -35,6 +35,8 @@ import MacBridgeNative
     private let relay = NSTextField(string: "")
     private let shortcut = NSTextField(string: "")
     private let appName = NSTextField(string: "")
+    private let appPicker = NSPopUpButton(frame: .zero, pullsDown: false)
+    private var installedApps: [AppInventory.Entry] = []
     private let cleanupBrowser = NSPopUpButton(frame: .zero, pullsDown: false)
     private let shortcutsList = NSStackView()
     private let activityList = NSStackView()
@@ -220,7 +222,8 @@ import MacBridgeNative
             volume.target = self; volume.action = #selector(setVolumeAction); volume.isContinuous = false
             volume.toolTip = "Adjust volume"
             add(card("Sound & playback", subtitle: "Playback controls use Music or Spotify when open.", views: [row(actionButton("Previous", #selector(previous), symbol: "backward.end.fill"), actionButton("Play / Pause", #selector(playPause), symbol: "playpause.fill"), actionButton("Next", #selector(next), symbol: "forward.end.fill")), row(volume, actionButton("Mute", #selector(muteSound)), actionButton("Unmute", #selector(unmuteSound)))]))
-            add(card("Open something", views: [row(field(website, placeholder: "Website · https://example.com"), actionButton("Open website", #selector(openWebsite), symbol: "arrow.up.right")), row(field(appName, placeholder: "App name · Calculator"), actionButton("Open app", #selector(openApp)), actionButton("Quit app…", #selector(quitApp)))]))
+            refreshApps()
+            add(card("Open something", views: [row(field(website, placeholder: "Website · https://example.com"), actionButton("Open website", #selector(openWebsite), symbol: "arrow.up.right")), row(appPicker, button("Refresh apps", #selector(refreshApps), symbol: "arrow.clockwise")), field(appName, placeholder: "Other app name or bundle ID"), row(actionButton("Open app", #selector(openApp)), actionButton("Quit app…", #selector(quitApp)))]))
             if cleanupBrowser.numberOfItems == 0 { cleanupBrowser.addItems(withTitles: ["Safari", "Chrome"]); cleanupBrowser.setAccessibilityLabel("Browser to clean up") }
             add(card("Mac controls", views: [row(actionButton("Lock…", #selector(lockMac)), actionButton("Sleep…", #selector(sleepMac))), row(actionButton("Focus on", #selector(focusOn)), actionButton("Focus off", #selector(focusOff))), row(cleanupBrowser, actionButton("Close browser tabs…", #selector(cleanSafari)))]))
         case 1:
@@ -332,11 +335,38 @@ import MacBridgeNative
         }; statusItem?.menu = menu
     }
     @objc private func readState() { agent?.refreshDeviceState() }
-    @objc private func openApp() { agent?.runLocalAction("open_app", params: .object(["app_name": .string(appName.stringValue)])) }
+    @objc private func refreshApps() {
+        let selectedID = appPicker.selectedItem?.representedObject as? String
+        appPicker.isEnabled = false
+        Task { @MainActor in
+        installedApps = await AppInventory.applications(refresh: true)
+        appPicker.isEnabled = true
+        appPicker.removeAllItems(); appPicker.addItem(withTitle: "Choose an app")
+        for app in installedApps {
+            let duplicate = installedApps.filter { $0.name == app.name }.count > 1
+            appPicker.addItem(withTitle: app.name + (duplicate ? " · " + app.bundleID : ""))
+            appPicker.lastItem?.representedObject = app.bundleID
+        }
+        appPicker.addItem(withTitle: "Other…"); appPicker.lastItem?.representedObject = "__manual"
+        if let selectedID, let item = appPicker.itemArray.first(where: { $0.representedObject as? String == selectedID }) { appPicker.select(item) }
+        appPicker.target = self; appPicker.action = #selector(appChoiceChanged)
+        appPicker.setAccessibilityLabel("Installed apps, most recently opened first")
+        appChoiceChanged()
+        }
+    }
+    @objc private func appChoiceChanged() { appName.isHidden = appPicker.selectedItem?.representedObject as? String != "__manual" }
+    private func chosenApp() -> (String, JSON)? {
+        guard let id = appPicker.selectedItem?.representedObject as? String else { result.stringValue = "Choose an app first."; return nil }
+        if id != "__manual" { return (installedApps.first(where: { $0.bundleID == id })?.name ?? id, .object(["bundle_id": .string(id)])) }
+        let name = appName.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { result.stringValue = "Enter an app name or bundle ID."; return nil }
+        let key = name.range(of: "^[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$", options: .regularExpression) != nil ? "bundle_id" : "app_name"
+        return (name, .object([key: .string(name)]))
+    }
+    @objc private func openApp() { if let (_, params) = chosenApp() { agent?.runLocalAction("open_app", params: params) } }
     @objc private func quitApp() {
-        let name = appName.stringValue
-        guard !name.isEmpty, confirm("Quit \(name)?", detail: "Wand will ask this app to quit gracefully. Any save dialog must be handled on this Mac.", button: "Quit app") else { return }
-        agent?.runLocalAction("quit_app", params: .object(["app_name": .string(name)]))
+        guard let (name, params) = chosenApp(), confirm("Quit \(name)?", detail: "Wand will ask this app to quit gracefully. Any save dialog must be handled on this Mac.", button: "Quit app") else { return }
+        agent?.runLocalAction("quit_app", params: params)
     }
     @objc private func playPause() { agent?.runLocalAction("media_play_pause") }
     @objc private func previous() { agent?.runLocalAction("media_previous") }

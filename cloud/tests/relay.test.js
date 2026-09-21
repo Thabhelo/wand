@@ -50,3 +50,15 @@ it('rejects malformed desktop input before it can reach a device',async()=>{
  {snapshot_id:crypto.randomUUID(),operation:'key',key:'command+q'}
  ])expect((await request('/v1/commands','POST',{device_id:p.device_id,action:'desktop_act',params})).status).toBe(422);
 });
+it('returns an app inventory only to its owner and keeps its contents out of audit',async()=>{
+ const p=await pair(),{ws,next}=await connect(p);
+ const body={device_id:p.device_id,action:'list_apps',params:{offset:0}};
+ expect((await request('/v1/commands','POST',body,'bob')).status).toBe(404);
+ const accepted=await request('/v1/commands','POST',body);expect(accepted.status).toBe(202);
+ const {command_id}=await accepted.json();expect((await next()).action).toBe('list_apps');
+ const data={apps:[{name:'Private Test App',bundle_id:'test.private.app',last_opened:null,running:false}],next_offset:null};
+ ws.send(JSON.stringify(envelope('result',{command_id,ok:true,data})));
+ expect((await poll(command_id)).result).toEqual(data);
+ const audit=await runInDurableObject(p.stub,o=>o.sql.exec('SELECT * FROM audit').toArray());
+ expect(JSON.stringify(audit)).not.toContain('Private Test App');ws.close();
+});

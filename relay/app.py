@@ -294,8 +294,8 @@ def create_app(repository=None, authenticator=None):
                     if m['type']=='delivered':c['status']='delivered';repo.put('commands',c['id'],c)
                     elif m['ok']:
                         data=m.get('data',{})
-                        validate('State' if c['action']=='get_state' else 'LockResult' if c['action']=='lock_screen' else 'ActionResult',data)
-                        if c['action'] not in ('get_state','lock_screen') and data != {}:raise Failure('invalid_result')
+                        validate('AppList' if c['action']=='list_apps' else 'State' if c['action']=='get_state' else 'LockResult' if c['action']=='lock_screen' else 'ActionResult',data)
+                        if c['action'] not in ('get_state','lock_screen','desktop_observe','list_apps') and data != {}:raise Failure('invalid_result')
                         finish(c,'succeeded',data=data)
                     else:finish(c,'failed',m['error_code'])
                 else:raise Failure('invalid_message')

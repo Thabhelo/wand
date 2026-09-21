@@ -31,6 +31,7 @@ rows=[
 ('open_url','Open an HTTP or HTTPS URL in the default browser.','medium',obj({'url':{'type':'string','format':'uri','pattern':r'^https?://[^\s/]+[^\s]*(?![\s\S])','maxLength':2048}})),
 ('run_shortcut','Run an exactly named locally allowlisted Shortcut after confirmation.','high',obj({'name':string(200)})),
 ('toggle_do_not_disturb','Set Do Not Disturb to the requested enabled state.','low',obj({'enabled':BOOL})),
+('list_apps','List installed apps on this unlocked Mac, ordered by last opened when known; page with next_offset.','low',obj({'offset':{'type':'integer','minimum':0,'maximum':20000,'default':0}},[])),
 ('get_state','Read minimal device state; a locked Mac reveals only that it is locked.','low',obj())]
 # Desktop mode is separately enabled on the Mac; no remote command grants permission.
 snapshot={'snapshot_id':UUID}
@@ -65,7 +66,8 @@ D['CommandAccepted']=obj({'command_id':UUID,'status':{'const':'dispatched'}})
 D['State']={'oneOf':[obj({'screen_locked':{'const':True}}),obj({'screen_locked':{'const':False},'frontmost_app':nullable(string()),'now_playing':nullable(obj({'title':string(500),'artist':string(500),'source_app':enum('Music','Spotify')})),'battery':nullable(obj({'percent':{'type':'integer','minimum':0,'maximum':100},'charging':BOOL})),'running_apps':{'type':'array','items':string(),'maxItems':512}})]}
 D['LockResult']=obj({'already_locked':BOOL})
 D['DesktopObservation']=obj({'snapshot_id':UUID,'bundle_id':string(200),'expires_at':TIME,'elements':{'type':'array','maxItems':60,'items':obj({'element_id':string(40),'role':string(80),'label':{'type':'string','maxLength':160},'value':{'type':'string','maxLength':160},'actions':{'type':'array','items':string(80),'maxItems':12}},['element_id','role','label','actions'])},'truncated':BOOL,'image':obj({'mime_type':{'const':'image/jpeg'},'base64':{'type':'string','maxLength':32000},'width':{'type':'integer'},'height':{'type':'integer'}})},['snapshot_id','bundle_id','expires_at','elements','truncated'])
-D['ActionResult']={'oneOf':[obj(),ref('State'),ref('LockResult'),ref('DesktopObservation')]}
+D['AppList']=obj({'apps':{'type':'array','maxItems':100,'items':obj({'name':string(),'bundle_id':string(200),'last_opened':nullable(TIME),'running':BOOL})},'next_offset':nullable({'type':'integer','minimum':1,'maximum':20000})})
+D['ActionResult']={'oneOf':[obj(),ref('State'),ref('LockResult'),ref('DesktopObservation'),ref('AppList')]}
 D['CommandStatus']={'oneOf':[obj({'command_id':UUID,'status':enum('dispatched','delivered')}),obj({'command_id':UUID,'status':{'const':'succeeded'},'result':ref('ActionResult')}),obj({'command_id':UUID,'status':{'const':'failed'},'error':ref('ErrorDetail')})]}
 D['PairingCodeRequest']=obj({'device_name':string(),'kind':{'const':'mac'},'agent_version':string(40)})
 D['PairingCodeResponse']=obj({'device_id':UUID,'code':CODE,'bootstrap_token':TOKEN,'expires_at':TIME})

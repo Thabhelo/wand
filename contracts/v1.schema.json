@@ -23,6 +23,7 @@
               "open_url",
               "run_shortcut",
               "toggle_do_not_disturb",
+              "list_apps",
               "get_state",
               "desktop_observe",
               "desktop_act",
@@ -61,8 +62,8 @@
         ],
         "additionalProperties": false
       },
-      "minItems": 18,
-      "maxItems": 18
+      "minItems": 19,
+      "maxItems": 19
     },
     "CommandRequest": {
       "oneOf": [
@@ -480,6 +481,37 @@
               "required": [
                 "enabled"
               ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "device_id",
+            "action",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "device_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "action": {
+              "const": "list_apps"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 20000,
+                  "default": 0
+                }
+              },
+              "required": [],
               "additionalProperties": false
             }
           },
@@ -1139,6 +1171,32 @@
           "type": "object",
           "properties": {
             "action": {
+              "const": "list_apps"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 20000,
+                  "default": 0
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "action",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
               "const": "get_state"
             },
             "params": {
@@ -1758,6 +1816,68 @@
       ],
       "additionalProperties": false
     },
+    "AppList": {
+      "type": "object",
+      "properties": {
+        "apps": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "bundle_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "last_opened": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "running": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "name",
+              "bundle_id",
+              "last_opened",
+              "running"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "next_offset": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "apps",
+        "next_offset"
+      ],
+      "additionalProperties": false
+    },
     "ActionResult": {
       "oneOf": [
         {
@@ -1774,6 +1894,9 @@
         },
         {
           "$ref": "#/$defs/DesktopObservation"
+        },
+        {
+          "$ref": "#/$defs/AppList"
         }
       ]
     },
@@ -3100,6 +3223,64 @@
               "format": "date-time"
             },
             "action": {
+              "const": "list_apps"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 20000,
+                  "default": 0
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "encrypted_payload": {
+              "type": "null",
+              "description": "Reserved; non-null payloads are unsupported in v1."
+            }
+          },
+          "required": [
+            "v",
+            "type",
+            "id",
+            "ts",
+            "command_id",
+            "expires_at",
+            "action",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "v": {
+              "const": 1
+            },
+            "type": {
+              "const": "command"
+            },
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "ts": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "command_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "action": {
               "const": "get_state"
             },
             "params": {
@@ -3603,6 +3784,7 @@
               "open_url",
               "run_shortcut",
               "toggle_do_not_disturb",
+              "list_apps",
               "get_state",
               "desktop_observe",
               "desktop_act",
@@ -3642,6 +3824,7 @@
             "open_url",
             "run_shortcut",
             "toggle_do_not_disturb",
+            "list_apps",
             "get_state",
             "desktop_observe",
             "desktop_act",
@@ -3909,6 +4092,7 @@
             "open_url",
             "run_shortcut",
             "toggle_do_not_disturb",
+            "list_apps",
             "get_state",
             "desktop_observe",
             "desktop_act",
@@ -4026,6 +4210,7 @@
             "open_url",
             "run_shortcut",
             "toggle_do_not_disturb",
+            "list_apps",
             "get_state",
             "desktop_observe",
             "desktop_act",
