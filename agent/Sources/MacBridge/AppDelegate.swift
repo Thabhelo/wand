@@ -23,6 +23,8 @@ import MacBridgeNative
     private var displayedCommand = ""
     private let state = NSTextField(wrappingLabelWithString: "Checking this Mac…")
     private let details = NSTextField(wrappingLabelWithString: "")
+    private let statusRows = NSStackView()
+    private var statusSignature = ""
     private let desktopStatus = NSTextField(wrappingLabelWithString: "Desktop control is off")
     private let connection = NSTextField(wrappingLabelWithString: "")
     private var connectButton: NSButton?
@@ -213,7 +215,7 @@ import MacBridgeNative
             state.font = .systemFont(ofSize: 15, weight: .medium)
             details.font = .systemFont(ofSize: 13); details.textColor = .secondaryLabelColor; details.isSelectable = true
             let refresh = button("Refresh", #selector(readState), symbol: "arrow.clockwise"); readButton = refresh
-            add(card(Host.current().localizedName ?? "This Mac", accessory: refresh, views: [state, details]))
+            add(card(Host.current().localizedName ?? "This Mac", accessory: refresh, views: [state, details, statusRows]))
             if volume.constraints.isEmpty {
                 volume.widthAnchor.constraint(greaterThanOrEqualToConstant: 130).isActive = true
                 let preferred = volume.widthAnchor.constraint(equalToConstant: 220); preferred.priority = .defaultHigh; preferred.isActive = true
@@ -285,24 +287,48 @@ import MacBridgeNative
         }
         statusItem?.button?.toolTip = "Wand · " + agent.status
         if let value = agent.deviceState {
-            if value["screen_locked"] == .bool(true) { details.stringValue = "Unlock on this Mac to use controls. Remote unlock is intentionally unavailable." }
+            if value["screen_locked"] == .bool(true) { showStatusRows([]); details.isHidden = false; details.stringValue = "Unlock on this Mac to use controls. Remote unlock is intentionally unavailable." }
             else {
-                let battery = value["battery"]?["percent"]?.number.map { "Battery \(Int($0))%" } ?? "Battery not available"
-                let charging = value["battery"]?["charging"] == .bool(true) ? " · Charging" : ""
-                let names = value["running_apps"]?.array?.compactMap(\.string) ?? []
-                details.stringValue = battery + charging + "\n" + "Active app: " + (value["frontmost_app"]?.string ?? "Unavailable") + "\n" + "\(names.count) open apps · " + names.prefix(8).joined(separator: ", ") + (names.count > 8 ? "…" : "")
+                var readings: [(String, String)] = []
+                let battery = value["battery"]?["percent"]?.number.map { "\(Int($0))%" } ?? "Unavailable"
+                readings.append(("Battery", battery + (value["battery"]?["charging"] == .bool(true) ? " · Charging" : "")))
                 if let system = value["system"] {
                     let gb: (Double) -> String = { String(format: "%.1f GB", $0 / 1e9) }
-                    if let storage = system["storage"], let free = storage["available_bytes"]?.number, let total = storage["total_bytes"]?.number { details.stringValue += "\nStorage: \(gb(free)) free of \(gb(total))" }
-                    if let memory = system["memory"], let used = memory["used_bytes"]?.number, let total = memory["total_bytes"]?.number { details.stringValue += "\nMemory: about \(gb(used)) of \(gb(total)) in use" }
-                    details.stringValue += "\nmacOS " + (system["macos_version"]?.string ?? "Unavailable")
-                    if let seconds = system["uptime_seconds"]?.number { let hours = Int(seconds / 3600); details.stringValue += " · Since restart: \(hours / 24)d \(hours % 24)h \(Int(seconds / 60) % 60)m" }
-                    details.stringValue += "\nLow Power Mode: " + (system["low_power_mode"] == .bool(true) ? "On" : "Off") + " · Thermal condition: " + (system["thermal_state"]?.string ?? "unknown")
+                    if let storage = system["storage"], let free = storage["available_bytes"]?.number, let total = storage["total_bytes"]?.number { readings.append(("Storage", "\(gb(free)) free of \(gb(total))")) }
+                    if let memory = system["memory"], let used = memory["used_bytes"]?.number, let total = memory["total_bytes"]?.number { readings.append(("Memory", "About \(gb(used)) of \(gb(total)) in use")) }
+                    if let seconds = system["uptime_seconds"]?.number {
+                        let minutes = Int(seconds / 60), hours = minutes / 60, days = hours / 24
+                        readings.append(("Uptime", days > 0 ? "\(days)d \(hours % 24)h" : hours > 0 ? "\(hours)h \(minutes % 60)m" : "\(minutes)m"))
+                    }
+                    readings.append(("Thermal", (system["thermal_state"]?.string ?? "Unavailable").capitalized))
                 }
+                readings.append(("Active app", value["frontmost_app"]?.string ?? "Unavailable"))
+                let names = value["running_apps"]?.array?.compactMap(\.string) ?? []
+                readings.append(("Open apps", names.prefix(8).joined(separator: ", ") + (names.count > 8 ? "…" : "")))
+                details.isHidden = true
+                showStatusRows(readings)
+
             }
-        } else { details.stringValue = agent.readingState ? "Reading your Mac…" : "Refresh to see this Mac’s current state." }
+        } else { showStatusRows([]); details.isHidden = false; details.stringValue = agent.readingState ? "Reading your Mac…" : "Refresh to see this Mac’s current state." }
         if selected == 1 { renderShortcuts() }
         if selected == 2, activitySnapshot != agent.lastCommand { refreshActivity() }
+    }
+    private func showStatusRows(_ readings: [(String, String)]) {
+        let signature = readings.map { $0.0 + ":" + $0.1 }.joined(separator: "\n")
+        guard signature != statusSignature else { return }; statusSignature = signature
+        statusRows.arrangedSubviews.forEach { statusRows.removeArrangedSubview($0); $0.removeFromSuperview() }
+        statusRows.orientation = .vertical; statusRows.alignment = .leading; statusRows.spacing = 12
+        statusRows.isHidden = readings.isEmpty
+        for (name, value) in readings {
+            let title = NSTextField(labelWithString: name)
+            title.font = .systemFont(ofSize: 12); title.textColor = .secondaryLabelColor
+            title.widthAnchor.constraint(equalToConstant: 76).isActive = true
+            let content = NSTextField(wrappingLabelWithString: value.isEmpty ? "None" : value)
+            content.font = .systemFont(ofSize: 13, weight: .medium); content.isSelectable = true
+            content.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+            let line = NSStackView(views: [title, content]); line.orientation = .horizontal; line.alignment = .firstBaseline; line.spacing = 12
+            statusRows.addArrangedSubview(line); line.widthAnchor.constraint(equalTo: statusRows.widthAnchor).isActive = true
+        }
     }
     private func showFeedback(_ message: String) {
         guard displayedCommand != message else { return }

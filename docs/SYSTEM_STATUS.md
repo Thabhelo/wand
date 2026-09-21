@@ -16,3 +16,5 @@ Verification: 21 native tests, 33 Cloudflare tests, 11 website tests, dashboard 
 Apple references: https://developer.apple.com/documentation/foundation/urlresourcevalues/volumeavailablecapacity and https://developer.apple.com/documentation/foundation/processinfo/thermalstate-swift.property . Any future App Store distribution must review required-reason API declarations for storage and boot-time APIs against Apple's then-current permitted usage; this release remains a direct-download development-signed beta.
 
 Live acceptance: production dashboard `get_state` returned and displayed all six new fields from the installed build 30, with no new permission prompts. The signed DMG binary matches the installed binary and passes strict signature and image-integrity checks. Relay deployment: `29986b2e-66cd-4dfd-9e46-1746aea054c6`. Website deployment: `c5d4c6e3-e905-4640-98fe-8294cd4558e2`.
+
+Build 31 simplifies the visible status: macOS version and Low Power Mode remain available in the API but are omitted from the Mac app and dashboard. Native readings use aligned label/value rows; the dashboard uses responsive cards.
