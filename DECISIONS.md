@@ -85,3 +85,7 @@ Do not claim first physical-device connector, guaranteed featuring, verified pla
 - 2026-09-20: Expose the actual relay OpenAPI at `/openapi.json`; omit invented OAuth endpoints while configuration is absent.
 - 2026-09-20: Now-playing reads must use already-running, already-authorized apps; get_state must never open a permission dialog or launch a player.
 - 2026-09-20: Recover interrupted enrollment by cancelling with the existing Keychain bootstrap token before allowing a new enrollment.
+
+- 2026-09-20: Firebase Google sign-in replaces Auth0 for production dashboard identity, per owner approval; dedicated `wand-getwand` project belongs to thabheloduve@gmail.com and stays on Spark.
+- 2026-09-20: Assistant authorization is separate Wand OAuth using Cloudflare's maintained provider, with explicit device/action consent and D1 revocation checks. Firebase login alone grants no assistant access.
+- 2026-09-20: Muse client registration stays closed until a verified platform callback/client is available; no invented Meta endpoint or publicly self-declared Muse clients.

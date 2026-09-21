@@ -10,10 +10,11 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path=self.path.split('?')[0]
         if path=='/':
-            html=(ROOT/'web/index.html').read_text().replace('https://cdn.auth0.com/js/auth0-spa-js/2.3/auth0-spa-js.production.js','/test-auth.js').replace('We gave Muse more powers.','LOCAL TEST DATA — no Mac is controlled')
+            html=(ROOT/'web/index.html').read_text().replace('/firebase-auth.js','/test-auth.js').replace('We gave Muse more powers.','LOCAL TEST DATA — no Mac is controlled')
             return self.reply(html,'text/html')
-        if path=='/test-auth.js':return self.reply("const auth0={createAuth0Client:async()=>({isAuthenticated:async()=>true,getUser:async()=>({email:'tester@example.test'}),getTokenSilently:async()=>'fixture',logout:async()=>{}})};",'application/javascript')
-        if path=='/config':return self.reply(json.dumps(dict(domain='test.invalid',clientId='fixture',audience='fixture')))
+        if path=='/test-auth.js':return self.reply("window.wandAuth={create:async()=>({isAuthenticated:async()=>true,getUser:async()=>({email:'tester@example.test'}),getTokenSilently:async()=>'fixture',logout:async()=>{}})};",'application/javascript')
+        if path=='/config':return self.reply(json.dumps(dict(firebase=dict(apiKey='fixture',projectId='fixture'))))
+        if path=='/v1/connections':return self.reply('[]')
         if path=='/v1/devices':return self.reply(json.dumps([dict(device_id='fixture-mac',name='Test MacBook',online=True,last_seen=None),dict(device_id='fixture-offline',name='Test Mac mini',online=False,last_seen='2026-09-20T12:00:00Z')]))
         if path=='/v1/commands/fixture':return self.reply(json.dumps(dict(command_id='fixture',status='succeeded',result=dict(screen_locked=False,frontmost_app='Finder',battery=dict(percent=82,charging=True),now_playing=None,running_apps=['Finder','Wand']))))
         if path in ('/dashboard.js','/dashboard.css','/mark.svg'):

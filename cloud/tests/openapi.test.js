@@ -1,15 +1,15 @@
 import {expect,it} from 'vitest';
 import {publicSpec} from '../src/openapi.js';
-it('publishes usable paths without imaginary OAuth endpoints when auth is absent',()=>{
- const spec=publicSpec({});expect(spec.servers[0].url).toBe('https://api.getwand.app');
+it('publishes only scoped connector operations',()=>{
+ const spec=publicSpec({});expect(spec.servers[0].url).toBe('https://api.getwand.app/connector');
  expect(spec['x-wand-auth-configured']).toBe(false);
- expect(JSON.stringify(spec)).not.toContain('YOUR_AUTH0_DOMAIN');
+ expect(Object.keys(spec.paths).sort()).toEqual(['/v1/commands','/v1/commands/{cid}','/v1/devices']);
  expect(spec.paths['/v1/commands'].post.responses['202']).toBeDefined();
- expect(spec.paths['/v1/commands'].post.security).toEqual([{userOAuth:[]}]);
+ expect(JSON.stringify(spec)).not.toContain('YOUR_AUTH0_DOMAIN');
 });
-it('builds OAuth metadata from the configured issuer without mutating the base',()=>{
- const spec=publicSpec({AUTH0_ISSUER:'https://tenant.auth0.com/',AUTH0_WEB_CLIENT_ID:'web',AUTH0_ALLOWED_CLIENT_IDS:'web'});
- expect(spec.components.securitySchemes.userOAuth.flows.authorizationCode.tokenUrl).toBe('https://tenant.auth0.com/oauth/token');
- expect(spec.paths['/v1/commands'].post.security).toEqual([{userOAuth:['macbridge:control']}]);
- expect(publicSpec({}).components.securitySchemes.userOAuth.type).toBe('http');
+it('uses Wand OAuth, never Firebase ID tokens as connector authority',()=>{
+ const spec=publicSpec({FIREBASE_PROJECT_ID:'wand-test',MUSE_CLIENT_IDS:'muse'});
+ expect(spec['x-wand-auth-configured']).toBe(true);
+ expect(spec.components.securitySchemes.userOAuth.flows.authorizationCode.tokenUrl).toBe('https://api.getwand.app/oauth/token');
+ expect(spec.components.securitySchemes.userOAuth.flows.authorizationCode.scopes['wand:lock_screen']).toBeDefined();
 });

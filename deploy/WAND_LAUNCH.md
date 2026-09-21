@@ -1,24 +1,21 @@
 # Wand deployment status — 2026-09-20
 
-## Live
+## Live and verified
 - getwand.app: public website on Cloudflare.
-- app.getwand.app: new responsive dashboard with pairing, device selection/status, media/volume, app/URL/Shortcut controls, confirmations, command polling, rename/disconnect and data deletion.
-- api.getwand.app: Cloudflare Worker, D1 registry, per-device SQLite Durable Objects with hibernating WebSockets. Website proxy is connected. Health check verified.
-
-## Activation blocker
-Auth0 public settings are blank. Authenticated endpoints fail closed. The dashboard cannot sign a real user in until an owner-controlled Auth0 SPA/API is configured. No Fly account is needed. See cloud/README.md for configuration. No paid hosting plan was selected.
+- app.getwand.app: Firebase Google sign-in completed in Chrome as thabheloduve@gmail.com; the signed-in dashboard loaded the protected device list from the deployed relay.
+- api.getwand.app: Cloudflare Worker, D1 registry, per-device SQLite Durable Objects with hibernating WebSockets. Firebase project `wand-getwand` is on the no-cost Spark plan.
+- Separate OAuth authorization and token endpoints, discovery metadata, device/action consent, connector revocation and account-deletion cascade are deployed. MUSE_CLIENT_IDS is intentionally empty until verified client registration; arbitrary clients cannot claim to be Muse.
 
 ## Verification
-17 Cloudflare runtime tests pass: pairing, ownership, JWT signature/issuer/audience/client/scope/expiry, command lifecycle, injection rejection, reconnect fencing, hibernation recovery, heartbeat expiry, token revocation, account deletion and locked-state privacy. Dashboard tests cover confirmations/cancellation, absent config, pairing review, polling, failures and offline controls. Python reference suite: 40 tests run, 5 skipped. Browser fixture checks verified rendered dashboard/status/offline controls; fixtures never control a real Mac.
+29 Cloudflare runtime tests pass, including real OAuth code/token exchange in isolated bindings, replay/PKCE rejection, narrowed refresh scopes, per-device/action authorization, separate dashboard/connector token acceptance, revocation and account deletion. Dashboard checks and six website routing tests pass. These tests use a fake OAuth client and device peer, not the real Muse service.
 
-Mac source adds X-Wand-Device-ID routing header, preserving hello authentication and v1 message fields. App version 0.9.0 is packaged as an ad-hoc local build; no public notarized download.
+The live Google sign-in was verified without an auth bypass, test password, service-account impersonation or copying user tokens into the command line. Website and native pairing share the dashboard's Firebase identity. The native app retains only its own device token in Keychain.
 
-## Still not a finished MVP
-Real Auth0 login and cloud pairing, physical Mac command acceptance, Muse connector authorization/registration, lock/sleep/pinned-tabs/Focus OS work, Apple signing/notarization, real demo and reviewer acceptance remain. No end-to-end Muse-to-Mac success is claimed.
+## Remaining release work
+- Register the genuine Muse connector using verified client/callback details, then test iPhone → Muse → Wand → Mac. No real Muse-to-Mac success is claimed.
+- Verify native cloud pairing and physical Mac acceptance against this identity.
+- Complete lock/sleep/pinned-tabs/Focus OS work.
+- Apple Developer signing/notarization: signing inventory previously showed zero valid identities. Current 0.9.1 Mac build is ad-hoc signed.
+- Complete release legal/support details, demo and reviewer acceptance.
 
-## 0.9.1 implementation update
-- Public relay OpenAPI discovery endpoint added. Account authorization remains unconfigured.
-- Native now-playing reader added for already-running, already-authorized Music/Spotify; it never prompts during a state read. Positive media playback still needs app-permission testing.
-- Interrupted enrollment credentials are retained for cancellation on restart/retry, redeemed identity is verified, and public device identity persists before token promotion.
-- Twenty cloud tests and nine native tests pass, including a real read-only state request; this is not physical-action acceptance or Muse end-to-end validation.
-- Signing inventory returned zero valid code-signing identities. Public notarization remains blocked on owner setup.
+No Auth0 or Fly account is required. No paid plan was selected. Google and Cloudflare free tiers have quotas.

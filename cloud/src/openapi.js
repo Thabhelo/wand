@@ -1,24 +1,17 @@
-import base from '../../connector/openapi.json';
-
-// The deployed API is the source of connection URLs; never publish placeholder OAuth URLs.
+import base from '../../connector/openapi.json' with {type:'json'};
+import catalog from '../../contracts/actions.json' with {type:'json'};
+const SCOPES=catalog.map(a=>'wand:'+a.name);
 export function publicSpec(env) {
-  const spec = structuredClone(base);
-  spec.info = {...spec.info, title:'Wand device control API', version:'0.9.1', description:'Control a paired Mac through Wand. Commands are asynchronous: poll until succeeded or failed. Offline commands are rejected, never queued.'};
-  spec.servers = [{url:'https://api.getwand.app'}];
-  spec['x-wand-auth-configured'] = Boolean(env.AUTH0_ISSUER && env.AUTH0_WEB_CLIENT_ID && env.AUTH0_ALLOWED_CLIENT_IDS);
-  if (spec['x-wand-auth-configured']) {
-    const issuer = new URL(env.AUTH0_ISSUER);
-    if (issuer.protocol !== 'https:' || issuer.username || issuer.password || issuer.search || issuer.hash) throw Error('Invalid auth issuer');
-    spec.components.securitySchemes.userOAuth.flows.authorizationCode.authorizationUrl = new URL('authorize', issuer).href;
-    spec.components.securitySchemes.userOAuth.flows.authorizationCode.tokenUrl = new URL('oauth/token', issuer).href;
-  } else {
-    spec.components.securitySchemes.userOAuth = {type:'http',scheme:'bearer',bearerFormat:'JWT',description:'Account sign-in is not configured yet. Protected operations reject requests until configuration is complete.'};
-    for (const path of Object.values(spec.paths)) for (const operation of Object.values(path)) {
-      if (operation.security?.some(item => item.userOAuth)) operation.security = [{userOAuth:[]}];
-    }
-  }
-  for (const path of Object.values(spec.paths)) for (const operation of Object.values(path)) {
-    operation.responses['503'] = {description:'Service unavailable or sign-in not configured',content:{'application/json':{schema:{$ref:'#/components/schemas/ErrorResponse'}}}};
-  }
-  return spec;
+ const spec=structuredClone(base);
+ spec.info={...spec.info,title:'Wand device control API',version:'0.10.0',description:'Control only the Macs and actions approved by the user. Poll commands until succeeded or failed. Offline commands are never queued.'};
+ spec.servers=[{url:'https://api.getwand.app/connector'}];
+ spec['x-wand-auth-configured']=Boolean(env.FIREBASE_PROJECT_ID&&env.MUSE_CLIENT_IDS);
+ spec.components.securitySchemes.userOAuth={type:'oauth2',flows:{authorizationCode:{authorizationUrl:'https://api.getwand.app/authorize',tokenUrl:'https://api.getwand.app/oauth/token',scopes:Object.fromEntries(SCOPES.map(s=>[s,s.slice(5).replaceAll('_',' ')]))}},description:'Registered clients only. PKCE S256 and resource=https://api.getwand.app/connector required. Firebase sign-in and explicit device/action consent take place on Wand.'};
+ for(const path of Object.keys(spec.paths))if(!['/v1/devices','/v1/commands','/v1/commands/{cid}'].includes(path))delete spec.paths[path];
+ for(const path of Object.values(spec.paths))for(const operation of Object.values(path)){
+  operation.security=[{userOAuth:[]}];
+  operation.responses['403']={description:'The device or action is outside the user’s approved permissions'};
+  operation.responses['503']={description:'Service temporarily unavailable'};
+ }
+ return spec;
 }

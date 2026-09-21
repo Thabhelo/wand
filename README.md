@@ -17,7 +17,7 @@
 
 The website, dashboard, and Cloudflare relay are deployed at [getwand.app](https://getwand.app), [app.getwand.app](https://app.getwand.app), and [api.getwand.app](https://api.getwand.app). The Mac app is a local, ad-hoc signed development build.
 
-Real sign-in still requires hosted-auth configuration. Muse registration, complete physical-device acceptance tests, remaining macOS actions, and Apple signing/notarization are unfinished. Simulated results do not demonstrate real device control. See [launch status](deploy/WAND_LAUNCH.md) and [cloud setup](cloud/README.md).
+Firebase Google sign-in is live and verified. Assistant access uses separate device/action consent through Wand OAuth. Muse registration, complete physical-device acceptance tests, remaining macOS actions, and Apple signing/notarization are unfinished. Simulated results do not demonstrate real device control. See [launch status](deploy/WAND_LAUNCH.md) and [cloud setup](cloud/README.md).
 
 ## Develop the cloud relay and website
 

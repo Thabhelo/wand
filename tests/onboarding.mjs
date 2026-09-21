@@ -3,15 +3,16 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 const script=fs.readFileSync(new URL('../web/dashboard.js',import.meta.url),'utf8');
 const flush=async()=>{for(let i=0;i<20;i++)await new Promise(setImmediate)};
-function harness({configured=true,signed=true,handoff='',initialDevices=[]}={}){
- const elements=new Map(),storage=new Map(),calls=[],timers=new Map();let nextTimer=0,deviceList=initialDevices,result={status:'succeeded',result:{}},failure=null;
+function harness({configured=true,signed=true,handoff='',initialDevices=[],facebookEnabled=false}={}){
+ const elements=new Map(),storage=new Map(),calls=[],logins=[],timers=new Map();let links=0;let nextTimer=0,deviceList=initialDevices,result={status:'succeeded',result:{}},failure=null;
  function element(){return {value:'',textContent:'',hidden:false,disabled:false,open:false,children:[],dataset:{},style:{},append(...items){this.children.push(...items)},replaceChildren(...items){this.children=items},setAttribute(k,v){this[k]=v},addEventListener(k,f){this['on'+k]=f},showModal(){this.open=true},close(){this.open=false},focus(){}}}
  const get=s=>{if(!elements.has(s))elements.set(s,element());return elements.get(s)};
  get('#confirm-input').hidden=true;get('#volume').value='50';
- const context={document:{hidden:false,querySelector:get,querySelectorAll:()=>[],createElement:element},location:{hash:handoff,pathname:'/',search:'',origin:'https://app.example'},history:{replaceState(){}},sessionStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},window:{addEventListener(){}},URL,URLSearchParams,AbortController,Date,Math,JSON,Error,String,Number,Object,console,clearTimeout:id=>timers.delete(id),setTimeout:(fn,ms)=>{const id=++nextTimer;timers.set(id,{fn,ms});return id},auth0:{createAuth0Client:async()=>({isAuthenticated:async()=>signed,getUser:async()=>({email:'reviewer@example.test'}),getTokenSilently:async()=>'test-token'})},fetch:async(url,options)=>{
+ const context={document:{hidden:false,querySelector:get,querySelectorAll:()=>[],createElement:element},location:{hash:handoff,pathname:'/',search:'',origin:'https://app.example'},history:{replaceState(){}},sessionStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},window:{addEventListener(){},wandAuth:{create:async()=>({isAuthenticated:async()=>signed,getUser:async()=>({email:'reviewer@example.test'}),getTokenSilently:async()=>'test-token',loginWithRedirect:async method=>logins.push(method),linkFacebook:async()=>{links++}})}},URL,URLSearchParams,AbortController,Date,Math,JSON,Error,String,Number,Object,console,clearTimeout:id=>timers.delete(id),setTimeout:(fn,ms)=>{const id=++nextTimer;timers.set(id,{fn,ms});return id},fetch:async(url,options)=>{
   calls.push({url,body:options?.body?JSON.parse(options.body):null});let data,ok=true;
-  if(url==='/config'){data=configured?{domain:'auth.example',clientId:'test-client',audience:'test-audience'}:{error:{code:'service_not_configured'}};ok=configured}
+  if(url==='/config'){data=configured?{firebase:{apiKey:'test',projectId:'wand-test'},facebookEnabled}:{error:{code:'service_not_configured'}};ok=configured}
   else if(url==='/v1/devices')data=deviceList;
+  else if(url==='/v1/connections')data=[];
   else if(url==='/v1/pairing/preview')data={device_name:'My Mac',expires_at:'2099-01-01T00:00:00Z'};
   else if(url==='/v1/pairing/claim')data={device_id:'device',status:'claimed'};
   else if(url==='/v1/commands'){if(failure){data={error:failure};ok=false}else data={command_id:'command',status:'dispatched'}}
@@ -20,7 +21,7 @@ function harness({configured=true,signed=true,handoff='',initialDevices=[]}={}){
   return {ok,json:async()=>data};
  }};
  vm.createContext(context);vm.runInContext(script,context);
- return {get,storage,calls,timers,run:code=>vm.runInContext(code,context),setDevices:value=>deviceList=value,setResult:value=>result=value,setFailure:value=>failure=value};
+ return {get,storage,calls,timers,logins,get links(){return links},run:code=>vm.runInContext(code,context),setDevices:value=>deviceList=value,setResult:value=>result=value,setFailure:value=>failure=value};
 }
 const online={device_id:'device',name:'My Mac',online:true,last_seen:null};
 {
@@ -51,3 +52,10 @@ const online={device_id:'device',name:'My Mac',online:true,last_seen:null};
  const h=harness({initialDevices:[online]});await flush();h.setFailure({code:'device_offline',message:'offline',last_seen:'2026-09-20T12:00:00Z'});await h.run("sendAction('mute')");assert.match(h.get('#status').textContent,/offline/);assert.equal(h.get('#offline-notice').hidden,false);
 }
 console.log('Dashboard checks passed: pairing, absent configuration, confirmations and cancellation, offline fail-fast, rejected Shortcuts, locked privacy, URL/catalog validation, result polling.');
+
+{
+ const h=harness({signed:false,facebookEnabled:true});await flush();assert.equal(h.get('#facebook-login').hidden,false);await h.get('#facebook-login').onclick();assert.deepEqual(h.logins,['facebook']);
+ const linked=harness({facebookEnabled:true});await flush();assert.equal(linked.get('#facebook-link-section').hidden,false);await linked.get('#facebook-link').onclick();assert.equal(linked.links,1);assert(linked.get('#facebook-link-section').hidden);
+ const disabled=harness();await flush();assert(disabled.get('#facebook-login').hidden);assert(disabled.get('#facebook-link-section').hidden);
+}
+console.log('Facebook checks passed: provider gating, sign-in selection and explicit account linking.');

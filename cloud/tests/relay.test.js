@@ -1,13 +1,14 @@
 import {env} from 'cloudflare:workers';
 import {runInDurableObject,evictDurableObject,runDurableObjectAlarm} from 'cloudflare:test';
 import {beforeAll,beforeEach,expect,it,vi} from 'vitest';
+import connectionsMigration from '../migrations/0002_connections.sql?raw';
 import migration from '../migrations/0001_registry.sql?raw';
 import worker from '../src/index.js';
 import {envelope,token} from '../src/common.js';
 vi.mock('../src/auth.js',async()=>{const {Failure}=await import('../src/common.js');return {authenticate:async r=>{const user=r.headers.get('Authorization')?.slice(7);if(!['alice','bob'].includes(user))throw new Failure('unauthorized',401);return {user_id:user,client_id:'test-client'}}}});
 let ip;
-beforeAll(async()=>{for(const sql of migration.split(';').filter(s=>s.trim()))await env.DB.prepare(sql).run()});
-beforeEach(async()=>{ip=crypto.randomUUID();for(const table of ['tokens','pairing','devices','deleting'])await env.DB.prepare('DELETE FROM '+table).run()});
+beforeAll(async()=>{for(const sql of (migration+connectionsMigration).split(';').filter(s=>s.trim()))await env.DB.prepare(sql).run()});
+beforeEach(async()=>{ip=crypto.randomUUID();for(const table of ['connections','consent_requests','tokens','pairing','devices','deleting'])await env.DB.prepare('DELETE FROM '+table).run()});
 function request(path,method='GET',data,who='alice'){return worker.fetch(new Request('https://api.example'+path,{method,headers:{Authorization:'Bearer '+who,'CF-Connecting-IP':ip,'Content-Type':'application/json'},body:data?JSON.stringify(data):undefined}),env)}
 async function pair(){const r=await request('/v1/pairing/code','POST',{kind:'mac',device_name:'Test Mac',agent_version:'0.8.0'});expect(r.status).toBe(200);const p=await r.json(),raw=token();expect((await request('/v1/pairing/redeem','POST',{device_token:raw},p.bootstrap_token)).status).toBe(409);expect((await request('/v1/pairing/claim','POST',{code:p.code})).status).toBe(200);expect((await request('/v1/pairing/redeem','POST',{device_token:raw},p.bootstrap_token)).status).toBe(200);return {...p,raw,stub:env.DEVICES.getByName(p.device_id)}}
 function inbox(ws){const queue=[],waiters=[];ws.addEventListener('message',e=>{const v=JSON.parse(e.data),waiter=waiters.shift();if(waiter)waiter(v);else queue.push(v)});return ()=>queue.length?Promise.resolve(queue.shift()):new Promise(r=>waiters.push(r))}

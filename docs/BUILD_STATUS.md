@@ -1,3 +1,7 @@
+# Current production authentication
+
+As of 2026-09-20, production uses Firebase Google sign-in and a separate Wand OAuth consent service. See [Firebase connections](FIREBASE_CONNECTIONS.md) and [cloud deployment](../cloud/README.md). Earlier FastAPI/Auth0 descriptions below refer to the retained reference implementation, not the deployed service.
+
 # Current hosted status
 
 See [Wand launch status](../deploy/WAND_LAUNCH.md) for the current Cloudflare deployment and sign-in blocker. The entries below are chronological history and do not override the current status.

@@ -1,7 +1,7 @@
 {
-  "name": "MacBridge",
-  "version": "0.3.0",
-  "format_status": "MacBridge internal manifest; Meta import format not yet verified",
+  "name": "Wand",
+  "version": "0.10.0",
+  "format_status": "Wand internal manifest; Meta import format and client registration not yet verified",
   "openapi": "openapi.json",
   "operator_instructions": "OPERATOR.md",
   "actions": [

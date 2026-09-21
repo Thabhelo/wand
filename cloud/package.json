@@ -9,13 +9,14 @@
     "deploy": "npm run build:contracts && wrangler deploy"
   },
   "dependencies": {
+    "@cloudflare/workers-oauth-provider": "^0.10.3",
     "jose": "^6.1.0"
   },
   "devDependencies": {
+    "@cloudflare/vitest-plugin": "latest",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "vitest": "^4.1.0",
-    "wrangler": "^4.135.0",
-    "@cloudflare/vitest-plugin": "latest"
+    "wrangler": "^4.135.0"
   }
 }
