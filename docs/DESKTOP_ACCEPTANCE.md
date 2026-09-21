@@ -87,3 +87,15 @@ Opened Control Center using CUA through System Settings > Menu Bar > Add Control
 Signed build 21 installed. Live local Focus-on command be42ed78-5727-4fc9-b04b-4da0f73687c4 succeeded at 16:12:11.752Z after receipt at 16:12:10.054Z; CUA independently observed Do Not Disturb on. Focus-off then completed and CUA observed Do Not Disturb off. Restored the original Work mode and verified Work on. This is local Wand verification, not Muse or remote relay verification. Sleep and Chrome cleanup remain untested. Public build remains 17.
 
 Shortcut reference: https://support.apple.com/en-au/102650
+
+## September 21 build 23 — additional live app coverage
+
+Tested through the signed-in production desktop dashboard, production relay, and installed build 23 on macOS 26.6.2. Chrome Apple Events automation operated the dashboard DOM; it did not execute the tested native inputs directly. No credentials were exported. Fixtures were created under `/private/tmp/wand-app-compatibility`.
+
+| App | Verified result | Remaining issue |
+| --- | --- | --- |
+| Preview | Real window screenshot; AXPress Zoom In visibly enlarged the numbered test image; actual-size control; scrolling returned the image from bands 8–12 to bands 1–5 | First observation during startup returned `desktop_window_unavailable`; later observations passed |
+| Dictionary | Inspection and text replacement searched `butterfly`; a subsequent observation returned the search value, 13 results, and the dictionary definition | Capturing the populated result window failed with `desktop_image_too_large`; text-only observation worked |
+| Finder | Captured the disposable 40-file folder and inspected its controls; click and Right-key commands acknowledged delivery | Click result did not match intended single-file selection, so coordinate accuracy is not certified. Later captures repeatedly failed with `desktop_capture_window_mismatch`; keyboard outcome was not visually certified |
+
+These are bounded app-operation checks, not blanket compatibility certification. No Muse integration claim. Screenshot resizing/encoding limits and Finder window matching need follow-up; do not remove matching checks to turn these failures into apparent passes.
