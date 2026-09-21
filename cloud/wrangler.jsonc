@@ -47,7 +47,7 @@
     "FIREBASE_AUTH_DOMAIN": "wand-getwand.firebaseapp.com",
     "FIREBASE_APP_ID": "1:65004035287:web:6d1691580121e8301ce492",
     "MUSE_CLIENT_IDS": "",
-    "FACEBOOK_ENABLED": "false"
+    "FACEBOOK_ENABLED": "true"
   },
   "triggers": {
     "crons": [

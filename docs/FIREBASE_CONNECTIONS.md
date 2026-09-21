@@ -10,6 +10,6 @@ Operational dependency: Meta/Muse's genuine connector registration and verified 
 
 The live native app does not need a Firebase SDK or Google tokens in Keychain. Its device-pairing protocol is unchanged. Native actions that remain blocked by OS verification are not made functional by this authentication change.
 
-Facebook sign-in and explicit account linking are implemented, but remain hidden until the Meta app and Firebase provider are configured. Facebook email verification is not used as proof of device ownership: the Firebase UID remains the sole account key.
+Facebook sign-in and explicit account linking are enabled. Firebase provider configuration for Meta app 1402697268050010 was verified on 2026-09-20 and the live button is visible. A completed Facebook sign-in and Meta public availability still need verification. Facebook email verification is not used as proof of device ownership: the Firebase UID remains the sole account key.
 
 Official platform discovery: https://muse.ai/platform — Submit a connector opens a sign-in-gated form. The public page confirms functional, security and legal review before directory listing; no OAuth callback address is published there.
