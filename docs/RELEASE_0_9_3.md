@@ -5,3 +5,6 @@
 - Hosted reviewer sandbox at https://app.getwand.app/review/ uses actual Firebase account sign-in and production pairing/relay, with only the device execution simulated. No public auth bypass, shared test password, or token in URLs. Public device ID routes the socket; hello still requires the 256-bit credential. Browser credential lives only in memory. Origin restricted to dashboard for this socket proxy.
 - Live Chrome checks: pair, succeeded get_state, offline rejection with last_seen, reconnect, revoke. Downloaded DMG SHA-256 matches packaged artifact. Seven routing tests passed; native release build and strict ad-hoc signature verification passed.
 - Muse submission is still a draft, not sent. No registered Muse callback or real phone-to-Mac acceptance. This beta does not implement native lock, sleep, pinned-tab cleanup or Focus.
+
+## Real-device follow-up
+Keychain initialization succeeded after relaunch. Native pairing completed and dashboard showed the physical Mac online. A dashboard get_state command completed through the production relay and returned actual battery/frontmost/running-app state. This verifies native cloud pairing and one read-only command, not all physical actions or Muse integration.
