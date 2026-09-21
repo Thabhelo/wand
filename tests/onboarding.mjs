@@ -3,12 +3,12 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 const script=fs.readFileSync(new URL('../web/dashboard.js',import.meta.url),'utf8');
 const flush=async()=>{for(let i=0;i<20;i++)await new Promise(setImmediate)};
-function harness({configured=true,signed=true,handoff='',initialDevices=[],facebookEnabled=false}={}){
- const elements=new Map(),storage=new Map(),calls=[],logins=[],timers=new Map();let links=0;let nextTimer=0,deviceList=initialDevices,result={status:'succeeded',result:{}},failure=null;
+function harness({configured=true,signed=true,handoff='',initialDevices=[],facebookEnabled=false,hangAuth=false}={}){
+ const events={},documentEvents={};const elements=new Map(),storage=new Map(),calls=[],logins=[],timers=new Map();let links=0;let nextTimer=0,deviceList=initialDevices,result={status:'succeeded',result:{}},failure=null;
  function element(){return {value:'',textContent:'',hidden:false,disabled:false,open:false,children:[],dataset:{},style:{},append(...items){this.children.push(...items)},replaceChildren(...items){this.children=items},setAttribute(k,v){this[k]=v},addEventListener(k,f){this['on'+k]=f},showModal(){this.open=true},close(){this.open=false},focus(){}}}
  const get=s=>{if(!elements.has(s))elements.set(s,element());return elements.get(s)};
  get('#confirm-input').hidden=true;get('#volume').value='50';
- const context={document:{hidden:false,querySelector:get,querySelectorAll:()=>[],createElement:element},location:{hash:handoff,pathname:'/',search:'',origin:'https://app.example'},history:{replaceState(){}},sessionStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},window:{addEventListener(){},wandAuth:{create:async()=>({isAuthenticated:async()=>signed,getUser:async()=>({email:'reviewer@example.test'}),getTokenSilently:async()=>'test-token',loginWithRedirect:async method=>logins.push(method),linkFacebook:async()=>{links++}})}},URL,URLSearchParams,AbortController,Date,Math,JSON,Error,String,Number,Object,console,clearTimeout:id=>timers.delete(id),setTimeout:(fn,ms)=>{const id=++nextTimer;timers.set(id,{fn,ms});return id},fetch:async(url,options)=>{
+ const context={document:{hidden:false,addEventListener:(name,fn)=>documentEvents[name]=fn,querySelector:get,querySelectorAll:()=>[],createElement:element},location:{hash:handoff,pathname:'/',search:'',origin:'https://app.example'},history:{replaceState(){}},sessionStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},window:{addEventListener:(name,fn)=>events[name]=fn,wandAuth:{create:async()=>hangAuth?new Promise(()=>{}):({isAuthenticated:async()=>signed,getUser:async()=>({email:'reviewer@example.test'}),getTokenSilently:async()=>'test-token',loginWithRedirect:async method=>logins.push(method),linkFacebook:async()=>{links++}})}},URL,URLSearchParams,AbortController,Date,Math,JSON,Error,String,Number,Object,console,clearTimeout:id=>timers.delete(id),setTimeout:(fn,ms)=>{const id=++nextTimer;timers.set(id,{fn,ms});return id},fetch:async(url,options)=>{
   calls.push({url,body:options?.body?JSON.parse(options.body):null});let data,ok=true;
   if(url==='/config'){data=configured?{firebase:{apiKey:'test',projectId:'wand-test'},facebookEnabled}:{error:{code:'service_not_configured'}};ok=configured}
   else if(url==='/v1/devices')data=deviceList;
@@ -21,7 +21,7 @@ function harness({configured=true,signed=true,handoff='',initialDevices=[],faceb
   return {ok,json:async()=>data};
  }};
  vm.createContext(context);vm.runInContext(script,context);
- return {get,storage,calls,timers,logins,get links(){return links},run:code=>vm.runInContext(code,context),setDevices:value=>deviceList=value,setResult:value=>result=value,setFailure:value=>failure=value};
+ return {get,storage,calls,timers,logins,events,documentEvents,restoreAuth:()=>hangAuth=false,get links(){return links},run:code=>vm.runInContext(code,context),setDevices:value=>deviceList=value,setResult:value=>result=value,setFailure:value=>failure=value};
 }
 const online={device_id:'device',name:'My Mac',online:true,last_seen:null};
 {
@@ -59,3 +59,21 @@ console.log('Dashboard checks passed: pairing, absent configuration, confirmatio
  const disabled=harness();await flush();assert(disabled.get('#facebook-login').hidden);assert(disabled.get('#facebook-link-section').hidden);
 }
 console.log('Facebook checks passed: provider gating, sign-in selection and explicit account linking.');
+
+{
+ const h=harness({hangAuth:true});await flush();
+ assert.equal(h.get('#login').textContent,'Loading sign-in…');
+ [...h.timers.values()].find(t=>t.ms===15000).fn();await flush();
+ assert.equal(h.get('#retry').hidden,false);assert.match(h.get('#login-note').textContent,/too long/);
+ h.restoreAuth();await h.get('#retry').onclick();await flush();assert.equal(h.get('#workspace').hidden,false);
+ h.events.pagehide();assert.equal(h.run('stopped'),true);
+ h.events.pageshow({persisted:true});await flush();assert.equal(h.run('stopped'),false);
+ assert.equal(h.get('#workspace').hidden,false);assert([...h.timers.values()].some(t=>t.ms===15000));
+}
+{
+ const h=harness({hangAuth:true});await flush();h.events.pagehide();h.restoreAuth();
+ h.events.pageshow({persisted:true});await flush();assert.equal(h.get('#workspace').hidden,false);
+ h.documentEvents.visibilitychange();await flush();assert.equal(h.get('#welcome').hidden,true);
+ assert.equal(h.logins.length,0);
+}
+console.log('Session recovery passed: stalled auth timeout, retry, suspended initialization, cached-page restore and foreground session reuse.');
