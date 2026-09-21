@@ -50,22 +50,36 @@ import MacBridgeCore
         try check()
         guard let app=NSRunningApplication.runningApplications(withBundleIdentifier:"com.apple.controlcenter").first else { throw ContractError(code:"focus_control_unavailable") }
         let root=AXUIElementCreateApplication(app.processIdentifier); AXUIElementSetMessagingTimeout(root,0.2)
-        var roots=[root]
-        for key in [kAXMenuBarAttribute,"AXExtrasMenuBar"] { if let v=value(root,key),CFGetTypeID(v)==AXUIElementGetTypeID() { roots.append(v as! AXUIElement) } }
-        let menu=roots.flatMap { descendants($0) }.first { text($0,kAXIdentifierAttribute)=="com.apple.menuextra.controlcenter" || text($0,kAXDescriptionAttribute)=="Control Center" }
-        guard let menu else { throw ContractError(code:"focus_control_unavailable") }
-        try press(menu)
+        func controls() -> [AXUIElement] {
+            var roots=[root]
+            roots += value(root,kAXWindowsAttribute) as? [AXUIElement] ?? []
+            return roots.flatMap { descendants($0) }
+        }
+        if !controls().contains(where: { text($0,kAXIdentifierAttribute)=="controlcenter-focus-modes" || (text($0,kAXIdentifierAttribute)=="focus-mode-activity-com.apple.donotdisturb.mode.default" && text($0,kAXDescriptionAttribute)=="Do Not Disturb") }) {
+            // Apple's documented Fn-C opens Control Center without relying on menu-extra labels.
+            guard let down=CGEvent(keyboardEventSource:nil,virtualKey:8,keyDown:true),let up=CGEvent(keyboardEventSource:nil,virtualKey:8,keyDown:false) else { throw ContractError(code:"focus_control_unavailable") }
+            down.flags=[.maskSecondaryFn]; up.flags=[.maskSecondaryFn]
+            down.post(tap:.cghidEventTap); up.post(tap:.cghidEventTap)
+        }
         for _ in 0..<15 {
-            let nodes=descendants(root)
-            if let dnd=nodes.first(where:{ text($0,kAXRoleAttribute)=="AXCheckBox" && (text($0,kAXTitleAttribute)=="Do Not Disturb" || text($0,kAXDescriptionAttribute).hasPrefix("Do Not Disturb")) }),let number=value(dnd,kAXValueAttribute) as? NSNumber {
+            let nodes=controls()
+            if let dnd=nodes.first(where:{ (text($0,kAXIdentifierAttribute)=="focus-mode-activity-com.apple.donotdisturb.mode.default" && text($0,kAXDescriptionAttribute)=="Do Not Disturb") }),let number=value(dnd,kAXValueAttribute) as? NSNumber {
                 if number.boolValue != enabled { try press(dnd) }
                 for _ in 0..<10 {
-                    if let current=value(dnd,kAXValueAttribute) as? NSNumber,current.boolValue==enabled { return .object([:]) }
+                    if let current=controls().first(where:{(text($0,kAXIdentifierAttribute)=="focus-mode-activity-com.apple.donotdisturb.mode.default" && text($0,kAXDescriptionAttribute)=="Do Not Disturb")}), let state=value(current,kAXValueAttribute) as? NSNumber,state.boolValue==enabled { return .object([:]) }
                     try await Task.sleep(for:.milliseconds(100))
                 }
                 throw ContractError(code:"focus_change_not_confirmed")
             }
-            if let focus=nodes.first(where:{ text($0,kAXRoleAttribute)=="AXButton" && (text($0,kAXTitleAttribute)=="Focus" || text($0,kAXDescriptionAttribute)=="Focus") }) { try press(focus) }
+            if let focus=nodes.first(where:{ text($0,kAXIdentifierAttribute)=="controlcenter-focus-modes" }) {
+                var actions:CFArray?; AXUIElementCopyActionNames(focus,&actions)
+                guard let details=(actions as? [String] ?? []).first(where: { name in
+                    var description:CFString?; AXUIElementCopyActionDescription(focus,name as CFString,&description)
+                    return (description as String?)?.lowercased()=="show details"
+                }) else { throw ContractError(code:"focus_control_unavailable") }
+                try check()
+                guard AXUIElementPerformAction(focus,details as CFString) == .success else { throw ContractError(code:"focus_control_unavailable") }
+            }
             try await Task.sleep(for:.milliseconds(150))
         }
         throw ContractError(code:"focus_control_unavailable")

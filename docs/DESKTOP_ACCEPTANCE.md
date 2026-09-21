@@ -79,3 +79,11 @@ Focus failed with focus_control_unavailable. Safari cleanup reached execution bu
 ### Build 19 follow-up
 
 Signed build 19 installed with the same identity. Safari cleanup passed locally: command 527a3d46-402d-444c-b522-3d6d67717a09 received at 16:00:47.247Z and succeeded at 16:00:47.885Z. CUA observed the two disposable unpinned tabs removed, the pinned fixture retained, and Safari's automatically generated Start Page. This verifies the response fix and pinned preservation on Safari 26.6.2. No relay or Muse claim is implied. Focus remains failed; Chrome cleanup and sleep remain untested.
+
+### Build 21 Focus verification
+
+Opened Control Center using CUA through System Settings > Menu Bar > Add Controls > Done. Observed controlcenter-focus-modes with a show-details action and the Do Not Disturb switch. Duration choices share the same identifier, so the implementation also matches the exact Do Not Disturb description. It traverses AXWindows as well as app children, opens the panel with Apple's documented Fn-C shortcut, and verifies the resulting switch value. This English-language description match remains a localization limitation.
+
+Signed build 21 installed. Live local Focus-on command be42ed78-5727-4fc9-b04b-4da0f73687c4 succeeded at 16:12:11.752Z after receipt at 16:12:10.054Z; CUA independently observed Do Not Disturb on. Focus-off then completed and CUA observed Do Not Disturb off. Restored the original Work mode and verified Work on. This is local Wand verification, not Muse or remote relay verification. Sleep and Chrome cleanup remain untested. Public build remains 17.
+
+Shortcut reference: https://support.apple.com/en-au/102650
