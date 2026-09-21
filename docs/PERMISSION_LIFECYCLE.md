@@ -27,7 +27,7 @@ Do not mark this gate passed from unit tests, noninteractive error suppression, 
 
 ## Current evidence
 
-Build 21 failed check 3: after the owner approved existing credential access and Wand connected, an unchanged-app relaunch reported connection keys locked. Desktop consent persisted. The new storage candidate has not yet passed the gate.
+Build 21 failed check 3: after the owner approved existing credential access and Wand connected, an unchanged-app relaunch reported connection keys locked. Desktop consent persisted. This was the failure that prompted the consolidated storage fix.
 
 ## September 21 verified results
 
@@ -39,4 +39,4 @@ Build 21 failed check 3: after the owner approved existing credential access and
 - A remote press test was rejected by the existing active-window guard; no input success is claimed for that attempt.
 - Three real codesign guard tests pass (same requirement, changed requirement, unsigned candidate); 14 Swift tests passed on the storage change.
 
-This demonstrates app restart and signed-update persistence on the owner's existing installation. Fresh-user setup, full Mac reboot, and post-update remote input still require verification. Public download remains build 17; installed build is 23.
+This demonstrates app restart and signed-update persistence on the owner's existing installation. After a full Mac reboot, Wand was opened manually and the owner confirmed it connected without a password prompt. Automatic launch at login, fresh-user setup, and post-reboot desktop capture/input remain unverified. Build 23 is published at https://getwand.app/download/. The downloaded public DMG matches the verified package. Cloudflare deployment: 8435171f-0813-4e7f-aeb9-7148c2eea2c2.
