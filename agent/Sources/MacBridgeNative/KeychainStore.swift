@@ -1,15 +1,25 @@
 import Foundation
 import Security
+import LocalAuthentication
 import MacBridgeCore
 
 /// Separate service/account namespace; no raw secrets in preferences, logs or file URLs.
 public struct KeychainStore: Sendable {
     private let service: String
-    public init(service: String) { self.service = service }
+    private let allowInteraction: Bool
+    public init(service: String, allowInteraction: Bool = false) { self.service = service; self.allowInteraction = allowInteraction }
     private func query(_ account: String) -> [String: Any] {
-        [kSecClass as String: kSecClassGenericPassword,
+        let context = LAContext()
+        context.interactionNotAllowed = !allowInteraction
+        return [kSecUseAuthenticationContext as String: context,
+         kSecClass as String: kSecClassGenericPassword,
          kSecAttrService as String: service, kSecAttrAccount as String: account,
          kSecAttrSynchronizable as String: false]
+    }
+    // Existing users have legacy file-based Keychain items. LAContext governs modern
+    // items; this process-wide legacy switch ensures background startup cannot prompt.
+    public static func setLegacyInteractionAllowed(_ allowed: Bool) {
+        SecKeychainSetUserInteractionAllowed(allowed)
     }
     public static func randomToken() throws -> String {
         var bytes = [UInt8](repeating: 0, count: 32)

@@ -534,11 +534,12 @@
                 },
                 "include_image": {
                   "type": "boolean"
+                },
+                "include_menus": {
+                  "type": "boolean"
                 }
               },
-              "required": [
-                "bundle_id"
-              ],
+              "required": [],
               "additionalProperties": false
             }
           },
@@ -621,6 +622,29 @@
                       "format": "uuid"
                     },
                     "operation": {
+                      "const": "type_text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    }
+                  },
+                  "required": [
+                    "snapshot_id",
+                    "operation",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "snapshot_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "operation": {
                       "const": "key"
                     },
                     "key": {
@@ -634,7 +658,11 @@
                         "right",
                         "backspace",
                         "space",
-                        "select_all"
+                        "select_all",
+                        "home",
+                        "end",
+                        "page_up",
+                        "page_down"
                       ]
                     }
                   },
@@ -694,6 +722,17 @@
                       "type": "integer",
                       "minimum": 0,
                       "maximum": 10000
+                    },
+                    "button": {
+                      "enum": [
+                        "left",
+                        "right"
+                      ]
+                    },
+                    "click_count": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 2
                     }
                   },
                   "required": [
@@ -1131,11 +1170,12 @@
                 },
                 "include_image": {
                   "type": "boolean"
+                },
+                "include_menus": {
+                  "type": "boolean"
                 }
               },
-              "required": [
-                "bundle_id"
-              ],
+              "required": [],
               "additionalProperties": false
             }
           },
@@ -1213,6 +1253,29 @@
                       "format": "uuid"
                     },
                     "operation": {
+                      "const": "type_text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    }
+                  },
+                  "required": [
+                    "snapshot_id",
+                    "operation",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "snapshot_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "operation": {
                       "const": "key"
                     },
                     "key": {
@@ -1226,7 +1289,11 @@
                         "right",
                         "backspace",
                         "space",
-                        "select_all"
+                        "select_all",
+                        "home",
+                        "end",
+                        "page_up",
+                        "page_down"
                       ]
                     }
                   },
@@ -1286,6 +1353,17 @@
                       "type": "integer",
                       "minimum": 0,
                       "maximum": 10000
+                    },
+                    "button": {
+                      "enum": [
+                        "left",
+                        "right"
+                      ]
+                    },
+                    "click_count": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 2
                     }
                   },
                   "required": [
@@ -3085,11 +3163,12 @@
                 },
                 "include_image": {
                   "type": "boolean"
+                },
+                "include_menus": {
+                  "type": "boolean"
                 }
               },
-              "required": [
-                "bundle_id"
-              ],
+              "required": [],
               "additionalProperties": false
             },
             "encrypted_payload": {
@@ -3199,6 +3278,29 @@
                       "format": "uuid"
                     },
                     "operation": {
+                      "const": "type_text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    }
+                  },
+                  "required": [
+                    "snapshot_id",
+                    "operation",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "snapshot_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "operation": {
                       "const": "key"
                     },
                     "key": {
@@ -3212,7 +3314,11 @@
                         "right",
                         "backspace",
                         "space",
-                        "select_all"
+                        "select_all",
+                        "home",
+                        "end",
+                        "page_up",
+                        "page_down"
                       ]
                     }
                   },
@@ -3272,6 +3378,17 @@
                       "type": "integer",
                       "minimum": 0,
                       "maximum": 10000
+                    },
+                    "button": {
+                      "enum": [
+                        "left",
+                        "right"
+                      ]
+                    },
+                    "click_count": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 2
                     }
                   },
                   "required": [

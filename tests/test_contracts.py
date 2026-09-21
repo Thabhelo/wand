@@ -37,7 +37,15 @@ class ContractTests(unittest.TestCase):
             self.rejects('State',{'screen_locked':True,field:None})
     def test_confirmation_metadata(self):
         for action in ACTIONS:
-            if action['risk']=='high' or action['name']=='close_browser_tabs': self.assertEqual(action['approval'],'always')
+            if action['name']=='desktop_observe': self.assertEqual(action['approval'],'never')
+            elif action['name']=='desktop_act': self.assertEqual(action['approval'],'on_high_risk')
+            elif action['risk']=='high' or action['name']=='close_browser_tabs': self.assertEqual(action['approval'],'always')
+    def test_desktop_navigation_contract(self):
+        validate('CommandRequest',command('desktop_observe',{}))
+        validate('CommandRequest',command('desktop_act',{'snapshot_id':ID,'operation':'type_text','text':'Hello'}))
+        validate('CommandRequest',command('desktop_act',{'snapshot_id':ID,'operation':'click','x':1,'y':2,'button':'right','click_count':2}))
+        self.rejects('CommandRequest',command('desktop_act',{'snapshot_id':ID,'operation':'click','x':1,'y':2,'click_count':1000}))
+        self.rejects('CommandRequest',command('desktop_act',{'snapshot_id':ID,'operation':'type_text','text':'x'*2001}))
     def test_wire_directions_and_version(self):
         heartbeat=envelope('heartbeat')
         validate('DeviceMessage',heartbeat)

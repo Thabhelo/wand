@@ -6,7 +6,7 @@ import MacBridgeCore
 /// Native implementation boundary. Caller must validate the shared contract, reserve the
 /// command ID and check current session + lock state immediately before invoking this.
 @MainActor public final class ActionExecutor {
-    public let desktop = DesktopControl()
+    public let desktop = DesktopControl(defaults: .standard)
     public init() {}
     public func executeGuarded(action: String, params: JSON, shortcuts: [String]) async throws -> JSON {
         if action == "desktop_stop" { desktop.stop(); return .object([:]) }
@@ -67,10 +67,12 @@ import MacBridgeCore
             }
             return .object(["screen_locked": .bool(false), "frontmost_app": NSWorkspace.shared.frontmostApplication?.localizedName.map { JSON.string(String($0.prefix(160))) } ?? .null,
                             "now_playing": await NowPlayingReader.read(), "battery": battery, "running_apps": .array(apps.map(JSON.string))])
-        case "lock_screen": throw ContractError(code: "lock_api_unverified")
-        case "close_browser_tabs": throw ContractError(code: "pinned_tab_detection_unverified")
-        case "toggle_do_not_disturb": throw ContractError(code: "focus_api_unverified")
-        case "sleep_mac": throw ContractError(code: "sleep_wake_verification_required")
+        case "lock_screen": return try await SystemActions.lock()
+        case "close_browser_tabs":
+            guard params["browser"]?.string == "safari" else { throw ContractError(code: "chrome_pinned_tab_detection_unverified") }
+            return try await SystemActions.safariCleanup(keepPinned: params["keep_pinned"] != .bool(false))
+        case "toggle_do_not_disturb": return try await SystemActions.focus(params["enabled"] == .bool(true))
+        case "sleep_mac": return try SystemActions.sleep()
         default: throw ContractError(code: "action_unsupported")
         }
         return .object([:])

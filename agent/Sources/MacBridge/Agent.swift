@@ -64,7 +64,7 @@ import MacBridgeNative
                 guard let self else { return }
                 let next = LockStateReader.read()
                 if next != self.screenState {
-                    if next != .unlocked { self.executor.desktop.stop() }
+                    if next != .unlocked { self.executor.desktop.suspend() }
                     self.screenState = next
                     self.deviceState = nil
                 }
@@ -73,18 +73,21 @@ import MacBridgeNative
         }
         status = pending ? RevocationState.warning : "Opening secure connection keys…"
     }
-    func startConnections() async {
+    func startConnections(allowInteraction: Bool = false) async {
         guard !openingKeys, !connectionReady else { return }
         openingKeys = true
-        status = "Approve Wand in the macOS Keychain dialog. Enter your Mac password there, then click Allow."
+        status = "Opening secure connection…"
         defer { openingKeys = false }
         do {
             let credentials = try await Task.detached {
-                let store = KeychainStore(service: "local.macbridge.agent")
+                KeychainStore.setLegacyInteractionAllowed(allowInteraction)
+                defer { KeychainStore.setLegacyInteractionAllowed(false) }
+                let store = KeychainStore(service: "local.macbridge.agent", allowInteraction: allowInteraction)
                 let device = try store.read(account: "device-token")
-                let local = try store.read(account: "local-api-token") ?? KeychainStore.randomToken()
-                try store.write(local, account: "local-api-token")
-                let hasBootstrap = try store.read(account: "bootstrap-token") != nil
+                let existingLocal = try store.read(account: "local-api-token")
+                let local = try existingLocal ?? KeychainStore.randomToken()
+                if existingLocal == nil { try store.write(local, account: "local-api-token") }
+                let hasBootstrap = device == nil ? try store.read(account: "bootstrap-token") != nil : false
                 return (device, local, hasBootstrap)
             }.value
             token = credentials.0
@@ -99,7 +102,7 @@ import MacBridgeNative
             else if token == nil, credentials.2 { cancelPairing() }
             else { status = "Unpaired"; connect() }
         } catch {
-            status = "Keychain access was not approved. Click Allow Keychain access to try again. Local controls still work."
+            status = "Connection keys are locked. Click Connect to retry when you are ready. Local controls still work."
         }
     }
     func origin() throws -> URL {
@@ -150,7 +153,7 @@ import MacBridgeNative
                 _ = try origin(); UserDefaults.standard.set(relay, forKey: "relay")
                 while !Task.isCancelled && generation == captured {
                     status = "Requesting a pairing code…"
-                    let enrollment = try await request("v1/pairing/code", body: .object(["device_name": .string(Host.current().localizedName ?? "Mac"), "kind": .string("mac"), "agent_version": .string("0.10.0")]))
+                    let enrollment = try await request("v1/pairing/code", body: .object(["device_name": .string(Host.current().localizedName ?? "Mac"), "kind": .string("mac"), "agent_version": .string("0.11.0")]))
                     guard !Task.isCancelled, generation == captured else { return }
                     try validator.validate("PairingCodeResponse", enrollment)
                     guard let bootstrap = enrollment["bootstrap_token"]?.string, let expiryText = enrollment["expires_at"]?.string,
@@ -196,7 +199,7 @@ import MacBridgeNative
         }
     }
     func suspend() {
-        executor.desktop.stop()
+        executor.desktop.suspend()
         suspended = true; online = false; pairing = false; generation &+= 1; worker?.cancel(); socket?.cancel(with: .goingAway, reason: nil); socket = nil; status = "Offline — session inactive"
     }
     func connect() {
@@ -228,7 +231,7 @@ import MacBridgeNative
         let ws = session.webSocketTask(with: request); ws.maximumMessageSize = 65536
         socket = ws; ws.resume(); status = "Connecting…"
         guard let token else { return }
-        try await send(envelope("hello", ["device_token": .string(token), "agent_version": .string("0.10.0"), "device_name": .string(Host.current().localizedName ?? "Mac"), "macos_version": .string(ProcessInfo.processInfo.operatingSystemVersionString.prefix(40).description)]))
+        try await send(envelope("hello", ["device_token": .string(token), "agent_version": .string("0.11.0"), "device_name": .string(Host.current().localizedName ?? "Mac"), "macos_version": .string(ProcessInfo.processInfo.operatingSystemVersionString.prefix(40).description)]))
         try await send(envelope("heartbeat"))
         let readinessTimeout = Task {
             do { try await Task.sleep(for: .seconds(10)) } catch { return }

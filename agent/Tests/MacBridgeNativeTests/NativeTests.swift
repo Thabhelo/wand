@@ -148,10 +148,26 @@ final class DesktopControlTests: XCTestCase {
     }
     @MainActor func testProtectedAppsCannotBeGranted() {
         let desktop=DesktopControl()
-        for id in ["com.apple.Passwords","com.apple.SecurityAgent","com.apple.Terminal","com.apple.systempreferences","com.apple.keychainaccess","local.macbridge.agent"] {
+        for id in ["com.apple.Passwords","com.apple.SecurityAgent","com.apple.keychainaccess","local.macbridge.agent"] {
             XCTAssertThrowsError(try desktop.grant(bundleID:id))
             XCTAssertFalse(desktop.active)
         }
+    }
+    @MainActor func testDesktopConsentPersistsAndPauseRevokes() {
+        let name = "wand-desktop-tests-" + UUID().uuidString
+        let defaults = UserDefaults(suiteName: name)!
+        defer { defaults.removePersistentDomain(forName: name) }
+        let first = DesktopControl(defaults: defaults)
+        XCTAssertFalse(first.active)
+        first.enableDesktop()
+        XCTAssertTrue(first.desktopWide)
+        XCTAssertTrue(DesktopControl(defaults: defaults).active)
+        first.suspend()
+        XCTAssertTrue(first.active) // Lock/sleep invalidates views, not owner consent.
+        first.stop()
+        XCTAssertFalse(DesktopControl(defaults: defaults).active)
+        XCTAssertTrue(DesktopControl.allowedBundle("com.apple.systempreferences"))
+        XCTAssertTrue(DesktopControl.allowedBundle("com.apple.Terminal"))
     }
     @MainActor func testNoSnapshotCannotProduceInput() throws {
         let desktop=DesktopControl(); try desktop.grant(bundleID:"com.apple.finder")

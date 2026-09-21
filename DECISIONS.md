@@ -93,3 +93,7 @@ Do not claim first physical-device connector, guaranteed featuring, verified pla
 - 2026-09-20: Owner supersedes the permanent product exclusion of remote unlock: investigate an explicitly opted-in, separately approved implementation. This changes roadmap intent only; current protocol still rejects unlock until an OS-supported implementation is verified. See docs/REMOTE_UNLOCK_RESEARCH.md.
 
 - 2026-09-20: Add optional Muse-directed desktop tools; no second model/planner. Supersedes original screenshot/typing exclusions only in explicit 15-minute local app grants. Do not claim Muse compatibility until verified. Keep desktop beta separate from stable direct controls.
+
+- 2026-09-20: Desktop-wide persistent consent replaces per-app timed grants at the owner's request; ordinary LLM navigation uses session consent, consequential actions still require operator confirmation. Lock/sleep suspend execution without erasing consent; Pause/revoke erase it.
+
+- 2026-09-21: Keep the same Apple Development identity and installed app path; cancel new signing when Keychain authorization is required instead of causing another permission-reset loop. Publish the previously verified signed build separately from unverified system-action changes.

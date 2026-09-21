@@ -11,13 +11,15 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser()
 p.add_argument('--binary',type=Path,required=True,help='SwiftPM-built MacBridge executable')
-p.add_argument('--identity',default='-',help='Developer ID Application identity; defaults to ad-hoc local testing')
+p.add_argument('--identity',default=os.environ.get('WAND_SIGNING_IDENTITY'),help='Apple Development identity for stable local testing, or Developer ID Application for distribution; defaults to WAND_SIGNING_IDENTITY; use explicit - only for disposable ad-hoc tests')
 p.add_argument('--dmg',action='store_true')
 p.add_argument('--output',type=Path,default=ROOT/'dist/Wand.app')
 p.add_argument('--notary-profile',help='Existing notarytool Keychain profile; never pass passwords here')
 p.add_argument('--relay-origin',default='',help='Production HTTPS relay baked into the signed app; no user configuration required')
 p.add_argument('--dashboard-origin',default='',help='Optional separate HTTPS account dashboard origin')
 a=p.parse_args()
+if not a.identity:
+    p.error("Set WAND_SIGNING_IDENTITY or pass --identity. Reuse your development identity for installed builds; --identity - is only for explicit disposable ad-hoc tests.")
 for configured_origin in (a.relay_origin,a.dashboard_origin):
     if not configured_origin: continue
     u=urlsplit(configured_origin)
@@ -38,8 +40,8 @@ shutil.copy2(ROOT/'contracts/v1.schema.json',contents/'Resources/v1.schema.json'
 shutil.copy2(ROOT/'contracts/actions.json',contents/'Resources/actions.json')
 with (contents/'Info.plist').open('wb') as f:
     plistlib.dump(dict(CFBundleName='Wand',CFBundleDisplayName='Wand',CFBundleExecutable='MacBridge',
-        CFBundleIconFile='Wand.icns',CFBundleIdentifier='local.macbridge.agent',CFBundlePackageType='APPL',CFBundleShortVersionString='0.10.0',
-        CFBundleVersion='13',MacBridgeRelayOrigin=a.relay_origin,MacBridgeDashboardOrigin=a.dashboard_origin,LSMinimumSystemVersion='26.0',LSUIElement=True,NSHighResolutionCapable=True,NSAppleEventsUsageDescription="Wand controls approved media apps when you request playback actions."),f)
+        CFBundleIconFile='Wand.icns',CFBundleIdentifier='local.macbridge.agent',CFBundlePackageType='APPL',CFBundleShortVersionString='0.11.0',
+        CFBundleVersion='17',MacBridgeRelayOrigin=a.relay_origin,MacBridgeDashboardOrigin=a.dashboard_origin,LSMinimumSystemVersion='26.0',LSUIElement=True,NSHighResolutionCapable=True,NSAppleEventsUsageDescription="Wand controls approved media apps when you request playback actions."),f)
 def run(args): subprocess.run(args,check=True)
 # Remove disallowed Finder/resource-fork metadata only from this generated bundle.
 for attr in ['com.apple.FinderInfo','com.apple.ResourceFork']:

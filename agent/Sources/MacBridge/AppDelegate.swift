@@ -220,7 +220,7 @@ import MacBridgeNative
             volume.toolTip = "Adjust volume"
             add(card("Sound & playback", subtitle: "Playback controls use Music or Spotify when open.", views: [row(actionButton("Previous", #selector(previous), symbol: "backward.end.fill"), actionButton("Play / Pause", #selector(playPause), symbol: "playpause.fill"), actionButton("Next", #selector(next), symbol: "forward.end.fill")), row(volume, actionButton("Mute", #selector(muteSound)), actionButton("Unmute", #selector(unmuteSound)))]))
             add(card("Open something", views: [row(field(website, placeholder: "Website · https://example.com"), actionButton("Open website", #selector(openWebsite), symbol: "arrow.up.right")), row(field(appName, placeholder: "App name · Calculator"), actionButton("Open app", #selector(openApp)), actionButton("Quit app…", #selector(quitApp)))]))
-            add(label("Lock, sleep, browser cleanup and Focus are awaiting macOS compatibility checks. They are not available in this preview.", size: 12, secondary: true))
+            add(card("Mac controls", views: [row(actionButton("Lock…", #selector(lockMac)), actionButton("Sleep…", #selector(sleepMac))), row(actionButton("Focus on", #selector(focusOn)), actionButton("Focus off", #selector(focusOff))), actionButton("Close Safari tabs…", #selector(cleanSafari))]))
         case 1:
             add(card("Add an approved Shortcut", subtitle: "Use its exact name from Apple Shortcuts. Shortcuts can run code; add only ones you trust.", views: [row(field(shortcut, placeholder: "Exact Shortcut name"), button("Add Shortcut", #selector(addShortcut), symbol: "plus", primary: true))]))
             shortcutsList.orientation = .vertical; shortcutsList.alignment = .leading; shortcutsList.spacing = 12
@@ -245,7 +245,7 @@ import MacBridgeNative
             pairingActions = handoff
             add(card("Connect your Mac", subtitle: "Approve this Mac in your browser. We’ll finish linking automatically.", views: [connect, connection, handoff]))
             add(label("Linking your Wand account prepares this Mac for remote control. Muse authorization requires the official connector; it is not included in this preview.", size: 12, secondary: true))
-            add(card("Desktop control", subtitle: "Let your assistant inspect and operate chosen apps for 15 minutes. Off again when Wand closes, your Mac locks, or you press Stop.", views: [desktopStatus, row(button("Choose app…", #selector(enableDesktop)), button("Stop", #selector(stopDesktop))), row(button("Accessibility permission", #selector(desktopAccessibility)), button("Screen capture permission", #selector(desktopScreenPermission)))]))
+            add(card("Desktop control", subtitle: "Let your assistant use apps across your Mac. Set up once; access stays on until you pause it. Your Mac must be awake and unlocked.", views: [desktopStatus, row(button("Enable desktop control", #selector(enableDesktop)), button("Pause", #selector(stopDesktop))), row(button("Accessibility permission", #selector(desktopAccessibility)), button("Screen capture permission", #selector(desktopScreenPermission)))]))
             add(button("Advanced…", #selector(toggleAdvanced)))
             relay.stringValue = agent?.relay ?? ""
             let advanced = card("Connection settings", subtitle: "For self-hosted or development services. Production builds include their service address.", views: [row(field(relay, placeholder: "https://your-relay.example"), button("Save", #selector(saveRelay))), button("Open dashboard", #selector(dashboard)), button("Revoke pairing…", #selector(revoke)), button("I revoked in dashboard…", #selector(acknowledgeRevoke))])
@@ -255,7 +255,7 @@ import MacBridgeNative
     }
     private func render() {
         guard let agent else { return }
-        desktopStatus.stringValue = agent.executor.desktop.active ? "Enabled for " + agent.executor.desktop.approvedApps.joined(separator: ", ") + " until " + agent.executor.desktop.deadline.formatted(date: .omitted, time: .shortened) : "Desktop control is off"
+        desktopStatus.stringValue = agent.executor.desktop.desktopWide ? "Desktop control enabled · apps across this Mac" : "Desktop control paused · enable once to get started"
         state.stringValue = agent.screenState == .unlocked ? "" : agent.screenState == .locked ? "Screen locked · information hidden" : "Session unavailable · actions paused"
         state.textColor = agent.screenState == .unlocked ? .systemGreen : .secondaryLabelColor
         state.isHidden = agent.screenState == .unlocked
@@ -266,7 +266,7 @@ import MacBridgeNative
         connection.stringValue = agent.pending ? RevocationState.warning : agent.status == "Unpaired" ? "" : agent.status
         codeLabel.stringValue = agent.code.isEmpty ? "" : "Code: " + agent.code
         pairingActions?.isHidden = agent.code.isEmpty || !agent.pairing
-        connectButton?.title = !agent.connectionReady ? (agent.openingKeys ? "Waiting for Keychain…" : "Allow Keychain access") : agent.online ? "Connected" : agent.pairing ? "Waiting for approval…" : agent.token != nil ? "Reconnecting…" : "Connect"
+        connectButton?.title = !agent.connectionReady ? (agent.openingKeys ? "Connecting…" : "Connect") : agent.online ? "Connected" : agent.pairing ? "Waiting for approval…" : agent.token != nil ? "Reconnecting…" : "Connect"
         connectButton?.isEnabled = !agent.openingKeys && !agent.pairing && agent.token == nil && !agent.pending
         if agent.pending { advancedView?.isHidden = false }
         if qrCode != agent.code {
@@ -325,7 +325,7 @@ import MacBridgeNative
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem?.button?.image = NSImage(systemSymbolName: "desktopcomputer", accessibilityDescription: "Wand")
         let menu = NSMenu()
-        for (title, action) in [("Open Wand", #selector(showWindow)), ("Visit getwand.app", #selector(websiteHome)), ("Quit Wand", #selector(quit))] {
+        for (title, action) in [("Open Wand", #selector(showWindow)), ("Pause desktop control", #selector(stopDesktop)), ("Visit getwand.app", #selector(websiteHome)), ("Quit Wand", #selector(quit))] {
             let item = NSMenuItem(title: title, action: action, keyEquivalent: ""); item.target = self; menu.addItem(item)
         }; statusItem?.menu = menu
     }
@@ -344,13 +344,8 @@ import MacBridgeNative
     @objc private func setVolumeAction() { agent?.runLocalAction("set_volume", params: .object(["level": .number(volume.doubleValue.rounded())])) }
     @objc private func openWebsite() { agent?.runLocalAction("open_url", params: .object(["url": .string(website.stringValue.trimmingCharacters(in: .whitespacesAndNewlines))])) }
     @objc private func enableDesktop() {
-        let picker = NSOpenPanel(); picker.title = "Choose the app your assistant may control"; picker.directoryURL = URL(fileURLWithPath: "/Applications"); picker.canChooseDirectories = false; picker.allowsMultipleSelection = true
-        guard picker.runModal() == .OK else { return }
-        let ids = picker.urls.filter { $0.pathExtension == "app" }.compactMap { Bundle(url:$0)?.bundleIdentifier }
-        guard !ids.isEmpty, ids.count == picker.urls.count, ids.count <= 10 else { result.stringValue = "Choose up to ten applications."; return }
-        guard ids.allSatisfy(DesktopControl.allowedBundle) else { result.stringValue = "This app is excluded from desktop control."; return }
-        guard confirm("Allow desktop control of these apps?", detail: "For 15 minutes, approved remote callers can read visible text, request images of the chosen apps' windows, and click or type in it. This may expose private content or perform consequential actions. Window content travels through Wand's relay to the caller. Full action parameters stay in this Mac's local log. Stop at any time in Wand. Only enable apps you intend to share.", button: "Allow for 15 minutes") else { return }
-        do { try agent?.executor.desktop.grant(bundleIDs:ids); render() } catch { result.stringValue = "Could not enable desktop control." }
+        guard confirm("Allow Muse-connected callers to control this Mac?", detail: "Desktop control covers applications across this Mac, including System Settings. Connected callers can read window contents, click, scroll and type, which can change files, send information or run code in capable apps. Content passes through Wand's relay. Access stays enabled across restarts and resumes after you unlock this Mac. Pause it anytime in Wand's menu. Password prompts and the lock screen remain yours to handle.", button: "Enable desktop control") else { return }
+        agent?.executor.desktop.enableDesktop(); render()
     }
     @objc private func stopDesktop() { agent?.executor.desktop.stop(); render() }
     @objc private func desktopAccessibility() {
@@ -359,12 +354,23 @@ import MacBridgeNative
         NSWorkspace.shared.open(URL(string:"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
     }
     @objc private func desktopScreenPermission() {
-        guard confirm("Allow window images?", detail: "Optional: desktop observations can include an image of the approved app window. It is sent through the relay to the assistant, not saved in Wand's log. macOS requires Screen Recording permission.", button: "Continue") else { return }
+        guard confirm("Allow window images?", detail: "Optional: desktop observations can include an image of the active app window. It is sent through the relay to the assistant, not saved in Wand's log. macOS requires Screen Recording permission.", button: "Continue") else { return }
         _ = CGRequestScreenCaptureAccess()
+    }
+    @objc private func lockMac() {
+        if confirm("Lock this Mac?", detail: "You will need to unlock it on the Mac to continue using it.", button: "Lock") { agent?.runLocalAction("lock_screen", params: .object([:])) }
+    }
+    @objc private func sleepMac() {
+        if confirm("Put this Mac to sleep?", detail: "Remote access stops until the Mac wakes. A sleeping Mac may not return a result.", button: "Sleep") { agent?.runLocalAction("sleep_mac", params: .object([:])) }
+    }
+    @objc private func focusOn() { agent?.runLocalAction("toggle_do_not_disturb", params: .object(["enabled": .bool(true)])) }
+    @objc private func focusOff() { agent?.runLocalAction("toggle_do_not_disturb", params: .object(["enabled": .bool(false)])) }
+    @objc private func cleanSafari() {
+        if confirm("Close unpinned Safari tabs?", detail: "This closes unpinned tabs in open Safari windows. Pinned tabs stay open. Unsaved pages may ask you to confirm in Safari.", button: "Close tabs") { agent?.runLocalAction("close_browser_tabs", params: .object(["browser": .string("safari"), "keep_pinned": .bool(true)])) }
     }
     @objc private func pair() {
         guard let agent else { return }
-        if !agent.connectionReady { Task { @MainActor in await agent.startConnections() } }
+        if !agent.connectionReady { Task { @MainActor in await agent.startConnections(allowInteraction: true) } }
         else { agent.pair() }
     }
     @objc private func continuePairing() { agent?.continuePairing() }
