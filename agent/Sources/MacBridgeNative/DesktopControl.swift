@@ -17,6 +17,8 @@ import MacBridgeCore
     private var window: AXUIElement?
     private var pid: pid_t = 0
     private var imageSize: CGSize?
+    private var imageBounds: CGRect?
+    private var observedTitle: String?
     private let defaults: UserDefaults?
     public var desktopWide: Bool { defaults?.bool(forKey: "desktop-control-consent-v1") == true }
     public init(defaults: UserDefaults? = nil) { self.defaults = defaults }
@@ -24,7 +26,7 @@ import MacBridgeCore
     public func suspend() { epoch &+= 1; invalidate() }
     public var active: Bool { desktopWide || (bundleID != nil && deadline > Date()) }
     public func stop() { defaults?.set(false, forKey: "desktop-control-consent-v1"); epoch &+= 1; bundleID = nil; approvedApps = []; deadline = .distantPast; invalidate() }
-    private func invalidate() { snapshotID = nil; nodes.removeAll(); window = nil; imageSize = nil }
+    private func invalidate() { snapshotID = nil; nodes.removeAll(); window = nil; imageSize = nil; imageBounds = nil; observedTitle = nil }
     public static func allowedBundle(_ id: String) -> Bool {
         // These are explicit exclusions, not a claim that GUI access cannot execute code.
         !["com.apple.SecurityAgent", "com.apple.loginwindow", "com.apple.keychainaccess", "com.apple.Passwords", "local.macbridge.agent"].contains(id)
@@ -82,11 +84,17 @@ import MacBridgeCore
         let capturedEpoch = epoch
         let observedBundle = app.bundleIdentifier ?? ""
         app.activate()
-        try await Task.sleep(for:.milliseconds(150))
+        // Launching and switching Spaces can take longer than one animation frame.
+        for _ in 0..<12 {
+            try await Task.sleep(for:.milliseconds(100))
+            guard epoch == capturedEpoch else { throw ContractError(code:"desktop_permission_required") }
+            if NSWorkspace.shared.frontmostApplication?.processIdentifier == app.processIdentifier,
+               (try? safeWindow(app)) != nil { break }
+        }
         guard epoch == capturedEpoch else { throw ContractError(code:"desktop_permission_required") }
         _ = try check(observedBundle)
         guard NSWorkspace.shared.frontmostApplication?.processIdentifier == app.processIdentifier else { throw ContractError(code:"desktop_focus_changed") }
-        let w=try safeWindow(app);invalidate();window=w;pid=app.processIdentifier
+        let w=try safeWindow(app);invalidate();window=w;pid=app.processIdentifier;observedTitle=text(w,kAXTitleAttribute)
         let root = AXUIElementCreateApplication(app.processIdentifier)
         var output:[JSON]=[];var queue=[w];
         if params["include_menus"] == .bool(true), let menus = attribute(root, kAXMenuBarAttribute), CFGetTypeID(menus) == AXUIElementGetTypeID() { queue.append(menus as! AXUIElement) };var visited=Set<CFHashCode>();var count=0
@@ -117,7 +125,7 @@ import MacBridgeCore
         let sid=UUID().uuidString.lowercased();snapshotID=sid;snapshotAt=Date()
         var result:[String:JSON]=["snapshot_id":.string(sid),"bundle_id":.string(observedBundle),"expires_at":.string(WireTime.text(snapshotAt.addingTimeInterval(30))),"elements":.array(output),"truncated":.bool(!queue.isEmpty)]
         if params["include_image"] == .bool(true) {
-            guard let bounds=rect(w) else { throw ContractError(code:"desktop_window_unavailable") }
+            guard rect(w) != nil else { throw ContractError(code:"desktop_window_unavailable") }
             // ScreenCaptureKit is the authority for its own permission. The legacy
             // CoreGraphics preflight can disagree with the grant shown by macOS.
             let content: SCShareableContent
@@ -127,32 +135,80 @@ import MacBridgeCore
                 if (error as NSError).code == -3801 { throw ContractError(code:"screen_recording_permission_required") }
                 throw ContractError(code:"desktop_capture_failed")
             }
-            let candidates=content.windows.filter{$0.owningApplication?.processID==app.processIdentifier && abs($0.frame.width-bounds.width)<3 && abs($0.frame.height-bounds.height)<3}
-            let exact=candidates.filter{abs($0.frame.minX-bounds.minX)<3 && abs($0.frame.minY-bounds.minY)<3}
-            // Full-screen Chrome can expose different AX and capture origins.
-            // Only fall back when there is one same-app, same-size candidate.
-            // Window titles may be absent; ambiguous matches are rejected.
-            guard let target = exact.count == 1 ? exact.first : (candidates.count == 1 ? candidates.first : nil) else { throw ContractError(code:"desktop_capture_window_mismatch") }
-            let config=SCStreamConfiguration();let scale=min(1,640/max(bounds.width,bounds.height));config.width=max(1,Int(bounds.width*scale));config.height=max(1,Int(bounds.height*scale));config.showsCursor=false;config.ignoreShadowsSingleWindow=true
+            guard let currentBounds=rect(w), CFEqual(try safeWindow(app),w) else { throw ContractError(code:"desktop_focus_changed") }
+            // Only normal app windows: Finder also exposes non-content capture layers.
+            let windows=content.windows.filter{$0.owningApplication?.processID==app.processIdentifier}
+            guard windows.contains(where:{$0.windowLayer==0}) else { throw ContractError(code:"desktop_window_unavailable") }
+            let candidates=windows.map{CaptureWindow(id:$0.windowID,bounds:$0.frame,layer:$0.windowLayer,title:$0.title ?? "")}
+            guard let targetID=Self.captureWindow(candidates,bounds:currentBounds,title:text(w,kAXTitleAttribute)),
+                  let target=windows.first(where:{$0.windowID==targetID}) else {
+                if defaults?.bool(forKey:"capture-diagnostics") == true {
+                    let report="AX \(currentBounds); SC \(windows.map{"id=\($0.windowID) layer=\($0.windowLayer) frame=\($0.frame)"})"
+                    let directory=FileManager.default.urls(for:.applicationSupportDirectory,in:.userDomainMask)[0].appendingPathComponent("MacBridge")
+                    try? report.write(to:directory.appendingPathComponent("capture-geometry.txt"),atomically:true,encoding:.utf8)
+                }
+                throw ContractError(code:"desktop_capture_window_mismatch")
+            }
+            let config=SCStreamConfiguration();let scale=min(1,640/max(currentBounds.width,currentBounds.height));config.width=max(1,Int(currentBounds.width*scale));config.height=max(1,Int(currentBounds.height*scale));config.showsCursor=false;config.ignoreShadowsSingleWindow=true
             let image=try await SCScreenshotManager.captureImage(contentFilter:SCContentFilter(desktopIndependentWindow:target),configuration:config)
-            let rep=NSBitmapImageRep(cgImage:image)
-            var encoded:Data?
-            for quality in [0.5,0.3,0.15,0.05] { if let d=rep.representation(using:.jpeg,properties:[.compressionFactor:quality]),d.count<=24000 { encoded=d;break } }
-            guard let encoded else { throw ContractError(code:"desktop_image_too_large") }
-            imageSize=CGSize(width:image.width,height:image.height)
-            result["image"] = .object(["mime_type":.string("image/jpeg"),"base64":.string(encoded.base64EncodedString()),"width":.number(Double(image.width)),"height":.number(Double(image.height))])
+            let encoded=try Self.encodeScreenshot(image)
+            imageSize=encoded.size;imageBounds=currentBounds
+            result["image"] = .object(["mime_type":.string("image/jpeg"),"base64":.string(encoded.data.base64EncodedString()),"width":.number(Double(encoded.size.width)),"height":.number(Double(encoded.size.height))])
         }
         guard epoch == capturedEpoch else { invalidate(); throw ContractError(code:"desktop_permission_required") }
         _ = try check();guard NSWorkspace.shared.frontmostApplication?.processIdentifier==pid else { invalidate();throw ContractError(code:"desktop_focus_changed") }
-        guard CFEqual(try safeWindow(app),w) else { invalidate();throw ContractError(code:"desktop_focus_changed") }
+        guard CFEqual(try safeWindow(app),w),text(w,kAXTitleAttribute)==observedTitle else { invalidate();throw ContractError(code:"desktop_focus_changed") }
         let data=JSON.object(result);guard try data.data().count<58000 else { invalidate();throw ContractError(code:"desktop_observation_too_large") }
         return data
+    }
+    struct CaptureWindow {
+        let id:CGWindowID
+        let bounds:CGRect
+        let layer:Int
+        let title:String
+    }
+    static func sameBounds(_ a:CGRect,_ b:CGRect)->Bool {
+        abs(a.minX-b.minX)<3 && abs(a.minY-b.minY)<3 && abs(a.width-b.width)<3 && abs(a.height-b.height)<3
+    }
+    static func captureWindow(_ windows:[CaptureWindow],bounds:CGRect,title:String)->CGWindowID? {
+        let candidates=windows.filter{$0.layer==0 && abs($0.bounds.width-bounds.width)<3 && abs($0.bounds.height-bounds.height)<3}
+        let exact=candidates.filter{sameBounds($0.bounds,bounds)}
+        if exact.count==1 { return exact[0].id }
+        // A title can disambiguate same-geometry windows, but never override geometry.
+        let named=exact.filter{!title.isEmpty && $0.title==title}
+        if named.count==1 { return named[0].id }
+        if exact.isEmpty && candidates.count==1 { return candidates[0].id }
+        return nil
+    }
+    static func encodeScreenshot(_ image:CGImage,byteLimit:Int=24000) throws -> (data:Data,size:CGSize) {
+        // Explicitly resize: display scale can make SCK return more pixels than requested.
+        // Reduce resolution as well as quality so text-rich/noisy windows stay within the wire limit.
+        for edge in [640,512,384,256,192,128] {
+            let scale=min(1,Double(edge)/Double(max(image.width,image.height)))
+            let width=max(1,Int(Double(image.width)*scale)),height=max(1,Int(Double(image.height)*scale))
+            guard let context=CGContext(data:nil,width:width,height:height,bitsPerComponent:8,bytesPerRow:width*4,space:CGColorSpaceCreateDeviceRGB(),bitmapInfo:CGImageAlphaInfo.noneSkipLast.rawValue) else { continue }
+            context.setFillColor(NSColor.white.cgColor);context.fill(CGRect(x:0,y:0,width:width,height:height))
+            context.interpolationQuality = .high
+            context.draw(image,in:CGRect(x:0,y:0,width:width,height:height))
+            guard let resized=context.makeImage() else { continue }
+            let rep=NSBitmapImageRep(cgImage:resized)
+            for quality in [0.65,0.45,0.25] {
+                if let data=rep.representation(using:.jpeg,properties:[.compressionFactor:quality]),data.count<=byteLimit {
+                    return (data,CGSize(width:width,height:height))
+                }
+            }
+        }
+        throw ContractError(code:"desktop_image_too_large")
+    }
+    private static func postKey(_ key:CGKeyCode,pid:pid_t,flags:CGEventFlags=[]) throws {
+        guard let down=CGEvent(keyboardEventSource:nil,virtualKey:key,keyDown:true),let up=CGEvent(keyboardEventSource:nil,virtualKey:key,keyDown:false) else { throw ContractError(code:"desktop_action_failed") }
+        down.flags=flags;up.flags=flags;down.postToPid(pid);up.postToPid(pid)
     }
     public func act(_ params: JSON) throws -> JSON {
         guard !observing else { throw ContractError(code:"desktop_busy") }
         let app=try check(bundleID)
         guard params["snapshot_id"]?.string==snapshotID,snapshotID != nil,Date().timeIntervalSince(snapshotAt)<30 else { throw ContractError(code:"desktop_snapshot_expired") }
-        guard app.processIdentifier==pid,NSWorkspace.shared.frontmostApplication?.processIdentifier==pid,let w=window,CFEqual(try safeWindow(app),w) else { invalidate();throw ContractError(code:"desktop_focus_changed") }
+        guard app.processIdentifier==pid,NSWorkspace.shared.frontmostApplication?.processIdentifier==pid,let w=window,CFEqual(try safeWindow(app),w),text(w,kAXTitleAttribute)==observedTitle else { invalidate();throw ContractError(code:"desktop_focus_changed") }
         defer { invalidate() }
         let operation=params["operation"]?.string ?? ""
         let root=AXUIElementCreateApplication(pid)
@@ -161,6 +217,7 @@ import MacBridgeCore
             guard let value=params["text"]?.string,!value.isEmpty,value.count<=2000 else { throw ContractError(code:"invalid_params") }
             let characters=Array(value.utf16)
             guard let down=CGEvent(keyboardEventSource:nil,virtualKey:0,keyDown:true),let up=CGEvent(keyboardEventSource:nil,virtualKey:0,keyDown:false) else { throw ContractError(code:"desktop_action_failed") }
+            down.flags=[];up.flags=[]
             characters.withUnsafeBufferPointer { buffer in
                 down.keyboardSetUnicodeString(stringLength:buffer.count,unicodeString:buffer.baseAddress)
                 up.keyboardSetUnicodeString(stringLength:buffer.count,unicodeString:buffer.baseAddress)
@@ -170,9 +227,11 @@ import MacBridgeCore
             let codes:[String:CGKeyCode]=["return":36,"tab":48,"escape":53,"up":126,"down":125,"left":123,"right":124,"backspace":51,"space":49,"select_all":0,"home":115,"end":119,"page_up":116,"page_down":121]
             guard let key=params["key"]?.string,let code=codes[key] else { throw ContractError(code:"invalid_params") }
             guard let down=CGEvent(keyboardEventSource:nil,virtualKey:code,keyDown:true),let up=CGEvent(keyboardEventSource:nil,virtualKey:code,keyDown:false) else { throw ContractError(code:"desktop_action_failed") }
+            down.flags=[];up.flags=[]
             if key=="select_all" {down.flags = .maskCommand;up.flags = .maskCommand};down.postToPid(pid);up.postToPid(pid)
         } else if operation=="click" {
             guard let imageSize,let bounds=rect(w),let x=params["x"]?.number,let y=params["y"]?.number,x>=0,y>=0,x<imageSize.width,y<imageSize.height else { throw ContractError(code:"desktop_image_required") }
+            guard let imageBounds,Self.sameBounds(bounds,imageBounds) else { throw ContractError(code:"desktop_focus_changed") }
             let point=CGPoint(x:bounds.minX+x/imageSize.width*bounds.width,y:bounds.minY+y/imageSize.height*bounds.height)
             var target:AXUIElement?
             guard AXUIElementCopyElementAtPosition(AXUIElementCreateSystemWide(),Float(point.x),Float(point.y),&target) == .success,let target else { throw ContractError(code:"desktop_target_unavailable") }
@@ -182,10 +241,11 @@ import MacBridgeCore
             let count = Int(params["click_count"]?.number ?? 1)
             for click in 1...max(1,min(2,count)) {
                 guard let down=CGEvent(mouseEventSource:nil,mouseType:right ? .rightMouseDown:.leftMouseDown,mouseCursorPosition:point,mouseButton:right ? .right:.left),let up=CGEvent(mouseEventSource:nil,mouseType:right ? .rightMouseUp:.leftMouseUp,mouseCursorPosition:point,mouseButton:right ? .right:.left) else { throw ContractError(code:"desktop_action_failed") }
+                down.flags=[];up.flags=[]
                 down.setIntegerValueField(.mouseEventClickState,value:Int64(click));up.setIntegerValueField(.mouseEventClickState,value:Int64(click))
                 // Deliver actual cursor events. PID-only events were accepted without
                 // activating SwiftUI controls in the System Settings acceptance test.
-                if let move=CGEvent(mouseEventSource:nil,mouseType:.mouseMoved,mouseCursorPosition:point,mouseButton:right ? .right:.left) { move.post(tap:.cghidEventTap) }
+                if let move=CGEvent(mouseEventSource:nil,mouseType:.mouseMoved,mouseCursorPosition:point,mouseButton:right ? .right:.left) { move.flags=[];move.post(tap:.cghidEventTap) }
                 down.post(tap:.cghidEventTap);up.post(tap:.cghidEventTap)
             }
         } else {
@@ -196,8 +256,38 @@ import MacBridgeCore
             case "press":status=AXUIElementPerformAction(element,kAXPressAction as CFString)
             case "type":
                 guard let value=params["text"]?.string,value.count<=2000,["AXTextField","AXTextArea","AXComboBox"].contains(text(element,kAXRoleAttribute)) else { throw ContractError(code:"desktop_target_not_editable") }
-                var settable=DarwinBoolean(false);guard AXUIElementIsAttributeSettable(element,kAXValueAttribute as CFString,&settable) == .success,settable.boolValue else { throw ContractError(code:"desktop_target_not_editable") }
-                status=AXUIElementSetAttributeValue(element,kAXValueAttribute as CFString,value as CFString)
+                // Native keyboard entry does not require AXValue to be writable (Chromium).
+                // AXValue alone does not emit editing events in apps such as Font Book.
+                // Focus exactly the observed editable field, then replace via normal input.
+                func isFocused() -> Bool {
+                    guard let focused=attribute(root,kAXFocusedUIElementAttribute),CFGetTypeID(focused)==AXUIElementGetTypeID() else { return false }
+                    return CFEqual(focused,element)
+                }
+                _ = AXUIElementSetAttributeValue(element,kAXFocusedAttribute as CFString,kCFBooleanTrue)
+                // Chromium applies focus asynchronously and may acknowledge AXFocused
+                // without moving web focus. AXPress supplies its native focus action.
+                if !isFocused() { _ = AXUIElementPerformAction(element,kAXPressAction as CFString) }
+                for _ in 0..<10 {
+                    if isFocused() { break }
+                    Thread.sleep(forTimeInterval:0.02)
+                }
+                guard isFocused() else { throw ContractError(code:"desktop_target_not_editable") }
+                _ = try check(bundleID)
+                guard NSWorkspace.shared.frontmostApplication?.processIdentifier==pid,
+                      CFEqual(try safeWindow(app),w),text(w,kAXTitleAttribute)==observedTitle else { throw ContractError(code:"desktop_focus_changed") }
+                try Self.postKey(0,pid:pid,flags:.maskCommand)
+                if value.isEmpty { try Self.postKey(51,pid:pid) }
+                else {
+                    let characters=Array(value.utf16)
+                    guard let down=CGEvent(keyboardEventSource:nil,virtualKey:0,keyDown:true),let up=CGEvent(keyboardEventSource:nil,virtualKey:0,keyDown:false) else { throw ContractError(code:"desktop_action_failed") }
+                    down.flags=[];up.flags=[]
+                    characters.withUnsafeBufferPointer { buffer in
+                        down.keyboardSetUnicodeString(stringLength:buffer.count,unicodeString:buffer.baseAddress)
+                        up.keyboardSetUnicodeString(stringLength:buffer.count,unicodeString:buffer.baseAddress)
+                    }
+                    down.postToPid(pid);up.postToPid(pid)
+                }
+                status = .success
             case "scroll":
                 let up=params["direction"]?.string=="up"
                 // Chromium can acknowledge AX page scrolling without moving its web viewport.
@@ -214,8 +304,8 @@ import MacBridgeCore
                     guard hitPID==pid else { throw ContractError(code:"desktop_focus_changed") }
                     let pixels=Int32(min(600,max(100,visible.height*0.75)))
                     guard let event=CGEvent(scrollWheelEvent2Source:nil,units:.pixel,wheelCount:1,wheel1:up ? pixels : -pixels,wheel2:0,wheel3:0) else { throw ContractError(code:"desktop_action_failed") }
-                    if let move=CGEvent(mouseEventSource:nil,mouseType:.mouseMoved,mouseCursorPosition:point,mouseButton:.left) { move.post(tap:.cghidEventTap) }
-                    event.location=point;event.post(tap:.cghidEventTap);status = .success
+                    if let move=CGEvent(mouseEventSource:nil,mouseType:.mouseMoved,mouseCursorPosition:point,mouseButton:.left) { move.flags=[];move.post(tap:.cghidEventTap) }
+                    event.flags=[];event.location=point;event.post(tap:.cghidEventTap);status = .success
                 }
             default:throw ContractError(code:"invalid_params")
             }

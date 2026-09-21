@@ -99,3 +99,29 @@ Tested through the signed-in production desktop dashboard, production relay, and
 | Finder | Captured the disposable 40-file folder and inspected its controls; click and Right-key commands acknowledged delivery | Click result did not match intended single-file selection, so coordinate accuracy is not certified. Later captures repeatedly failed with `desktop_capture_window_mismatch`; keyboard outcome was not visually certified |
 
 These are bounded app-operation checks, not blanket compatibility certification. No Muse integration claim. Screenshot resizing/encoding limits and Finder window matching need follow-up; do not remove matching checks to turn these failures into apparent passes.
+
+## September 21 compatibility fixes (candidates 24–28)
+
+The failures above prompted implementation fixes, not just new coverage notes:
+
+- Resize screenshot pixels as well as JPEG quality to stay within the 24 KB image budget; return the encoded dimensions for coordinate conversion.
+- Exclude capture overlays, match the focused window by geometry/title, and reject ambiguous matches. Finder's desktop alone now reports that a window must be opened.
+- Clear inherited input modifiers. Reject coordinate input if the observed window has moved or resized; reject any input if the focused window title changed.
+- Replace editable text through focused keyboard input so native apps receive editing events. Chromium does not need a writable AXValue property; allow its focus action to settle before requiring exact-field focus.
+
+Live checks through the production relay, using disposable fixtures:
+
+| App | Result |
+| --- | --- |
+| Finder (24) | Screenshot confirmed a coordinate click selected only Test item 01; Right selected only Test item 02. |
+| Dictionary (24) | Searching telescope returned its definition and a 512-pixel screenshot, replacing the previous image-too-large failure. |
+| Font Book (25) | Replacing search with Helvetica filtered to 2 of 362 typefaces; setting AXValue alone previously left the list unchanged. |
+| QuickTime Player (25) | Play/Pause advanced a silent disposable clip to 00:22 of 00:30, verified by fresh observation. |
+| Xcode (25) | Replaced a disposable Swift editor buffer; fresh observation returned the exact test text and Edited title. No code executed. |
+| TextEdit (25) | Replaced a disposable document with two lines; fresh observation returned both lines. |
+
+Native tests: 16 passed, including noisy screenshot-budget/dimension tests and ambiguous-window rejection. Website tests: 7 passed. Earlier Chrome, Safari, System Settings and Preview results remain baseline evidence, not a claim that every operation in those apps was retested on the final candidate. Identical windows with indistinguishable geometry/title still fail closed. This is representative operation coverage, not certification of all Mac apps. Muse registration remains separate.
+
+Final build 28 regression checks passed through the production relay: Chrome text replacement returned `Wand Chrome regression passed` in a fresh observation and screenshot; Font Book returned Helvetica and 2 of 362 typefaces; Dictionary returned telescope, its definition and a 512-pixel image; TextEdit returned the new disposable two-line content and a 640-pixel image. The installed signed binary and the DMG's signed binary have identical SHA256 `52891c300e39cd6ad91e86bfbc60ee9d093b7721b06753ed1b78b811f642fbdd`. The DMG passed integrity and strict code-signature checks. These updates reconnected without additional Wand permission approval; developer release signing needed one Keychain approval.
+
+Published build 28 at https://getwand.app/releases/Wand-0.12.0-build28.dmg. Downloaded production bytes match SHA256 `b9fbbb34c5924adebdea716aa395b4f31a67933e54c67bdfbc661cdb1084e6b5`. Cloudflare website version: `c014edca-716a-4028-a2a1-a35953e898e8`. The public download page points to build 28. This remains an Apple Development-signed, non-notarized beta.
