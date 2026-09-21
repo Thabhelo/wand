@@ -69,7 +69,8 @@ import MacBridgeCore
                             "now_playing": await NowPlayingReader.read(), "battery": battery, "running_apps": .array(apps.map(JSON.string))])
         case "lock_screen": return try await SystemActions.lock()
         case "close_browser_tabs":
-            guard params["browser"]?.string == "safari" else { throw ContractError(code: "chrome_pinned_tab_detection_unverified") }
+            if params["browser"]?.string == "chrome" { return try await SystemActions.chromeCleanup(keepPinned: params["keep_pinned"] != .bool(false)) }
+            guard params["browser"]?.string == "safari" else { throw ContractError(code: "invalid_params") }
             return try await SystemActions.safariCleanup(keepPinned: params["keep_pinned"] != .bool(false))
         case "toggle_do_not_disturb": return try await SystemActions.focus(params["enabled"] == .bool(true))
         case "sleep_mac": return try SystemActions.sleep()

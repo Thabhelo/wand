@@ -35,6 +35,7 @@ import MacBridgeNative
     private let relay = NSTextField(string: "")
     private let shortcut = NSTextField(string: "")
     private let appName = NSTextField(string: "")
+    private let cleanupBrowser = NSPopUpButton(frame: .zero, pullsDown: false)
     private let shortcutsList = NSStackView()
     private let activityList = NSStackView()
     private let volume = NSSlider(value: 30, minValue: 0, maxValue: 100, target: nil, action: nil)
@@ -220,7 +221,8 @@ import MacBridgeNative
             volume.toolTip = "Adjust volume"
             add(card("Sound & playback", subtitle: "Playback controls use Music or Spotify when open.", views: [row(actionButton("Previous", #selector(previous), symbol: "backward.end.fill"), actionButton("Play / Pause", #selector(playPause), symbol: "playpause.fill"), actionButton("Next", #selector(next), symbol: "forward.end.fill")), row(volume, actionButton("Mute", #selector(muteSound)), actionButton("Unmute", #selector(unmuteSound)))]))
             add(card("Open something", views: [row(field(website, placeholder: "Website · https://example.com"), actionButton("Open website", #selector(openWebsite), symbol: "arrow.up.right")), row(field(appName, placeholder: "App name · Calculator"), actionButton("Open app", #selector(openApp)), actionButton("Quit app…", #selector(quitApp)))]))
-            add(card("Mac controls", views: [row(actionButton("Lock…", #selector(lockMac)), actionButton("Sleep…", #selector(sleepMac))), row(actionButton("Focus on", #selector(focusOn)), actionButton("Focus off", #selector(focusOff))), actionButton("Close Safari tabs…", #selector(cleanSafari))]))
+            if cleanupBrowser.numberOfItems == 0 { cleanupBrowser.addItems(withTitles: ["Safari", "Chrome"]); cleanupBrowser.setAccessibilityLabel("Browser to clean up") }
+            add(card("Mac controls", views: [row(actionButton("Lock…", #selector(lockMac)), actionButton("Sleep…", #selector(sleepMac))), row(actionButton("Focus on", #selector(focusOn)), actionButton("Focus off", #selector(focusOff))), row(cleanupBrowser, actionButton("Close browser tabs…", #selector(cleanSafari)))]))
         case 1:
             add(card("Add an approved Shortcut", subtitle: "Use its exact name from Apple Shortcuts. Shortcuts can run code; add only ones you trust.", views: [row(field(shortcut, placeholder: "Exact Shortcut name"), button("Add Shortcut", #selector(addShortcut), symbol: "plus", primary: true))]))
             shortcutsList.orientation = .vertical; shortcutsList.alignment = .leading; shortcutsList.spacing = 12
@@ -366,7 +368,8 @@ import MacBridgeNative
     @objc private func focusOn() { agent?.runLocalAction("toggle_do_not_disturb", params: .object(["enabled": .bool(true)])) }
     @objc private func focusOff() { agent?.runLocalAction("toggle_do_not_disturb", params: .object(["enabled": .bool(false)])) }
     @objc private func cleanSafari() {
-        if confirm("Close unpinned Safari tabs?", detail: "This closes unpinned tabs in open Safari windows. Pinned tabs stay open. Unsaved pages may ask you to confirm in Safari.", button: "Close tabs") { agent?.runLocalAction("close_browser_tabs", params: .object(["browser": .string("safari"), "keep_pinned": .bool(true)])) }
+        let browser = cleanupBrowser.indexOfSelectedItem == 1 ? "Chrome" : "Safari"
+        if confirm("Close unpinned \(browser) tabs?", detail: "This closes unpinned tabs in open \(browser) windows. Pinned tabs stay open. Unsaved pages may ask you to confirm in the browser.", button: "Close tabs") { agent?.runLocalAction("close_browser_tabs", params: .object(["browser": .string(browser.lowercased()), "keep_pinned": .bool(true)])) }
     }
     @objc private func pair() {
         guard let agent else { return }

@@ -22,3 +22,6 @@ The previous real TextEdit observe/type/press/stop test is documented in RELEASE
 See DESKTOP_ACCEPTANCE.md for the current authoritative matrix. Development-signed build 17 is installed locally; Chrome screenshot, coordinate click, typing, Enter and scroll have passed through the production relay. System Settings observation, capture and Tab input also passed. These local fixes are not in the published build 15 DMG. Real Muse integration, broader native regression and public-distribution readiness remain open.
 
 Build 17 is now published (September 21); the current download page points to it. See DESKTOP_ACCEPTANCE.md for checksum and expanded Safari/TextEdit results. New Keychain/system-action source is not in that artifact: the next signing attempt was cancelled at a Keychain authorization request.
+
+
+The next candidate is 0.12.0 build 18, currently source-only with successful compilation and automated checks. It has not replaced the published build 17. See DESKTOP_ACCEPTANCE.md for the signing dependency and unverified dedicated actions.

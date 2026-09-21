@@ -13,6 +13,9 @@ p=argparse.ArgumentParser()
 p.add_argument('--binary',type=Path,required=True,help='SwiftPM-built MacBridge executable')
 p.add_argument('--identity',default=os.environ.get('WAND_SIGNING_IDENTITY'),help='Apple Development identity for stable local testing, or Developer ID Application for distribution; defaults to WAND_SIGNING_IDENTITY; use explicit - only for disposable ad-hoc tests')
 p.add_argument('--dmg',action='store_true')
+p.add_argument('--version',default='0.12.0')
+p.add_argument('--build-number',default='18')
+p.add_argument('--signing-timeout',type=int,default=60,help='Stop waiting for signing authorization without replacing the installed app')
 p.add_argument('--output',type=Path,default=ROOT/'dist/Wand.app')
 p.add_argument('--notary-profile',help='Existing notarytool Keychain profile; never pass passwords here')
 p.add_argument('--relay-origin',default='',help='Production HTTPS relay baked into the signed app; no user configuration required')
@@ -40,8 +43,8 @@ shutil.copy2(ROOT/'contracts/v1.schema.json',contents/'Resources/v1.schema.json'
 shutil.copy2(ROOT/'contracts/actions.json',contents/'Resources/actions.json')
 with (contents/'Info.plist').open('wb') as f:
     plistlib.dump(dict(CFBundleName='Wand',CFBundleDisplayName='Wand',CFBundleExecutable='MacBridge',
-        CFBundleIconFile='Wand.icns',CFBundleIdentifier='local.macbridge.agent',CFBundlePackageType='APPL',CFBundleShortVersionString='0.11.0',
-        CFBundleVersion='17',MacBridgeRelayOrigin=a.relay_origin,MacBridgeDashboardOrigin=a.dashboard_origin,LSMinimumSystemVersion='26.0',LSUIElement=True,NSHighResolutionCapable=True,NSAppleEventsUsageDescription="Wand controls approved media apps when you request playback actions."),f)
+        CFBundleIconFile='Wand.icns',CFBundleIdentifier='local.macbridge.agent',CFBundlePackageType='APPL',CFBundleShortVersionString=a.version,
+        CFBundleVersion=a.build_number,MacBridgeRelayOrigin=a.relay_origin,MacBridgeDashboardOrigin=a.dashboard_origin,LSMinimumSystemVersion='26.0',LSUIElement=True,NSHighResolutionCapable=True,NSAppleEventsUsageDescription="Wand controls approved media apps when you request playback actions."),f)
 def run(args): subprocess.run(args,check=True)
 # Remove disallowed Finder/resource-fork metadata only from this generated bundle.
 for attr in ['com.apple.FinderInfo','com.apple.ResourceFork']:
@@ -51,7 +54,11 @@ if a.identity!='-':
     entitlements=contents/'Resources/Entitlements.plist'
     with entitlements.open('wb') as f: plistlib.dump({'com.apple.security.automation.apple-events':True},f)
     sign += ['--options','runtime','--timestamp','--entitlements',str(entitlements)]
-run(sign+[str(app)])
+try:
+    subprocess.run(sign+[str(app)],check=True,timeout=a.signing_timeout)
+except (subprocess.TimeoutExpired,subprocess.CalledProcessError):
+    shutil.rmtree(staging)
+    raise SystemExit('Signing did not finish. The previous app is unchanged. Approve signing access in macOS before retrying; do not reset Wand permissions.')
 run(['codesign','--verify','--strict',str(app)])
 # Publish by renaming the completed bundle; never overwrite a running executable in place.
 previous=staging/'previous.app'
