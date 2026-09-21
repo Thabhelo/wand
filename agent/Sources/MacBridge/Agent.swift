@@ -34,6 +34,7 @@ import MacBridgeNative
     @Published var localPort: Int = 0
     let session = URLSession(configuration: .ephemeral)
     let executor = ActionExecutor()
+    @Published var connectionReady = false
     init() throws {
         directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("MacBridge")
         guard let schema = Bundle.main.url(forResource: "v1.schema", withExtension: "json") else { throw ContractError(code: "schema_missing") }
@@ -42,7 +43,6 @@ import MacBridgeNative
         revocation = try RevocationState(file: directory.appendingPathComponent("revocation.json"))
         log = LocalForensicLog(file: directory.appendingPathComponent("commands.jsonl"))
         pending = revocation.pending
-        token = try secrets.read(account: "device-token")
         let nc = NSWorkspace.shared.notificationCenter
         for name in [NSWorkspace.willSleepNotification, NSWorkspace.sessionDidResignActiveNotification] {
             observers.append(nc.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
@@ -57,13 +57,6 @@ import MacBridgeNative
         let savedPort = UserDefaults.standard.integer(forKey: "local-port")
         localPort = (49152...65535).contains(savedPort) ? savedPort : Int.random(in: 49152...65535)
         UserDefaults.standard.set(localPort, forKey: "local-port")
-        let localToken = try secrets.read(account: "local-api-token") ?? KeychainStore.randomToken()
-        try secrets.write(localToken, account: "local-api-token")
-        localServer = try LocalHTTPServer(port: UInt16(localPort), token: localToken) { [weak self] value in
-            guard let self else { return (503, .object([:])) }
-            return await self.localCommand(value)
-        }
-        localServer?.start()
         screenState = LockStateReader.read()
         stateMonitor = Task { [weak self] in
             while !Task.isCancelled {
@@ -76,11 +69,32 @@ import MacBridgeNative
                 try? await Task.sleep(for: .milliseconds(250))
             }
         }
-        if pending { status = RevocationState.warning }
-        else if token == nil, try secrets.read(account: "bootstrap-token") != nil {
-            // Recover a crash after redemption without discarding revocation credentials.
-            cancelPairing()
-        } else { connect() }
+        status = pending ? RevocationState.warning : "Opening secure connection keys…"
+    }
+    func startConnections() async {
+        do {
+            let credentials = try await Task.detached {
+                let store = KeychainStore(service: "local.macbridge.agent")
+                let device = try store.read(account: "device-token")
+                let local = try store.read(account: "local-api-token") ?? KeychainStore.randomToken()
+                try store.write(local, account: "local-api-token")
+                let hasBootstrap = try store.read(account: "bootstrap-token") != nil
+                return (device, local, hasBootstrap)
+            }.value
+            token = credentials.0
+            let localToken = credentials.1
+            localServer = try LocalHTTPServer(port: UInt16(localPort), token: localToken) { [weak self] value in
+                guard let self else { return (503, .object([:])) }
+                return await self.localCommand(value)
+            }
+            localServer?.start()
+            connectionReady = true
+            if pending { status = RevocationState.warning }
+            else if token == nil, credentials.2 { cancelPairing() }
+            else { status = "Unpaired"; connect() }
+        } catch {
+            status = "Connection keys unavailable. Reopen Wand and approve Keychain access. Local controls still work."
+        }
     }
     func origin() throws -> URL {
         guard let u = URL(string: relay), u.scheme == "https", u.host != nil, u.user == nil, u.password == nil,
@@ -117,7 +131,7 @@ import MacBridgeNative
     }
     func continuePairing() { if let url = pairingURL() { NSWorkspace.shared.open(url) } }
     func pair() {
-        guard !pending, token == nil, !pairing else { return }
+        guard connectionReady, !pending, token == nil, !pairing else { return }
         do {
             if try secrets.read(account: "bootstrap-token") != nil { cancelPairing(); return }
         } catch { status = safeError(error); return }
@@ -130,7 +144,7 @@ import MacBridgeNative
                 _ = try origin(); UserDefaults.standard.set(relay, forKey: "relay")
                 while !Task.isCancelled && generation == captured {
                     status = "Requesting a pairing code…"
-                    let enrollment = try await request("v1/pairing/code", body: .object(["device_name": .string(Host.current().localizedName ?? "Mac"), "kind": .string("mac"), "agent_version": .string("0.9.1")]))
+                    let enrollment = try await request("v1/pairing/code", body: .object(["device_name": .string(Host.current().localizedName ?? "Mac"), "kind": .string("mac"), "agent_version": .string("0.9.2")]))
                     guard !Task.isCancelled, generation == captured else { return }
                     try validator.validate("PairingCodeResponse", enrollment)
                     guard let bootstrap = enrollment["bootstrap_token"]?.string, let expiryText = enrollment["expires_at"]?.string,
@@ -207,7 +221,7 @@ import MacBridgeNative
         let ws = session.webSocketTask(with: request); ws.maximumMessageSize = 65536
         socket = ws; ws.resume(); status = "Connecting…"
         guard let token else { return }
-        try await send(envelope("hello", ["device_token": .string(token), "agent_version": .string("0.9.1"), "device_name": .string(Host.current().localizedName ?? "Mac"), "macos_version": .string(ProcessInfo.processInfo.operatingSystemVersionString.prefix(40).description)]))
+        try await send(envelope("hello", ["device_token": .string(token), "agent_version": .string("0.9.2"), "device_name": .string(Host.current().localizedName ?? "Mac"), "macos_version": .string(ProcessInfo.processInfo.operatingSystemVersionString.prefix(40).description)]))
         try await send(envelope("heartbeat"))
         let readinessTimeout = Task {
             do { try await Task.sleep(for: .seconds(10)) } catch { return }

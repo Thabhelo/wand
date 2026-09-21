@@ -15,3 +15,5 @@ Facebook sign-in and explicit account linking are enabled. Firebase provider con
 Official platform discovery: https://muse.ai/platform — Submit a connector opens a sign-in-gated form. The public page confirms functional, security and legal review before directory listing; no OAuth callback address is published there.
 
 Meta publication check (2026-09-20): created the Wand App business portfolio (27578447625164268). Meta reports it eligible for verification, but requires legal business type, business/contact details and possibly supporting documents. The owner must supply these facts; no verification submission or public publication has been completed. The previously exposed Meta app secret still needs rotation and replacement in Firebase; successful sign-in does not establish that rotation occurred.
+
+Release focus update: FACEBOOK_ENABLED=false deployed on 2026-09-20. Google is the public sign-in path; the existing Facebook provider/account links are retained. Meta Business verification is deferred. The actual Muse platform accepts a company or individual developer and its connector draft has reached Review, but no connector was submitted or approved.

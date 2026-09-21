@@ -44,17 +44,23 @@ import MacBridgeNative
     private var activitySnapshot = ""
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        do {
-            agent = try Agent()
-            buildWindow(); buildMenu(); buildPage()
-            observation = agent?.objectWillChange.sink { [weak self] _ in
-                Task { @MainActor in self?.render() }
+        buildWindow(); buildMenu(); showWindow()
+        add(label("Opening Wand…", size: 28, weight: .semibold))
+        add(label("If macOS asks, allow Wand to access its connection keys in Keychain.", secondary: true))
+        Task { @MainActor [self] in
+            do {
+                agent = try Agent()
+                buildPage()
+                observation = agent?.objectWillChange.sink { [weak self] _ in
+                    Task { @MainActor in self?.render() }
+                }
+                render(); agent?.refreshDeviceState()
+                Task { @MainActor in await agent?.startConnections() }
+            } catch {
+                body.arrangedSubviews.forEach { body.removeArrangedSubview($0); $0.removeFromSuperview() }
+                add(label("Wand couldn’t open its connection keys.", size: 22, weight: .semibold))
+                add(label("Reopen Wand and approve its Keychain access when macOS asks. Your existing keys have not been deleted.", secondary: true))
             }
-            render(); showWindow(); agent?.refreshDeviceState()
-        } catch {
-            let alert = NSAlert(); alert.messageText = "Wand could not start"
-            alert.informativeText = "Local storage or Keychain access failed. " + ((error as? ContractError)?.code ?? "startup_failed")
-            alert.runModal(); NSApplication.shared.terminate(nil)
         }
     }
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool { showWindow(); return true }
@@ -258,7 +264,7 @@ import MacBridgeNative
         codeLabel.stringValue = agent.code.isEmpty ? "" : "Code: " + agent.code
         pairingActions?.isHidden = agent.code.isEmpty || !agent.pairing
         connectButton?.title = agent.online ? "Connected" : agent.pairing ? "Waiting for approval…" : agent.token != nil ? "Reconnecting…" : "Connect"
-        connectButton?.isEnabled = !agent.pairing && agent.token == nil && !agent.pending
+        connectButton?.isEnabled = agent.connectionReady && !agent.pairing && agent.token == nil && !agent.pending
         if agent.pending { advancedView?.isHidden = false }
         if qrCode != agent.code {
             qrCode = agent.code; pairingQR.image = nil
