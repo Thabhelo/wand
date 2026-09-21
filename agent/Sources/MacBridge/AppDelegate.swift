@@ -263,8 +263,8 @@ import MacBridgeNative
         connection.stringValue = agent.pending ? RevocationState.warning : agent.status == "Unpaired" ? "" : agent.status
         codeLabel.stringValue = agent.code.isEmpty ? "" : "Code: " + agent.code
         pairingActions?.isHidden = agent.code.isEmpty || !agent.pairing
-        connectButton?.title = agent.online ? "Connected" : agent.pairing ? "Waiting for approval…" : agent.token != nil ? "Reconnecting…" : "Connect"
-        connectButton?.isEnabled = agent.connectionReady && !agent.pairing && agent.token == nil && !agent.pending
+        connectButton?.title = !agent.connectionReady ? (agent.openingKeys ? "Waiting for Keychain…" : "Allow Keychain access") : agent.online ? "Connected" : agent.pairing ? "Waiting for approval…" : agent.token != nil ? "Reconnecting…" : "Connect"
+        connectButton?.isEnabled = !agent.openingKeys && !agent.pairing && agent.token == nil && !agent.pending
         if agent.pending { advancedView?.isHidden = false }
         if qrCode != agent.code {
             qrCode = agent.code; pairingQR.image = nil
@@ -340,7 +340,11 @@ import MacBridgeNative
     @objc private func unmuteSound() { agent?.runLocalAction("unmute") }
     @objc private func setVolumeAction() { agent?.runLocalAction("set_volume", params: .object(["level": .number(volume.doubleValue.rounded())])) }
     @objc private func openWebsite() { agent?.runLocalAction("open_url", params: .object(["url": .string(website.stringValue.trimmingCharacters(in: .whitespacesAndNewlines))])) }
-    @objc private func pair() { agent?.pair() }
+    @objc private func pair() {
+        guard let agent else { return }
+        if !agent.connectionReady { Task { @MainActor in await agent.startConnections() } }
+        else { agent.pair() }
+    }
     @objc private func continuePairing() { agent?.continuePairing() }
     @objc private func toggleAdvanced() { advancedView?.isHidden.toggle() }
     @objc private func saveRelay() {

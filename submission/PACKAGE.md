@@ -1,3 +1,7 @@
+# Current reviewer access
+
+See [REVIEWER-ACCESS.md](REVIEWER-ACCESS.md) for the hosted sandbox and public unnotarized beta. The historical preparation notes below predate Firebase and the Cloudflare deployment; they are not current launch status.
+
 # MacBridge submission draft — not submitted
 
 ## Product description

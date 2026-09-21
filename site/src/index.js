@@ -5,6 +5,15 @@ export default {
     if (url.hostname === 'www.getwand.app') { url.hostname='getwand.app'; return Response.redirect(url,308); }
     if (url.pathname === '/connect') { return Response.redirect('https://app.getwand.app/',302); }
     const dashboard = url.hostname === 'app.getwand.app';
+    // Browser simulator transports a public device ID only; relay hello still authenticates the token.
+    if (dashboard && url.pathname === '/review-device') {
+      const did=url.searchParams.get('device_id');
+      if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket' || !/^[0-9a-f-]{36}$/i.test(did||'')) return new Response('Invalid device socket',{status:400});
+      if (request.headers.get('Origin') !== 'https://app.getwand.app') return new Response('Invalid origin',{status:403});
+      if (env.RELAY_ORIGIN !== 'https://api.getwand.app') return missing();
+      const headers=new Headers(request.headers); headers.set('X-Wand-Device-ID',did);
+      return fetch(new Request('https://api.getwand.app/v1/ws/device',{headers}));
+    }
     if (dashboard && (url.pathname === '/config' || url.pathname.startsWith('/v1/'))) {
       if (!env.RELAY_ORIGIN) return missing();
       const upstream = new URL(env.RELAY_ORIGIN);

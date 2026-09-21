@@ -35,6 +35,7 @@ import MacBridgeNative
     let session = URLSession(configuration: .ephemeral)
     let executor = ActionExecutor()
     @Published var connectionReady = false
+    @Published var openingKeys = false
     init() throws {
         directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("MacBridge")
         guard let schema = Bundle.main.url(forResource: "v1.schema", withExtension: "json") else { throw ContractError(code: "schema_missing") }
@@ -72,6 +73,10 @@ import MacBridgeNative
         status = pending ? RevocationState.warning : "Opening secure connection keys…"
     }
     func startConnections() async {
+        guard !openingKeys, !connectionReady else { return }
+        openingKeys = true
+        status = "Approve Wand in the macOS Keychain dialog. Enter your Mac password there, then click Allow."
+        defer { openingKeys = false }
         do {
             let credentials = try await Task.detached {
                 let store = KeychainStore(service: "local.macbridge.agent")
@@ -93,7 +98,7 @@ import MacBridgeNative
             else if token == nil, credentials.2 { cancelPairing() }
             else { status = "Unpaired"; connect() }
         } catch {
-            status = "Connection keys unavailable. Reopen Wand and approve Keychain access. Local controls still work."
+            status = "Keychain access was not approved. Click Allow Keychain access to try again. Local controls still work."
         }
     }
     func origin() throws -> URL {
