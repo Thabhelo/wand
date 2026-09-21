@@ -38,8 +38,8 @@ shutil.copy2(ROOT/'contracts/v1.schema.json',contents/'Resources/v1.schema.json'
 shutil.copy2(ROOT/'contracts/actions.json',contents/'Resources/actions.json')
 with (contents/'Info.plist').open('wb') as f:
     plistlib.dump(dict(CFBundleName='Wand',CFBundleDisplayName='Wand',CFBundleExecutable='MacBridge',
-        CFBundleIconFile='Wand.icns',CFBundleIdentifier='local.macbridge.agent',CFBundlePackageType='APPL',CFBundleShortVersionString='0.9.3',
-        CFBundleVersion='12',MacBridgeRelayOrigin=a.relay_origin,MacBridgeDashboardOrigin=a.dashboard_origin,LSMinimumSystemVersion='26.0',LSUIElement=True,NSHighResolutionCapable=True,NSAppleEventsUsageDescription="Wand controls approved media apps when you request playback actions."),f)
+        CFBundleIconFile='Wand.icns',CFBundleIdentifier='local.macbridge.agent',CFBundlePackageType='APPL',CFBundleShortVersionString='0.10.0',
+        CFBundleVersion='13',MacBridgeRelayOrigin=a.relay_origin,MacBridgeDashboardOrigin=a.dashboard_origin,LSMinimumSystemVersion='26.0',LSUIElement=True,NSHighResolutionCapable=True,NSAppleEventsUsageDescription="Wand controls approved media apps when you request playback actions."),f)
 def run(args): subprocess.run(args,check=True)
 # Remove disallowed Finder/resource-fork metadata only from this generated bundle.
 for attr in ['com.apple.FinderInfo','com.apple.ResourceFork']:

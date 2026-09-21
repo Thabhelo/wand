@@ -6,8 +6,10 @@ import MacBridgeCore
 /// Native implementation boundary. Caller must validate the shared contract, reserve the
 /// command ID and check current session + lock state immediately before invoking this.
 @MainActor public final class ActionExecutor {
+    public let desktop = DesktopControl()
     public init() {}
     public func executeGuarded(action: String, params: JSON, shortcuts: [String]) async throws -> JSON {
+        if action == "desktop_stop" { desktop.stop(); return .object([:]) }
         if let guarded = try CommandGate.lockedResult(action: action, locked: LockStateReader.read().locked) { return guarded }
         let result = try await execute(action: action, params: params, shortcuts: shortcuts)
         if action == "get_state", let guarded = try CommandGate.lockedResult(action: action, locked: LockStateReader.read().locked) { return guarded }
@@ -15,6 +17,9 @@ import MacBridgeCore
     }
     public func execute(action: String, params: JSON, shortcuts: [String]) async throws -> JSON {
         switch action {
+        case "desktop_observe": return try await desktop.observe(params)
+        case "desktop_act": return try desktop.act(params)
+        case "desktop_stop": desktop.stop()
         case "open_url":
             guard let text = params["url"]?.string, let url = URL(string: text), ["https", "http"].contains(url.scheme?.lowercased() ?? ""), url.host != nil else { throw ContractError(code: "invalid_url") }
             guard NSWorkspace.shared.open(url) else { throw ContractError(code: "action_failed") }

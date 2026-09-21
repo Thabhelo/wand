@@ -69,3 +69,8 @@ it('declining creates no grant and returns the exact registered callback',async(
  const response=await begin(),id=new URL(response.headers.get('Location')).searchParams.get('authorize');
  const declined=await request('/v1/connections/consent','POST',{id,decision:'deny'});expect(declined.status).toBe(200);const target=new URL((await declined.json()).redirectTo);expect(target.origin).toBe('https://muse.example');expect(target.searchParams.get('error')).toBe('access_denied');expect((await env.DB.prepare('SELECT COUNT(*) n FROM connections').first()).n).toBe(0);
 });
+
+it('existing narrow grants cannot acquire desktop access',async()=>{
+ const {code}=await approve(),credentials=await(await exchange(code)).json();
+ const r=await request('/connector/v1/commands','POST',{device_id:did,action:'desktop_observe',params:{bundle_id:'com.apple.finder'}},credentials.access_token);expect(r.status).toBe(403);
+});

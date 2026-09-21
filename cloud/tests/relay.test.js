@@ -33,3 +33,20 @@ it('never lets a bad hello interrupt an authenticated command',async()=>{const p
 it('bounds hello attempts per IP',async()=>{for(let i=0;i<10;i++)expect((await worker.fetch(new Request('https://api.example/v1/ws/device',{headers:{Upgrade:'websocket','CF-Connecting-IP':ip}}),env)).status).toBe(400);expect((await worker.fetch(new Request('https://api.example/v1/ws/device',{headers:{Upgrade:'websocket','CF-Connecting-IP':ip}}),env)).status).toBe(429)});
 
 it('serves connector discovery before requiring a user login',async()=>{const response=await request('/openapi.json','GET',undefined,'not-a-user');expect(response.status).toBe(200);const spec=await response.json();expect(spec.info.title).toBe('Wand device control API');expect(spec.paths['/v1/commands']).toBeDefined()});
+it('routes desktop observations without retaining their contents in audit',async()=>{
+ const p=await pair(),{ws,next}=await connect(p);
+ const accepted=await request('/v1/commands','POST',{device_id:p.device_id,action:'desktop_observe',params:{bundle_id:'com.apple.finder'}});expect(accepted.status).toBe(202);
+ const {command_id}=await accepted.json();expect((await next()).action).toBe('desktop_observe');
+ const data={snapshot_id:crypto.randomUUID(),bundle_id:'com.apple.finder',expires_at:new Date(Date.now()+30000).toISOString(),elements:[{element_id:'0',role:'AXWindow',label:'private window text',actions:[]}],truncated:false};
+ ws.send(JSON.stringify(envelope('result',{command_id,ok:true,data})));
+ expect((await poll(command_id)).result).toEqual(data);
+ const audit=await runInDurableObject(p.stub,o=>o.sql.exec('SELECT * FROM audit').toArray());expect(JSON.stringify(audit)).not.toContain('private window text');ws.close();
+});
+it('rejects malformed desktop input before it can reach a device',async()=>{
+ const p=await pair();for(const params of [
+ {operation:'type',text:'hello',element_id:'0'},
+ {snapshot_id:crypto.randomUUID(),operation:'shell',text:'whoami'},
+ {snapshot_id:crypto.randomUUID(),operation:'click',x:-1,y:0},
+ {snapshot_id:crypto.randomUUID(),operation:'key',key:'command+q'}
+ ])expect((await request('/v1/commands','POST',{device_id:p.device_id,action:'desktop_act',params})).status).toBe(422);
+});

@@ -378,7 +378,10 @@
                 "open_url",
                 "run_shortcut",
                 "toggle_do_not_disturb",
-                "get_state"
+                "get_state",
+                "desktop_observe",
+                "desktop_act",
+                "desktop_stop"
               ]
             },
             "description": {
@@ -413,8 +416,8 @@
           ],
           "additionalProperties": false
         },
-        "minItems": 15,
-        "maxItems": 15
+        "minItems": 18,
+        "maxItems": 18
       },
       "CommandRequest": {
         "oneOf": [
@@ -865,6 +868,230 @@
               "params"
             ],
             "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "desktop_observe"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "bundle_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "include_image": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "bundle_id"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "desktop_act"
+              },
+              "params": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
+                      "operation": {
+                        "const": "press"
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "element_id",
+                      "operation"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
+                      "operation": {
+                        "const": "type"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2000
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "element_id",
+                      "operation",
+                      "text"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "operation": {
+                        "const": "key"
+                      },
+                      "key": {
+                        "enum": [
+                          "return",
+                          "tab",
+                          "escape",
+                          "up",
+                          "down",
+                          "left",
+                          "right",
+                          "backspace",
+                          "space",
+                          "select_all"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "operation",
+                      "key"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
+                      "operation": {
+                        "const": "scroll"
+                      },
+                      "direction": {
+                        "enum": [
+                          "up",
+                          "down"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "element_id",
+                      "operation",
+                      "direction"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "operation": {
+                        "const": "click"
+                      },
+                      "x": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "y": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "operation",
+                      "x",
+                      "y"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "const": "desktop_stop"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "device_id",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
           }
         ]
       },
@@ -1242,6 +1469,215 @@
               "params"
             ],
             "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "desktop_observe"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "bundle_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "include_image": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "bundle_id"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "desktop_act"
+              },
+              "params": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
+                      "operation": {
+                        "const": "press"
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "element_id",
+                      "operation"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
+                      "operation": {
+                        "const": "type"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2000
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "element_id",
+                      "operation",
+                      "text"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "operation": {
+                        "const": "key"
+                      },
+                      "key": {
+                        "enum": [
+                          "return",
+                          "tab",
+                          "escape",
+                          "up",
+                          "down",
+                          "left",
+                          "right",
+                          "backspace",
+                          "space",
+                          "select_all"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "operation",
+                      "key"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
+                      "operation": {
+                        "const": "scroll"
+                      },
+                      "direction": {
+                        "enum": [
+                          "up",
+                          "down"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "element_id",
+                      "operation",
+                      "direction"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "operation": {
+                        "const": "click"
+                      },
+                      "x": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "y": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "operation",
+                      "x",
+                      "y"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "const": "desktop_stop"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
           }
         ]
       },
@@ -1515,6 +1951,9 @@
           },
           {
             "$ref": "#/components/schemas/LockResult"
+          },
+          {
+            "$ref": "#/components/schemas/DesktopObservation"
           }
         ]
       },
@@ -2865,6 +3304,311 @@
               "params"
             ],
             "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "desktop_observe"
+              },
+              "params": {
+                "type": "object",
+                "properties": {
+                  "bundle_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "include_image": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "bundle_id"
+                ],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "desktop_act"
+              },
+              "params": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
+                      "operation": {
+                        "const": "press"
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "element_id",
+                      "operation"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
+                      "operation": {
+                        "const": "type"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2000
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "element_id",
+                      "operation",
+                      "text"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "operation": {
+                        "const": "key"
+                      },
+                      "key": {
+                        "enum": [
+                          "return",
+                          "tab",
+                          "escape",
+                          "up",
+                          "down",
+                          "left",
+                          "right",
+                          "backspace",
+                          "space",
+                          "select_all"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "operation",
+                      "key"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      },
+                      "operation": {
+                        "const": "scroll"
+                      },
+                      "direction": {
+                        "enum": [
+                          "up",
+                          "down"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "element_id",
+                      "operation",
+                      "direction"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "snapshot_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "operation": {
+                        "const": "click"
+                      },
+                      "x": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "y": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000
+                      }
+                    },
+                    "required": [
+                      "snapshot_id",
+                      "operation",
+                      "x",
+                      "y"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "v": {
+                "const": 1
+              },
+              "type": {
+                "const": "command"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "action": {
+                "const": "desktop_stop"
+              },
+              "params": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              },
+              "encrypted_payload": {
+                "type": "null",
+                "description": "Reserved; non-null payloads are unsupported in v1."
+              }
+            },
+            "required": [
+              "v",
+              "type",
+              "id",
+              "ts",
+              "command_id",
+              "expires_at",
+              "action",
+              "params"
+            ],
+            "additionalProperties": false
           }
         ]
       },
@@ -3000,7 +3744,10 @@
                 "open_url",
                 "run_shortcut",
                 "toggle_do_not_disturb",
-                "get_state"
+                "get_state",
+                "desktop_observe",
+                "desktop_act",
+                "desktop_stop"
               ]
             },
             "uniqueItems": true
@@ -3036,7 +3783,10 @@
               "open_url",
               "run_shortcut",
               "toggle_do_not_disturb",
-              "get_state"
+              "get_state",
+              "desktop_observe",
+              "desktop_act",
+              "desktop_stop"
             ]
           },
           "params": {
@@ -3300,7 +4050,10 @@
               "open_url",
               "run_shortcut",
               "toggle_do_not_disturb",
-              "get_state"
+              "get_state",
+              "desktop_observe",
+              "desktop_act",
+              "desktop_stop"
             ]
           },
           "params_json": {
@@ -3414,7 +4167,10 @@
               "open_url",
               "run_shortcut",
               "toggle_do_not_disturb",
-              "get_state"
+              "get_state",
+              "desktop_observe",
+              "desktop_act",
+              "desktop_stop"
             ]
           },
           "params_json": {
@@ -3464,6 +4220,103 @@
           "created_at"
         ],
         "additionalProperties": false
+      },
+      "DesktopObservation": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bundle_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "elements": {
+            "type": "array",
+            "maxItems": 60,
+            "items": {
+              "type": "object",
+              "properties": {
+                "element_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                },
+                "role": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "label": {
+                  "type": "string",
+                  "maxLength": 160
+                },
+                "value": {
+                  "type": "string",
+                  "maxLength": 160
+                },
+                "actions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "maxItems": 12
+                }
+              },
+              "required": [
+                "element_id",
+                "role",
+                "label",
+                "actions"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "image": {
+            "type": "object",
+            "properties": {
+              "mime_type": {
+                "const": "image/jpeg"
+              },
+              "base64": {
+                "type": "string",
+                "maxLength": 32000
+              },
+              "width": {
+                "type": "integer"
+              },
+              "height": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "mime_type",
+              "base64",
+              "width",
+              "height"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "bundle_id",
+          "expires_at",
+          "elements",
+          "truncated"
+        ],
+        "additionalProperties": false
       }
     },
     "securitySchemes": {
@@ -3488,7 +4341,10 @@
               "wand:open_url": "open url",
               "wand:run_shortcut": "run shortcut",
               "wand:toggle_do_not_disturb": "toggle do not disturb",
-              "wand:get_state": "get state"
+              "wand:get_state": "get state",
+              "wand:desktop_observe": "desktop observe",
+              "wand:desktop_act": "desktop act",
+              "wand:desktop_stop": "desktop stop"
             }
           }
         },

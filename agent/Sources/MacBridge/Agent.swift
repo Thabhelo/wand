@@ -64,6 +64,7 @@ import MacBridgeNative
                 guard let self else { return }
                 let next = LockStateReader.read()
                 if next != self.screenState {
+                    if next != .unlocked { self.executor.desktop.stop() }
                     self.screenState = next
                     self.deviceState = nil
                 }
@@ -149,7 +150,7 @@ import MacBridgeNative
                 _ = try origin(); UserDefaults.standard.set(relay, forKey: "relay")
                 while !Task.isCancelled && generation == captured {
                     status = "Requesting a pairing code…"
-                    let enrollment = try await request("v1/pairing/code", body: .object(["device_name": .string(Host.current().localizedName ?? "Mac"), "kind": .string("mac"), "agent_version": .string("0.9.2")]))
+                    let enrollment = try await request("v1/pairing/code", body: .object(["device_name": .string(Host.current().localizedName ?? "Mac"), "kind": .string("mac"), "agent_version": .string("0.10.0")]))
                     guard !Task.isCancelled, generation == captured else { return }
                     try validator.validate("PairingCodeResponse", enrollment)
                     guard let bootstrap = enrollment["bootstrap_token"]?.string, let expiryText = enrollment["expires_at"]?.string,
@@ -195,6 +196,7 @@ import MacBridgeNative
         }
     }
     func suspend() {
+        executor.desktop.stop()
         suspended = true; online = false; pairing = false; generation &+= 1; worker?.cancel(); socket?.cancel(with: .goingAway, reason: nil); socket = nil; status = "Offline — session inactive"
     }
     func connect() {
@@ -226,7 +228,7 @@ import MacBridgeNative
         let ws = session.webSocketTask(with: request); ws.maximumMessageSize = 65536
         socket = ws; ws.resume(); status = "Connecting…"
         guard let token else { return }
-        try await send(envelope("hello", ["device_token": .string(token), "agent_version": .string("0.9.2"), "device_name": .string(Host.current().localizedName ?? "Mac"), "macos_version": .string(ProcessInfo.processInfo.operatingSystemVersionString.prefix(40).description)]))
+        try await send(envelope("hello", ["device_token": .string(token), "agent_version": .string("0.10.0"), "device_name": .string(Host.current().localizedName ?? "Mac"), "macos_version": .string(ProcessInfo.processInfo.operatingSystemVersionString.prefix(40).description)]))
         try await send(envelope("heartbeat"))
         let readinessTimeout = Task {
             do { try await Task.sleep(for: .seconds(10)) } catch { return }
@@ -299,7 +301,7 @@ import MacBridgeNative
         }
     }
     func privacyChecked(_ data: JSON, action: String) throws -> JSON {
-        guard action == "get_state" else { return data }
+        guard action == "get_state" || action == "desktop_observe" else { return data }
         // Recheck after collecting state; never disclose the snapshot if the screen locked
         // or ownership changed while it was being collected.
         if let guarded = try CommandGate.lockedResult(action: action, locked: LockStateReader.read().locked) { return guarded }
@@ -347,6 +349,7 @@ import MacBridgeNative
         }
     }
     func wipe() throws {
+        executor.desktop.stop()
         try secrets.delete(account: "device-token"); try secrets.delete(account: "pending-device-token"); try secrets.delete(account: "bootstrap-token")
         token = nil; online = false; pairing = false; try revocation.acknowledge(); pending = false; code = ""; status = "Unpaired — revoked"
         UserDefaults.standard.removeObject(forKey: "device-id")

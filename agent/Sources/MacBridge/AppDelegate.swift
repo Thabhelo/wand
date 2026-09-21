@@ -23,6 +23,7 @@ import MacBridgeNative
     private var displayedCommand = ""
     private let state = NSTextField(wrappingLabelWithString: "Checking this Mac…")
     private let details = NSTextField(wrappingLabelWithString: "")
+    private let desktopStatus = NSTextField(wrappingLabelWithString: "Desktop control is off")
     private let connection = NSTextField(wrappingLabelWithString: "")
     private var connectButton: NSButton?
     private var pairingActions: NSStackView?
@@ -244,6 +245,7 @@ import MacBridgeNative
             pairingActions = handoff
             add(card("Connect your Mac", subtitle: "Approve this Mac in your browser. We’ll finish linking automatically.", views: [connect, connection, handoff]))
             add(label("Linking your Wand account prepares this Mac for remote control. Muse authorization requires the official connector; it is not included in this preview.", size: 12, secondary: true))
+            add(card("Desktop control", subtitle: "Let your assistant inspect and operate chosen apps for 15 minutes. Off again when Wand closes, your Mac locks, or you press Stop.", views: [desktopStatus, row(button("Choose app…", #selector(enableDesktop)), button("Stop", #selector(stopDesktop))), row(button("Accessibility permission", #selector(desktopAccessibility)), button("Screen capture permission", #selector(desktopScreenPermission)))]))
             add(button("Advanced…", #selector(toggleAdvanced)))
             relay.stringValue = agent?.relay ?? ""
             let advanced = card("Connection settings", subtitle: "For self-hosted or development services. Production builds include their service address.", views: [row(field(relay, placeholder: "https://your-relay.example"), button("Save", #selector(saveRelay))), button("Open dashboard", #selector(dashboard)), button("Revoke pairing…", #selector(revoke)), button("I revoked in dashboard…", #selector(acknowledgeRevoke))])
@@ -253,6 +255,7 @@ import MacBridgeNative
     }
     private func render() {
         guard let agent else { return }
+        desktopStatus.stringValue = agent.executor.desktop.active ? "Enabled for " + agent.executor.desktop.approvedApps.joined(separator: ", ") + " until " + agent.executor.desktop.deadline.formatted(date: .omitted, time: .shortened) : "Desktop control is off"
         state.stringValue = agent.screenState == .unlocked ? "" : agent.screenState == .locked ? "Screen locked · information hidden" : "Session unavailable · actions paused"
         state.textColor = agent.screenState == .unlocked ? .systemGreen : .secondaryLabelColor
         state.isHidden = agent.screenState == .unlocked
@@ -340,6 +343,25 @@ import MacBridgeNative
     @objc private func unmuteSound() { agent?.runLocalAction("unmute") }
     @objc private func setVolumeAction() { agent?.runLocalAction("set_volume", params: .object(["level": .number(volume.doubleValue.rounded())])) }
     @objc private func openWebsite() { agent?.runLocalAction("open_url", params: .object(["url": .string(website.stringValue.trimmingCharacters(in: .whitespacesAndNewlines))])) }
+    @objc private func enableDesktop() {
+        let picker = NSOpenPanel(); picker.title = "Choose the app your assistant may control"; picker.directoryURL = URL(fileURLWithPath: "/Applications"); picker.canChooseDirectories = false; picker.allowsMultipleSelection = true
+        guard picker.runModal() == .OK else { return }
+        let ids = picker.urls.filter { $0.pathExtension == "app" }.compactMap { Bundle(url:$0)?.bundleIdentifier }
+        guard !ids.isEmpty, ids.count == picker.urls.count, ids.count <= 10 else { result.stringValue = "Choose up to ten applications."; return }
+        guard ids.allSatisfy(DesktopControl.allowedBundle) else { result.stringValue = "This app is excluded from desktop control."; return }
+        guard confirm("Allow desktop control of these apps?", detail: "For 15 minutes, approved remote callers can read visible text, request images of the chosen apps' windows, and click or type in it. This may expose private content or perform consequential actions. Window content travels through Wand's relay to the caller. Full action parameters stay in this Mac's local log. Stop at any time in Wand. Only enable apps you intend to share.", button: "Allow for 15 minutes") else { return }
+        do { try agent?.executor.desktop.grant(bundleIDs:ids); render() } catch { result.stringValue = "Could not enable desktop control." }
+    }
+    @objc private func stopDesktop() { agent?.executor.desktop.stop(); render() }
+    @objc private func desktopAccessibility() {
+        guard confirm("Allow Wand to use Accessibility?", detail: "This lets Wand inspect buttons and fields and perform approved desktop interactions. macOS will ask you to enable Wand in Privacy & Security → Accessibility.", button: "Continue") else { return }
+        agent?.executor.desktop.requestAccessibility()
+        NSWorkspace.shared.open(URL(string:"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+    }
+    @objc private func desktopScreenPermission() {
+        guard confirm("Allow window images?", detail: "Optional: desktop observations can include an image of the approved app window. It is sent through the relay to the assistant, not saved in Wand's log. macOS requires Screen Recording permission.", button: "Continue") else { return }
+        _ = CGRequestScreenCaptureAccess()
+    }
     @objc private func pair() {
         guard let agent else { return }
         if !agent.connectionReady { Task { @MainActor in await agent.startConnections() } }

@@ -132,3 +132,30 @@ final class NowPlayingTests: XCTestCase {
         XCTAssertEqual(state["source_app"]?.string, "Music")
     }
 }
+
+final class DesktopControlTests: XCTestCase {
+    @MainActor func testRequiresLocalGrantAndStopClearsIt() throws {
+        let desktop = DesktopControl()
+        XCTAssertFalse(desktop.active)
+        XCTAssertThrowsError(try desktop.act(.object(["snapshot_id":.string(UUID().uuidString),"operation":.string("key"),"key":.string("return")])))
+        try desktop.grant(bundleIDs:["com.apple.finder","com.apple.TextEdit"])
+        XCTAssertTrue(desktop.active)
+        XCTAssertEqual(desktop.approvedApps.count,2)
+        XCTAssertLessThanOrEqual(desktop.deadline.timeIntervalSinceNow,900)
+        desktop.stop()
+        XCTAssertFalse(desktop.active)
+        XCTAssertTrue(desktop.approvedApps.isEmpty)
+    }
+    @MainActor func testProtectedAppsCannotBeGranted() {
+        let desktop=DesktopControl()
+        for id in ["com.apple.Passwords","com.apple.SecurityAgent","com.apple.Terminal","com.apple.systempreferences","com.apple.keychainaccess","local.macbridge.agent"] {
+            XCTAssertThrowsError(try desktop.grant(bundleID:id))
+            XCTAssertFalse(desktop.active)
+        }
+    }
+    @MainActor func testNoSnapshotCannotProduceInput() throws {
+        let desktop=DesktopControl(); try desktop.grant(bundleID:"com.apple.finder")
+        XCTAssertThrowsError(try desktop.act(.object(["snapshot_id":.string(UUID().uuidString),"operation":.string("key"),"key":.string("return")])))
+        desktop.stop()
+    }
+}

@@ -91,3 +91,5 @@ Do not claim first physical-device connector, guaranteed featuring, verified pla
 - 2026-09-20: Muse client registration stays closed until a verified platform callback/client is available; no invented Meta endpoint or publicly self-declared Muse clients.
 
 - 2026-09-20: Owner supersedes the permanent product exclusion of remote unlock: investigate an explicitly opted-in, separately approved implementation. This changes roadmap intent only; current protocol still rejects unlock until an OS-supported implementation is verified. See docs/REMOTE_UNLOCK_RESEARCH.md.
+
+- 2026-09-20: Add optional Muse-directed desktop tools; no second model/planner. Supersedes original screenshot/typing exclusions only in explicit 15-minute local app grants. Do not claim Muse compatibility until verified. Keep desktop beta separate from stable direct controls.

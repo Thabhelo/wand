@@ -13,9 +13,9 @@ class ContractTests(unittest.TestCase):
     def test_schema_and_catalog(self):
         Draft202012Validator.check_schema(SCHEMA)
         validate('ActionCatalog',ACTIONS)
-        self.assertEqual(len({a['name'] for a in ACTIONS}),15)
+        self.assertEqual(len({a['name'] for a in ACTIONS}),18)
     def test_all_valid_actions(self):
-        params={'set_volume':{'level':50},'close_browser_tabs':{'browser':'safari'},'quit_app':{'bundle_id':'com.apple.Music'},'open_app':{'app_name':'Music'},'open_url':{'url':'https://example.com'},'run_shortcut':{'name':'My routine'},'toggle_do_not_disturb':{'enabled':True}}
+        params={'desktop_observe':{'bundle_id':'com.apple.finder'},'desktop_act':{'snapshot_id':str(uuid4()),'operation':'key','key':'tab'},'set_volume':{'level':50},'close_browser_tabs':{'browser':'safari'},'quit_app':{'bundle_id':'com.apple.Music'},'open_app':{'app_name':'Music'},'open_url':{'url':'https://example.com'},'run_shortcut':{'name':'My routine'},'toggle_do_not_disturb':{'enabled':True}}
         for action in ACTIONS:
             with self.subTest(action=action['name']): validate('CommandRequest',command(action['name'],params.get(action['name'],{})))
     def test_closed_catalog_and_no_execution_field(self):

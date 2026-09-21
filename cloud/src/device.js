@@ -28,7 +28,7 @@ export class Device extends DurableObject{
   else if(m.type==='result'||m.type==='delivered'){
    const c=this.sql.exec('SELECT * FROM commands WHERE id=?',m.command_id).toArray()[0];if(!c||c.generation!==a.generation||!['dispatched','delivered'].includes(c.status))return;if(Date.now()>c.created+15000){this.finish(c,'failed','command_timeout');return}
    if(m.type==='delivered')this.sql.exec("UPDATE commands SET status='delivered' WHERE id=?",c.id);
-   else if(m.ok){const data=m.data||{};validate(c.action==='get_state'?'State':c.action==='lock_screen'?'LockResult':'ActionResult',data);if(!['get_state','lock_screen'].includes(c.action)&&Object.keys(data).length)throw new Failure('invalid_result');this.finish(c,'succeeded',null,data)}else this.finish(c,'failed',m.error_code);
+   else if(m.ok){const data=m.data||{};validate(c.action==='desktop_observe'?'DesktopObservation':c.action==='get_state'?'State':c.action==='lock_screen'?'LockResult':'ActionResult',data);if(!['get_state','lock_screen','desktop_observe'].includes(c.action)&&Object.keys(data).length)throw new Failure('invalid_result');this.finish(c,'succeeded',null,data)}else this.finish(c,'failed',m.error_code);
   }else throw new Failure('invalid_message');await this.schedule();
  }catch{ws.close(4002,'invalid_message');const generation=ws.deserializeAttachment()?.generation;if(generation)this.failPending('device_disconnected',generation);await this.schedule()}}
  async webSocketClose(ws){const generation=ws.deserializeAttachment()?.generation;if(generation&&generation===this.get('generation'))this.failPending('device_disconnected',generation);await this.schedule()}
