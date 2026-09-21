@@ -44,7 +44,7 @@ import MacBridgeCore
         defer { IOServiceClose(connection) }
         guard IOPMSleepSystem(connection)==kIOReturnSuccess else { throw ContractError(code:"sleep_request_denied") }
         // The network may suspend before this response arrives. This is a request acknowledgement.
-        return .object(["sleep_requested":.bool(true)])
+        return .object([:])
     }
     public static func focus(_ enabled: Bool) async throws -> JSON {
         try check()
@@ -60,7 +60,7 @@ import MacBridgeCore
             if let dnd=nodes.first(where:{ text($0,kAXRoleAttribute)=="AXCheckBox" && (text($0,kAXTitleAttribute)=="Do Not Disturb" || text($0,kAXDescriptionAttribute).hasPrefix("Do Not Disturb")) }),let number=value(dnd,kAXValueAttribute) as? NSNumber {
                 if number.boolValue != enabled { try press(dnd) }
                 for _ in 0..<10 {
-                    if let current=value(dnd,kAXValueAttribute) as? NSNumber,current.boolValue==enabled { return .object(["enabled":.bool(enabled)]) }
+                    if let current=value(dnd,kAXValueAttribute) as? NSNumber,current.boolValue==enabled { return .object([:]) }
                     try await Task.sleep(for:.milliseconds(100))
                 }
                 throw ContractError(code:"focus_change_not_confirmed")
@@ -72,7 +72,7 @@ import MacBridgeCore
     }
     public static func chromeCleanup(keepPinned: Bool) async throws -> JSON {
         try check()
-        guard let app=NSRunningApplication.runningApplications(withBundleIdentifier:"com.google.Chrome").first else { return .object(["closed_windows":.number(0)]) }
+        guard let app=NSRunningApplication.runningApplications(withBundleIdentifier:"com.google.Chrome").first else { return .object([:]) }
         let root=AXUIElementCreateApplication(app.processIdentifier); AXUIElementSetMessagingTimeout(root,0.2)
         let windows=value(root,kAXWindowsAttribute) as? [AXUIElement] ?? []
         guard windows.count<=10 else { throw ContractError(code:"browser_cleanup_limit_exceeded") }
@@ -119,11 +119,11 @@ import MacBridgeCore
             let remaining=value(root,kAXWindowsAttribute) as? [AXUIElement] ?? []
             guard !remaining.contains(where:{ current in windows.contains(where:{CFEqual(current,$0)}) }) else { throw ContractError(code:"browser_cleanup_pending_user_attention") }
         }
-        return .object(["processed_windows":.number(Double(windows.count)),"kept_pinned":.bool(keepPinned)])
+        return .object([:])
     }
     public static func safariCleanup(keepPinned: Bool) async throws -> JSON {
         try check()
-        guard let app=NSRunningApplication.runningApplications(withBundleIdentifier:"com.apple.Safari").first else { return .object(["closed_tabs":.number(0)]) }
+        guard let app=NSRunningApplication.runningApplications(withBundleIdentifier:"com.apple.Safari").first else { return .object([:]) }
         let root=AXUIElementCreateApplication(app.processIdentifier); AXUIElementSetMessagingTimeout(root,0.2)
         let windows=value(root,kAXWindowsAttribute) as? [AXUIElement] ?? []
         guard windows.count <= 20 else { throw ContractError(code:"browser_cleanup_limit_exceeded") }
@@ -138,7 +138,7 @@ import MacBridgeCore
             for _ in 0..<10 {
                 let remaining=value(root,kAXWindowsAttribute) as? [AXUIElement] ?? []
                 if !remaining.contains(where:{ current in windows.contains(where:{CFEqual(current,$0)}) }) {
-                    return .object(["closed_windows":.number(Double(windows.count)),"kept_pinned":.bool(false)])
+                    return .object([:])
                 }
                 try await Task.sleep(for:.milliseconds(100))
             }
@@ -175,7 +175,7 @@ import MacBridgeCore
         }
         for _ in 0..<10 {
             let remaining=(value(root,kAXWindowsAttribute) as? [AXUIElement] ?? []).flatMap { descendants($0) }.filter { text($0,kAXIdentifierAttribute).hasPrefix("TabBarTab?") && (!keepPinned || pinnedState(text($0,kAXIdentifierAttribute)) == false) }
-            if !remaining.contains(where: { current in targets.contains(where: { CFEqual(current,$0.0) }) }) { return .object(["closed_tabs":.number(Double(targets.count)),"kept_pinned":.bool(keepPinned)]) }
+            if !remaining.contains(where: { current in targets.contains(where: { CFEqual(current,$0.0) }) }) { return .object([:]) }
             try await Task.sleep(for:.milliseconds(100))
         }
         throw ContractError(code:"browser_cleanup_pending_user_attention")

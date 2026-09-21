@@ -67,3 +67,15 @@ The Chrome compatibility spike used an isolated window containing only disposabl
 All 72 automated checks pass (Swift 14, relay 32, contracts 19, website 7). The build script now bounds signing to 60 seconds and removes incomplete staging on signing failure. A timed-out signing attempt left build 17 installed and published, with existing permissions unchanged. No password was automated and no permission reset was performed.
 
 Build 18 still requires successful signing, installed-app startup/Keychain verification, and live dedicated-action tests. Lock/sleep testing also needs a person available to unlock/wake the Mac. Existing desktop-control results do not certify those dedicated actions. Do not publish the candidate as tested until these checks pass.
+
+## September 21 live build 18 test
+
+Build 18 signed successfully and was installed with the same designated requirement; desktop consent persisted and the app reconnected. iCloud had offloaded source files under Documents, causing packaging reads to hang. An archive of the committed source under /private/tmp/wand-local-source avoided that dependency.
+
+The local Wand Lock control passed: command b4b5b358-c573-4eea-b526-124f7d99b70f was received at 15:54:38.982Z and succeeded at 15:54:39.178Z after lock-state verification; desktop access ceased. This was a local action test, not a Muse/relay dispatch test.
+
+Focus failed with focus_control_unavailable. Safari cleanup reached execution but failed result validation (invalid_message); no visible tab closure was confirmed. Native non-state actions were returning result fields absent from ActionResult. The follow-up source returns the contract's empty acknowledgement for those actions and compiles; live retesting remains necessary. Sleep has not been tested. Build 17 remains the public download.
+
+### Build 19 follow-up
+
+Signed build 19 installed with the same identity. Safari cleanup passed locally: command 527a3d46-402d-444c-b522-3d6d67717a09 received at 16:00:47.247Z and succeeded at 16:00:47.885Z. CUA observed the two disposable unpinned tabs removed, the pinned fixture retained, and Safari's automatically generated Start Page. This verifies the response fix and pinned preservation on Safari 26.6.2. No relay or Muse claim is implied. Focus remains failed; Chrome cleanup and sleep remain untested.
