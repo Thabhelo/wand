@@ -52,7 +52,12 @@ import MacBridgeNative
         }
         for name in [NSWorkspace.didWakeNotification, NSWorkspace.sessionDidBecomeActiveNotification] {
             observers.append(nc.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
-                Task { @MainActor in self?.suspended = false; self?.connect() }
+                Task { @MainActor in
+                    guard let self else { return }
+                    self.suspended = false
+                    if self.connectionReady { self.connect() }
+                    else { await self.startConnections() } // Retry silently after the user unlocks.
+                }
             })
         }
         let savedPort = UserDefaults.standard.integer(forKey: "local-port")
@@ -86,9 +91,10 @@ import MacBridgeNative
                 let device = try store.read(account: "device-token")
                 let existingLocal = try store.read(account: "local-api-token")
                 let local = try existingLocal ?? KeychainStore.randomToken()
-                if existingLocal == nil { try store.write(local, account: "local-api-token") }
-                let hasBootstrap = device == nil ? try store.read(account: "bootstrap-token") != nil : false
-                return (device, local, hasBootstrap)
+                let bootstrap = device == nil ? try store.read(account: "bootstrap-token") : nil
+                let pendingDevice = bootstrap != nil ? try store.read(account: "pending-device-token") : nil
+                try store.consolidate(device: device, local: local, bootstrap: bootstrap, pending: pendingDevice)
+                return (device, local, bootstrap != nil)
             }.value
             token = credentials.0
             let localToken = credentials.1

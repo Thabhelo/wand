@@ -7,12 +7,14 @@ import tempfile
 import os
 from urllib.parse import urlsplit
 from pathlib import Path
+from signing_guard import verify_update
 
 ROOT=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser()
 p.add_argument('--binary',type=Path,required=True,help='SwiftPM-built MacBridge executable')
 p.add_argument('--identity',default=os.environ.get('WAND_SIGNING_IDENTITY'),help='Apple Development identity for stable local testing, or Developer ID Application for distribution; defaults to WAND_SIGNING_IDENTITY; use explicit - only for disposable ad-hoc tests')
 p.add_argument('--dmg',action='store_true')
+p.add_argument('--upgrade-from',type=Path,help='Installed app whose signing identity must be preserved by this update')
 p.add_argument('--version',default='0.12.0')
 p.add_argument('--build-number',default='18')
 p.add_argument('--signing-timeout',type=int,default=60,help='Stop waiting for signing authorization without replacing the installed app')
@@ -60,6 +62,13 @@ except (subprocess.TimeoutExpired,subprocess.CalledProcessError):
     shutil.rmtree(staging)
     raise SystemExit('Signing did not finish. The previous app is unchanged. Approve signing access in macOS before retrying; do not reset Wand permissions.')
 run(['codesign','--verify','--strict',str(app)])
+# Fail before replacing any existing app if an update changes its identity.
+try:
+    baseline = a.upgrade_from or (destination if destination.exists() else None)
+    if baseline is not None: verify_update(baseline, app)
+except (ValueError, subprocess.CalledProcessError) as error:
+    shutil.rmtree(staging)
+    raise SystemExit(f'Update identity check failed: {error}')
 # Publish by renaming the completed bundle; never overwrite a running executable in place.
 previous=staging/'previous.app'
 if destination.exists(): os.replace(destination,previous)
