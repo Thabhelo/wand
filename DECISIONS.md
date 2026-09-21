@@ -89,3 +89,5 @@ Do not claim first physical-device connector, guaranteed featuring, verified pla
 - 2026-09-20: Firebase Google sign-in replaces Auth0 for production dashboard identity, per owner approval; dedicated `wand-getwand` project belongs to thabheloduve@gmail.com and stays on Spark.
 - 2026-09-20: Assistant authorization is separate Wand OAuth using Cloudflare's maintained provider, with explicit device/action consent and D1 revocation checks. Firebase login alone grants no assistant access.
 - 2026-09-20: Muse client registration stays closed until a verified platform callback/client is available; no invented Meta endpoint or publicly self-declared Muse clients.
+
+- 2026-09-20: Owner supersedes the permanent product exclusion of remote unlock: investigate an explicitly opted-in, separately approved implementation. This changes roadmap intent only; current protocol still rejects unlock until an OS-supported implementation is verified. See docs/REMOTE_UNLOCK_RESEARCH.md.
