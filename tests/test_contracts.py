@@ -22,6 +22,14 @@ class ContractTests(unittest.TestCase):
         self.rejects('CommandRequest',command('list_apps',{'offset':-1}))
         self.rejects('AppList',{**result,'path':'/Applications/Editor.app'})
         self.rejects('AppList',{**result,'apps':result['apps']*101})
+    def test_optional_system_status_and_locked_privacy(self):
+        state={'screen_locked':False,'frontmost_app':None,'now_playing':None,'battery':None,'running_apps':[]}
+        validate('State',state)
+        system={'macos_version':'26.6.2','uptime_seconds':0,'low_power_mode':False,'thermal_state':'normal','memory':None,'storage':None}
+        validate('State',{**state,'system':system})
+        self.rejects('State',{'screen_locked':True,'system':system})
+        self.rejects('State',{**state,'system':{**system,'serial_number':'private'}})
+        self.rejects('State',{**state,'system':{**system,'uptime_seconds':-1}})
     def test_all_valid_actions(self):
         params={'desktop_observe':{'bundle_id':'com.apple.finder'},'desktop_act':{'snapshot_id':str(uuid4()),'operation':'key','key':'tab'},'set_volume':{'level':50},'close_browser_tabs':{'browser':'safari'},'quit_app':{'bundle_id':'com.apple.Music'},'open_app':{'app_name':'Music'},'open_url':{'url':'https://example.com'},'run_shortcut':{'name':'My routine'},'toggle_do_not_disturb':{'enabled':True}}
         for action in ACTIONS:

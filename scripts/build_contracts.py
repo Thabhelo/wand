@@ -64,6 +64,10 @@ D['Device']=obj({'device_id':UUID,'name':string(),'kind':{'const':'mac'},'online
 D['DeviceList']={'type':'array','items':ref('Device')}
 D['CommandAccepted']=obj({'command_id':UUID,'status':{'const':'dispatched'}})
 D['State']={'oneOf':[obj({'screen_locked':{'const':True}}),obj({'screen_locked':{'const':False},'frontmost_app':nullable(string()),'now_playing':nullable(obj({'title':string(500),'artist':string(500),'source_app':enum('Music','Spotify')})),'battery':nullable(obj({'percent':{'type':'integer','minimum':0,'maximum':100},'charging':BOOL})),'running_apps':{'type':'array','items':string(),'maxItems':512}})]}
+# Optional on unlocked state for compatibility with older installed agents.
+bytes_count={'type':'integer','minimum':0,'maximum':9007199254740991}
+D['SystemStatus']=obj({'macos_version':string(80),'uptime_seconds':nullable(bytes_count),'low_power_mode':BOOL,'thermal_state':enum('normal','warm','hot','critical','unknown'),'memory':nullable(obj({'total_bytes':bytes_count,'used_bytes':bytes_count})),'storage':nullable(obj({'total_bytes':bytes_count,'available_bytes':bytes_count}))})
+D['State']['oneOf'][1]['properties']['system']=ref('SystemStatus')
 D['LockResult']=obj({'already_locked':BOOL})
 D['DesktopObservation']=obj({'snapshot_id':UUID,'bundle_id':string(200),'expires_at':TIME,'elements':{'type':'array','maxItems':60,'items':obj({'element_id':string(40),'role':string(80),'label':{'type':'string','maxLength':160},'value':{'type':'string','maxLength':160},'actions':{'type':'array','items':string(80),'maxItems':12}},['element_id','role','label','actions'])},'truncated':BOOL,'image':obj({'mime_type':{'const':'image/jpeg'},'base64':{'type':'string','maxLength':32000},'width':{'type':'integer'},'height':{'type':'integer'}})},['snapshot_id','bundle_id','expires_at','elements','truncated'])
 D['AppList']=obj({'apps':{'type':'array','maxItems':100,'items':obj({'name':string(),'bundle_id':string(200),'last_opened':nullable(TIME),'running':BOOL})},'next_offset':nullable({'type':'integer','minimum':1,'maximum':20000})})

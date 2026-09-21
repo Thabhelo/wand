@@ -2049,6 +2049,9 @@
                   "maxLength": 160
                 },
                 "maxItems": 512
+              },
+              "system": {
+                "$ref": "#/components/schemas/SystemStatus"
               }
             },
             "required": [
@@ -4617,6 +4620,103 @@
         "required": [
           "apps",
           "next_offset"
+        ],
+        "additionalProperties": false
+      },
+      "SystemStatus": {
+        "type": "object",
+        "properties": {
+          "macos_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "uptime_seconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "low_power_mode": {
+            "type": "boolean"
+          },
+          "thermal_state": {
+            "enum": [
+              "normal",
+              "warm",
+              "hot",
+              "critical",
+              "unknown"
+            ]
+          },
+          "memory": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "total_bytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "used_bytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "total_bytes",
+                  "used_bytes"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "storage": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "total_bytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "available_bytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "total_bytes",
+                  "available_bytes"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "macos_version",
+          "uptime_seconds",
+          "low_power_mode",
+          "thermal_state",
+          "memory",
+          "storage"
         ],
         "additionalProperties": false
       }

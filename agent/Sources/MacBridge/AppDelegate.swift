@@ -291,6 +291,14 @@ import MacBridgeNative
                 let charging = value["battery"]?["charging"] == .bool(true) ? " · Charging" : ""
                 let names = value["running_apps"]?.array?.compactMap(\.string) ?? []
                 details.stringValue = battery + charging + "\n" + "Active app: " + (value["frontmost_app"]?.string ?? "Unavailable") + "\n" + "\(names.count) open apps · " + names.prefix(8).joined(separator: ", ") + (names.count > 8 ? "…" : "")
+                if let system = value["system"] {
+                    let gb: (Double) -> String = { String(format: "%.1f GB", $0 / 1e9) }
+                    if let storage = system["storage"], let free = storage["available_bytes"]?.number, let total = storage["total_bytes"]?.number { details.stringValue += "\nStorage: \(gb(free)) free of \(gb(total))" }
+                    if let memory = system["memory"], let used = memory["used_bytes"]?.number, let total = memory["total_bytes"]?.number { details.stringValue += "\nMemory: about \(gb(used)) of \(gb(total)) in use" }
+                    details.stringValue += "\nmacOS " + (system["macos_version"]?.string ?? "Unavailable")
+                    if let seconds = system["uptime_seconds"]?.number { let hours = Int(seconds / 3600); details.stringValue += " · Since restart: \(hours / 24)d \(hours % 24)h \(Int(seconds / 60) % 60)m" }
+                    details.stringValue += "\nLow Power Mode: " + (system["low_power_mode"] == .bool(true) ? "On" : "Off") + " · Thermal condition: " + (system["thermal_state"]?.string ?? "unknown")
+                }
             }
         } else { details.stringValue = agent.readingState ? "Reading your Mac…" : "Refresh to see this Mac’s current state." }
         if selected == 1 { renderShortcuts() }

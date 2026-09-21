@@ -77,3 +77,10 @@ console.log('Facebook checks passed: provider gating, sign-in selection and expl
  assert.equal(h.logins.length,0);
 }
 console.log('Session recovery passed: stalled auth timeout, retry, suspended initialization, cached-page restore and foreground session reuse.');
+{
+ const h=harness({initialDevices:[{...online,online:true}]});await flush();
+ h.setResult({status:'succeeded',result:{screen_locked:false,frontmost_app:null,now_playing:null,battery:null,running_apps:[],system:{macos_version:'26.6.2',uptime_seconds:0,low_power_mode:false,thermal_state:'normal',memory:{used_bytes:0,total_bytes:16000000000},storage:{available_bytes:0,total_bytes:100000000000}}}});
+ await h.run("sendAction('get_state')");const text=JSON.stringify(h.get('#state-result').children);assert.match(text,/0 GB free/);assert.match(text,/Memory/);assert.match(text,/26.6.2/);assert.match(text,/Since restart/);assert.match(text,/Off/);
+ h.setResult({status:'succeeded',result:{screen_locked:true}});await h.run("sendAction('get_state')");assert.equal(h.get('#state-result').children.length,0);assert.match(h.get('#state-result').textContent,/locked/);
+}
+console.log('Extended status passed: zero values, optional system data and clearing details when locked.');

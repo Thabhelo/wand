@@ -67,7 +67,7 @@ import MacBridgeCore
                 }
             }
             return .object(["screen_locked": .bool(false), "frontmost_app": NSWorkspace.shared.frontmostApplication?.localizedName.map { JSON.string(String($0.prefix(160))) } ?? .null,
-                            "now_playing": await NowPlayingReader.read(), "battery": battery, "running_apps": .array(apps.map(JSON.string))])
+                            "now_playing": await NowPlayingReader.read(), "battery": battery, "running_apps": .array(apps.map(JSON.string)), "system": SystemStatus.read()])
         case "lock_screen": return try await SystemActions.lock()
         case "close_browser_tabs":
             if params["browser"]?.string == "chrome" { return try await SystemActions.chromeCleanup(keepPinned: params["keep_pinned"] != .bool(false)) }
