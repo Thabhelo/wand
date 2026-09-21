@@ -10,6 +10,7 @@
 - `site/`: public website and dashboard hosting. Dashboard assets sync from `web/` before deployment.
 - `contracts/`: shared action catalog, schemas, and transport rules.
 - `connector/`: OpenAPI, action manifest, and operator instructions.
+- [`policy.md`](policy.md): draft Muse operating policy covering tool choice, approvals, memory, verification, and cleanup.
 - `relay/` and `harness/`: Python reference relay and isolated device simulator.
 - `submission/`: security, legal, and reviewer-package drafts.
 
