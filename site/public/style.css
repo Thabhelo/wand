@@ -36,7 +36,7 @@
 .footer-bottom a:hover{color:#26362d}
 .site-footer a:focus-visible{outline-color:#799b31}
 /* A full first screen, with a floating glass navigation capsule. */
-.home .glass-nav{position:fixed;z-index:30;top:24px;left:50%;transform:translateX(-50%);width:calc(100% - 64px);max-width:1160px;height:76px;margin:0;padding:0 28px;border-radius:999px;border:1px solid #ffffffb3;background:rgba(250,251,244,.76);backdrop-filter:blur(22px) saturate(135%);-webkit-backdrop-filter:blur(22px) saturate(135%);box-shadow:0 8px 35px #35402b0b,inset 0 1px 0 #ffffffde;gap:24px}
+.home .glass-nav{position:fixed;z-index:50;top:24px;left:50%;transform:translateX(-50%);width:calc(100% - 64px);max-width:1160px;height:76px;margin:0;padding:0 28px;border-radius:999px;border:1px solid rgba(255,255,255,.85);background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(250,251,244,.48));backdrop-filter:blur(28px) saturate(155%);-webkit-backdrop-filter:blur(28px) saturate(155%);box-shadow:0 24px 64px -16px rgba(25,34,28,.3),0 10px 24px -12px rgba(25,34,28,.22),0 1px 3px rgba(25,34,28,.08),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.35);gap:24px;isolation:isolate}
 .glass-nav nav{gap:28px}.glass-nav .nav-connect{background:#ffffff65;border-color:#d5ddca;padding:12px 20px}.glass-nav .nav-connect:hover{background:#fff9}
 .home .hero{min-height:100vh;min-height:100svh;min-height:100dvh;padding:144px 54px 72px;gap:48px;align-content:center;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .home .hero-copy{min-width:0;max-width:555px}.home .hero h1{margin:0 0 32px;font-size:clamp(48px,5.4vw,76px);line-height:1.13}.home .intro{margin:0 0 38px;max-width:510px;line-height:1.9}.home .actions{flex-wrap:wrap;row-gap:22px}.home .magic-scene{min-width:0}
