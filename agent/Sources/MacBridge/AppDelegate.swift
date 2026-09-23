@@ -35,6 +35,9 @@ import MacBridgeNative
     private var advancedView: NSView?
     private let pairingQR = NSImageView()
     private let phoneQR = NSImageView()
+    private let loginToggle = NSButton(checkboxWithTitle: "Start Wand when I log in", target: nil, action: nil)
+    private let loginStatus = NSTextField(wrappingLabelWithString: "")
+    private var phoneSharePicker: NSSharingServicePicker?
     private var phoneHandoff: NSView?
     private var phoneURL = ""
     private var qrCode = ""
@@ -56,7 +59,12 @@ import MacBridgeNative
     private var activitySnapshot = ""
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        buildWindow(); buildMenu(); showWindow()
+        buildWindow(); buildMenu()
+        // First launch shows setup; later launches run quietly. The menu icon and
+        // reopening the app always provide an explicit way to show the window.
+        if !UserDefaults.standard.bool(forKey: "wand-has-launched") { showWindow() }
+        UserDefaults.standard.set(true, forKey: "wand-has-launched")
+        StartupSettings.enableOnceIfInstalled()
         add(label("Opening Wand…", size: 28, weight: .semibold))
         add(label("If macOS asks, allow Wand to access its connection keys in Keychain.", secondary: true))
         Task { @MainActor [self] in
@@ -276,9 +284,12 @@ import MacBridgeNative
                 phoneQR.widthAnchor.constraint(equalToConstant: 160).isActive = true
                 phoneQR.heightAnchor.constraint(equalToConstant: 160).isActive = true
             }
-            let phoneCard = card("Use Wand on your phone", subtitle: "Scan with your phone’s camera. Sign in with the same Google account if asked.", views: [phoneQR, button("Open dashboard", #selector(dashboard), symbol: "arrow.up.right")])
+            let phoneCard = card("Use Wand on your phone", subtitle: "Scan with your phone’s camera. Sign in with the same Google account if asked.", views: [phoneQR, row(button("Send link…", #selector(sharePhoneLink), symbol: "square.and.arrow.up"), button("Copy link", #selector(copyPhoneLink))), button("Open dashboard", #selector(dashboard), symbol: "arrow.up.right")])
             phoneHandoff = phoneCard
             add(phoneCard)
+            loginToggle.target = self; loginToggle.action = #selector(toggleStartAtLogin)
+            loginStatus.font = .systemFont(ofSize: 12); loginStatus.textColor = .secondaryLabelColor
+            add(card("Startup", views: [loginToggle, loginStatus, button("Login settings", #selector(openLoginSettings))]))
             add(card("Desktop control", subtitle: "Let your assistant use apps across your Mac. Set up once; access stays on until you pause it. Your Mac must be awake and unlocked.", views: [desktopStatus, row(button("Enable desktop control", #selector(enableDesktop)), button("Pause", #selector(stopDesktop))), row(button("Accessibility permission", #selector(desktopAccessibility)), button("Screen capture permission", #selector(desktopScreenPermission)))]))
             add(button("Advanced…", #selector(toggleAdvanced)))
             relay.stringValue = agent?.relay ?? ""
@@ -289,6 +300,8 @@ import MacBridgeNative
     }
     private func render() {
         guard let agent else { return }
+        loginToggle.state = StartupSettings.enabled ? .on : .off
+        loginStatus.stringValue = StartupSettings.message
         desktopStatus.stringValue = agent.executor.desktop.desktopWide ? "Desktop control enabled · apps across this Mac" : "Desktop control paused · enable once to get started"
         state.stringValue = agent.screenState == .unlocked ? "" : agent.screenState == .locked ? "Screen locked · information hidden" : "Session unavailable · actions paused"
         state.textColor = agent.screenState == .unlocked ? .systemGreen : .secondaryLabelColor
@@ -515,6 +528,28 @@ import MacBridgeNative
         UserDefaults.standard.set(agent.relay, forKey: "relay"); agent.status = "Service saved. You can connect now."
     }
     @objc private func cancelPairing() { agent?.cancelPairing() }
+    @objc private func toggleStartAtLogin() {
+        do { try StartupSettings.setEnabled(loginToggle.state == .on) }
+        catch {
+            let alert = NSAlert()
+            alert.messageText = "Wand couldn’t change its startup setting."
+            alert.informativeText = "Move Wand to Applications if needed, then check General → Login Items in System Settings."
+            alert.runModal()
+        }
+        render()
+    }
+    @objc private func openLoginSettings() { StartupSettings.openSettings() }
+    @objc private func sharePhoneLink(_ sender: NSButton) {
+        guard let url = try? agent?.dashboardOrigin() else { return }
+        let picker = NSSharingServicePicker(items: ["Open Wand on your phone and sign in with the same Google account to control your Mac.", url])
+        phoneSharePicker = picker
+        picker.show(relativeTo: sender.bounds, of: sender, preferredEdge: .minY)
+    }
+    @objc private func copyPhoneLink() {
+        guard let url = try? agent?.dashboardOrigin() else { return }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(url.absoluteString, forType: .string)
+    }
     @objc private func dashboard() { agent?.dashboard() }
     @objc private func revoke() { if confirm("Disconnect this Mac?", detail: "Remote commands will stop. If you are offline, you must also revoke in the dashboard.", button: "Revoke pairing") { agent?.revoke() } }
     @objc private func acknowledgeRevoke() { agent?.confirmDashboardRevocation() }
