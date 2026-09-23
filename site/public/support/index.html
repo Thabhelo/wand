@@ -8,20 +8,27 @@
 <body>
 <header><a class="brand" href="/"><img src="/mark.svg?v=2" width="32" height="32" alt="">wand</a><nav aria-label="Main"><a href="/download">Download</a><a href="https://app.getwand.app/">Your Macs ↗</a></nav></header>
 <main class="document support">
-<h1>How can we help?</h1><p class="intro">Start here if something isn’t working.</p>
-<section aria-labelledby="help-title"><h2 id="help-title" class="visually-hidden">Common questions</h2>
+<h1>How can we help?</h1><p class="intro">Tell us what’s going on.</p>
+<section class="contact-card" aria-labelledby="contact-title"><h2 id="contact-title">Send us a message</h2>
+<form id="support-form">
+<label for="support-name">Name <span>(optional)</span></label><input id="support-name" name="name" autocomplete="name" maxlength="100">
+<label for="support-email">Your email</label><input id="support-email" name="email" type="email" autocomplete="email" maxlength="254" required>
+<label for="support-topic">What’s this about?</label><select id="support-topic" name="topic"><option>Connection</option><option>Mac controls</option><option>Account</option><option>Privacy</option><option>Something else</option></select>
+<label for="support-message">Message</label><textarea id="support-message" name="message" rows="5" minlength="10" maxlength="5000" placeholder="Tell us what happened and what you expected." required></textarea>
+<div hidden aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
+<p class="privacy-note">Don’t include passwords or connection codes. We’ll use your email only to reply. <a href="/privacy">Privacy policy</a></p>
+<button type="submit">Send message</button><p id="send-status" role="status" aria-live="polite"></p>
+</form></section>
+<section aria-labelledby="help-title"><h2 id="help-title">Common questions</h2>
 <details><summary>My Mac is offline</summary><div><p>Make sure your Mac is awake, connected to the internet, and running Wand. Open Wand from its menu bar icon and check its connection. Then refresh <a href="https://app.getwand.app/">Your Macs</a>.</p><p>Your phone and Mac can be anywhere. They don’t need to share Wi-Fi.</p></div></details>
 <details><summary>I can’t sign in or find my Mac</summary><div><p>Use the same sign-in account on your phone and Mac. If sign-in gets stuck, reload the page and choose Retry if it appears.</p><p>To connect a new Mac, open Wand on it, click Connect, sign in, and approve the connection. Only use the code under “Setup page didn’t open?” if automatic setup fails.</p></div></details>
-<details><summary>An action needs permission</summary><div><p>Open Wand on your Mac. Enable desktop control if you want it to click, type, or scroll. macOS may ask you to allow Accessibility or Screen Recording in System Settings → Privacy & Security.</p><p>If a Keychain prompt identifies Wand, choose Always Allow to remember that choice. If the prompts keep returning, contact us below. Don’t uninstall Wand or reset all your permissions to troubleshoot.</p></div></details>
+<details><summary>An action needs permission</summary><div><p>Open Wand on your Mac. Enable desktop control if you want it to click, type, or scroll. macOS may ask you to allow Accessibility or Screen Recording in System Settings → Privacy & Security.</p><p>If a Keychain prompt identifies Wand, choose Always Allow to remember that choice. If the prompts keep returning, send us a message. Don’t uninstall Wand or reset all your permissions to troubleshoot.</p></div></details>
 <details><summary>Music or volume isn’t working</summary><div><p>Open Music or Spotify on your Mac before using playback controls. Allow Wand’s Automation request on the Mac if one appears.</p><p>If the page says a volume reading is unavailable, your installed build may not support it yet. Check the <a href="/download">download page</a> for the current release.</p></div></details>
 <details><summary>An app won’t open or close</summary><div><p>Choose Refresh apps, then select the app again. Use Other… if it isn’t listed. macOS background components cannot be opened or closed through these controls.</p><p>An app may stay open while it asks you to save a document. Check the Mac for an open dialog.</p></div></details>
 <details><summary>How do I connect Muse?</summary><div><p>Muse access requires its connector registration and approval. Signing in to Wand doesn’t connect Muse automatically. You can use <a href="https://app.getwand.app/">Wand’s web controls</a> while that integration is being prepared.</p></div></details>
 <details><summary>I want to disconnect or delete my data</summary><div><p>In <a href="https://app.getwand.app/">Your Macs</a>, select your Mac and choose Disconnect. To delete your Wand records and disconnect all your Macs, open Account settings → Delete my Wand data.</p><p>See our <a href="/privacy#delete-data">privacy policy</a> for details.</p></div></details>
 </section>
-<section class="contact-card" aria-labelledby="contact-title"><h2 id="contact-title">Still need help?</h2><p>Email us with what you tried, what happened, and the message Wand showed. Include your Wand version and macOS version if you know them.</p>
-<div class="contact-address"><span id="support-address">thabheloduve@gmail.com</span><button type="button" id="copy-address">Copy email</button></div><p id="copy-status" role="status" aria-live="polite"></p>
-<p class="privacy-note">Leave out passwords, connection codes, and anything private in screenshots.</p>
-</section>
+
 </main>
 <footer class="support-footer"><a href="/">Wand</a><nav aria-label="Footer"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="https://app.getwand.app/">Your Macs ↗</a></nav></footer>
 <script src="/support/support.js" defer></script>

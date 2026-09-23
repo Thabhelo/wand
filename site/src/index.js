@@ -1,9 +1,11 @@
+import {support} from './support.js';
 const missing = () => Response.json({error:{code:'service_not_configured',message:'Wand online connections are not available yet.'}},{status:503,headers:{'Cache-Control':'no-store'}});
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.hostname === 'www.getwand.app') { url.hostname='getwand.app'; return Response.redirect(url,308); }
     if (url.pathname === '/connect') { return Response.redirect('https://app.getwand.app/',302); }
+    if (url.pathname === '/api/support') return support(request,env);
     const dashboard = url.hostname === 'app.getwand.app';
     // Browser simulator transports a public device ID only; relay hello still authenticates the token.
     if (dashboard && url.pathname === '/review-device') {

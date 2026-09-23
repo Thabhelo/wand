@@ -27,5 +27,20 @@
   },
   "observability": {
     "enabled": false
-  }
+  },
+  "send_email": [
+    {
+      "name": "SUPPORT_EMAIL"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "SUPPORT_LIMIT",
+      "namespace_id": "9232601",
+      "simple": {
+        "limit": 3,
+        "period": 60
+      }
+    }
+  ]
 }
