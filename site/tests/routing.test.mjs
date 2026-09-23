@@ -13,3 +13,11 @@ test('review socket rejects bad IDs and foreign origins before forwarding',async
  let r=await worker.fetch(new Request('https://app.getwand.app/review-device?device_id=bad',{headers:{Upgrade:'websocket',Origin:'https://app.getwand.app'}}),configured);assert.equal(r.status,400);
  r=await worker.fetch(new Request('https://app.getwand.app/review-device?device_id=11111111-1111-4111-8111-111111111111',{headers:{Upgrade:'websocket',Origin:'https://evil.example'}}),configured);assert.equal(r.status,403);
 });
+test('account screens stay out of search without blocking public pages',async()=>{
+ for(const url of ['https://app.getwand.app/','https://getwand.app/dashboard/','https://getwand.app/review/']) {
+  const r=await worker.fetch(new Request(url),env);
+  assert.equal(r.status,200);assert.equal(r.headers.get('x-robots-tag'),'noindex');
+ }
+ const r=await worker.fetch(new Request('https://getwand.app/privacy/'),env);
+ assert.equal(r.headers.get('x-robots-tag'),null);
+});

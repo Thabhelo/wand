@@ -32,6 +32,10 @@ export default {
     headers.set('X-Frame-Options','DENY');
     headers.set('Permissions-Policy','camera=(), microphone=(), geolocation=()');
     if(dashboard) headers.set('Cache-Control','no-store');
+    // Account and reviewer screens are usable links, not public search results.
+    if (dashboard || /^\/(dashboard|review|consent)(\/|$)/.test(url.pathname)) {
+      headers.set('X-Robots-Tag','noindex');
+    }
     return new Response(response.body,{status:response.status,headers});
   }
 };
