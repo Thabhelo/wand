@@ -14,17 +14,3 @@ form.addEventListener('submit',async event=>{
  }catch(error){status.dataset.error='true';status.textContent=error.name==='TimeoutError'?'Sending took too long to confirm. Please wait a minute before trying again.':error instanceof TypeError?'Check your connection and try again.':error.message;}
  finally{button.disabled=false;button.textContent='Send message';}
 });
-
-const copyMuseButton=document.getElementById('copy-muse-prompt');
-copyMuseButton.addEventListener('click',async()=>{
- const prompt=document.getElementById('muse-setup-prompt');
- const feedback=document.getElementById('muse-copy-status');
- try{
-  await navigator.clipboard.writeText(prompt.value);
-  feedback.textContent='Copied. Paste it into Muse.';
- }catch{
-  document.getElementById('muse-prompt-preview').open=true;
-  prompt.focus();prompt.select();prompt.setSelectionRange(0,prompt.value.length);
-  feedback.textContent='Select and copy the prompt below, then paste it into Muse.';
- }
-});

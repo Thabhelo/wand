@@ -284,7 +284,7 @@ import MacBridgeNative
                 phoneQR.widthAnchor.constraint(equalToConstant: 160).isActive = true
                 phoneQR.heightAnchor.constraint(equalToConstant: 160).isActive = true
             }
-            let phoneCard = card("Use Wand on your phone", subtitle: "Scan with your phone’s camera. Sign in with the same Google account if asked.", views: [phoneQR, row(button("Send link…", #selector(sharePhoneLink), symbol: "square.and.arrow.up"), button("Copy link", #selector(copyPhoneLink))), button("Open dashboard", #selector(dashboard), symbol: "arrow.up.right")])
+            let phoneCard = card("Use Wand on your phone", subtitle: "Scan with your phone’s camera. Sign in with the same Google account if asked.", views: [phoneQR, row(button("Send link…", #selector(sharePhoneLink), symbol: "square.and.arrow.up"), button("Copy link", #selector(copyPhoneLink))), button("Open dashboard", #selector(dashboard), symbol: "arrow.up.right"), label("Use your Mac with Muse", size: 15), button("Copy setup prompt", #selector(copyMuseSetupPrompt), symbol: "doc.on.doc")])
             phoneHandoff = phoneCard
             add(phoneCard)
             loginToggle.target = self; loginToggle.action = #selector(toggleStartAtLogin)
@@ -544,6 +544,14 @@ import MacBridgeNative
         let picker = NSSharingServicePicker(items: ["Open Wand on your phone and sign in with the same Google account to control your Mac.", url])
         phoneSharePicker = picker
         picker.show(relativeTo: sender.bounds, of: sender, preferredEdge: .minY)
+    }
+    @objc private func copyMuseSetupPrompt(_ sender: NSButton) {
+        NSPasteboard.general.clearContents()
+        if NSPasteboard.general.setString(MuseSetupPrompt.text, forType: .string) {
+            sender.title = "Copied — paste into Muse"
+        } else {
+            sender.title = "Couldn’t copy — try again"
+        }
     }
     @objc private func copyPhoneLink() {
         guard let url = try? agent?.dashboardOrigin() else { return }

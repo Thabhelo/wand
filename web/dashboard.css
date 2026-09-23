@@ -13,3 +13,5 @@
 @media(max-width:600px){.phone-handoff{display:none}}
 
 .state-warning dd{color:#9b420c;font-weight:600}#app-error{color:#a32b26}label:has(input[type="checkbox"]){display:flex;align-items:center;gap:.6rem}input[type="checkbox"]{width:auto;flex:0 0 auto}
+
+#muse-setup{margin:20px 0;padding:18px;border:1px solid #d9ddd4;border-radius:18px}#muse-setup h3{margin:0}#muse-setup p{margin:8px 0}#muse-setup [role="status"]:empty{display:none}

@@ -25,8 +25,8 @@
 <details><summary>An action needs permission</summary><div><p>Open Wand on your Mac. Enable desktop control if you want it to click, type, or scroll. macOS may ask you to allow Accessibility or Screen Recording in System Settings → Privacy & Security.</p><p>If a Keychain prompt identifies Wand, choose Always Allow to remember that choice. If the prompts keep returning, send us a message. Don’t uninstall Wand or reset all your permissions to troubleshoot.</p></div></details>
 <details><summary>Music or volume isn’t working</summary><div><p>Open Music or Spotify on your Mac before using playback controls. Allow Wand’s Automation request on the Mac if one appears.</p><p>If the page says a volume reading is unavailable, your installed build may not support it yet. Check the <a href="/download">download page</a> for the current release.</p></div></details>
 <details><summary>An app won’t open or close</summary><div><p>Choose Refresh apps, then select the app again. Use Other… if it isn’t listed. macOS background components cannot be opened or closed through these controls.</p><p>An app may stay open while it asks you to save a document. Check the Mac for an open dialog.</p></div></details>
-<details id="connect-muse"><summary>How do I connect Muse?</summary><div><p>Muse can use Wand’s web controls today. Copy this prompt and send it to Muse to get started. The official native connection is still being prepared.</p>
-<button id="copy-muse-prompt" type="button">Copy setup prompt</button><p id="muse-copy-status" role="status" aria-live="polite"></p>
+<details id="connect-muse"><summary>How do I connect Muse?</summary><div data-muse-setup><p>Muse can use Wand’s web controls today. Copy this prompt and send it to Muse to get started. The official native connection is still being prepared.</p>
+<button id="copy-muse-prompt" data-copy-muse type="button">Copy setup prompt</button><p id="muse-copy-status" role="status" aria-live="polite"></p>
 <details id="muse-prompt-preview"><summary>View prompt</summary><div><textarea id="muse-setup-prompt" aria-label="Muse setup prompt" readonly rows="12">I want to set up Wand (https://getwand.app) so I can control my Mac from my phone, and so you can operate it for me.
 
 Wand is a menu-bar app for Mac with web controls at https://app.getwand.app. It lets you mute or lock my Mac, change volume, check battery, storage and memory, control playback, and open or close apps. These are examples, not the full list. Explore the web app to see what is available.
@@ -48,5 +48,6 @@ This setup uses Wand&#x27;s website. It does not add Wand as a native Muse conne
 
 </main>
 <footer class="support-footer"><a href="/">Wand</a><nav aria-label="Footer"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="https://app.getwand.app/">Your Macs ↗</a></nav></footer>
+<script src="/muse-setup.js" defer></script>
 <script src="/support/support.js" defer></script>
 </body></html>
