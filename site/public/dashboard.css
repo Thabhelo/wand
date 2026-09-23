@@ -5,3 +5,9 @@
 .app-picker{display:grid;gap:10px}.app-picker label{display:grid;gap:6px}.app-picker select,.app-picker input{width:100%;min-width:0;font:inherit;padding:12px;border:1px solid #cad0cd;border-radius:12px;background:#fff}.app-picker small{color:#52625d}.app-picker [hidden]{display:none}
 
 .state-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px;margin:0}.state-grid>div{padding:14px 16px;border-radius:14px;background:var(--card);min-width:0}.state-grid dt{font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px}.state-grid dd{margin:0;font-size:15px;font-weight:550;line-height:1.5;overflow-wrap:anywhere}.state-grid .state-wide{grid-column:1/-1}.state-grid .state-wide dd{font-size:13px;font-weight:400;color:var(--muted)}
+
+.phone-handoff summary{cursor:pointer;font-weight:600;min-height:24px}
+.phone-handoff-content{display:flex;align-items:center;gap:24px;margin-top:20px;flex-wrap:wrap}
+.phone-handoff-content>img{box-sizing:content-box;width:160px;height:160px;padding:16px;background:#fff;border-radius:16px;image-rendering:pixelated;flex-shrink:0}
+.phone-handoff-content>div{flex:1;min-width:180px}
+@media(max-width:600px){.phone-handoff{display:none}}

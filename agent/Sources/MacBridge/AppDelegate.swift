@@ -31,6 +31,9 @@ import MacBridgeNative
     private var pairingActions: NSStackView?
     private var advancedView: NSView?
     private let pairingQR = NSImageView()
+    private let phoneQR = NSImageView()
+    private var phoneHandoff: NSView?
+    private var phoneURL = ""
     private var qrCode = ""
     private let codeLabel = NSTextField(labelWithString: "")
     private let website = NSTextField(string: "")
@@ -252,6 +255,14 @@ import MacBridgeNative
             pairingActions = handoff
             add(card("Connect your Mac", subtitle: "Approve this Mac in your browser. We’ll finish linking automatically.", views: [connect, connection, handoff]))
             add(label("Linking your Wand account prepares this Mac for remote control. Muse authorization requires the official connector; it is not included in this preview.", size: 12, secondary: true))
+            phoneQR.setAccessibilityLabel("Scan to open Wand on your phone")
+            if phoneQR.constraints.isEmpty {
+                phoneQR.widthAnchor.constraint(equalToConstant: 160).isActive = true
+                phoneQR.heightAnchor.constraint(equalToConstant: 160).isActive = true
+            }
+            let phoneCard = card("Use Wand on your phone", subtitle: "Scan with your phone’s camera. Sign in with the same Google account if asked.", views: [phoneQR, button("Open dashboard", #selector(dashboard), symbol: "arrow.up.right")])
+            phoneHandoff = phoneCard
+            add(phoneCard)
             add(card("Desktop control", subtitle: "Let your assistant use apps across your Mac. Set up once; access stays on until you pause it. Your Mac must be awake and unlocked.", views: [desktopStatus, row(button("Enable desktop control", #selector(enableDesktop)), button("Pause", #selector(stopDesktop))), row(button("Accessibility permission", #selector(desktopAccessibility)), button("Screen capture permission", #selector(desktopScreenPermission)))]))
             add(button("Advanced…", #selector(toggleAdvanced)))
             relay.stringValue = agent?.relay ?? ""
@@ -276,6 +287,26 @@ import MacBridgeNative
         connectButton?.title = !agent.connectionReady ? (agent.openingKeys ? "Connecting…" : "Connect") : agent.online ? "Connected" : agent.pairing ? "Waiting for approval…" : agent.token != nil ? "Reconnecting…" : "Connect"
         connectButton?.isEnabled = !agent.openingKeys && !agent.pairing && agent.token == nil && !agent.pending
         if agent.pending { advancedView?.isHidden = false }
+        phoneHandoff?.isHidden = agent.token == nil || agent.pending
+        let dashboardURL = (try? agent.dashboardOrigin().absoluteString) ?? ""
+        if phoneURL != dashboardURL {
+            phoneURL = dashboardURL
+            phoneQR.image = nil
+            if !dashboardURL.isEmpty {
+                let filter = CIFilter.qrCodeGenerator()
+                filter.message = Data(dashboardURL.utf8)
+                if let output = filter.outputImage {
+                    // White quiet zone keeps the code scannable in light and dark mode.
+                    let padded = output.extent.insetBy(dx: -4, dy: -4)
+                    let background = CIImage(color: CIColor.white).cropped(to: padded)
+                    let code = output.composited(over: background)
+                    let scale = CGAffineTransform(scaleX: 6, y: 6)
+                    if let cg = CIContext().createCGImage(code.transformed(by: scale), from: padded.applying(scale)) {
+                        phoneQR.image = NSImage(cgImage: cg, size: NSSize(width: 160, height: 160))
+                    }
+                }
+            }
+        }
         if qrCode != agent.code {
             qrCode = agent.code; pairingQR.image = nil
             if let url = agent.pairingURL() {
