@@ -1,0 +1,81 @@
+name: Mac release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: App version (for example 0.12.1)
+        required: true
+        type: string
+      build:
+        description: Unique build number greater than the published build
+        required: true
+        type: string
+      publish:
+        description: Sign, notarize, publish and deploy (requires release secrets)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: wand-production-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Validate release and run checks
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_BUILD: ${{ inputs.build }}
+        run: |
+          python3 scripts/ci_release.py validate
+          python3 tests/test_ci_release.py
+          swift test --package-path agent
+          swift build --package-path agent -c release --product MacBridge
+          npm ci --prefix site --no-audit --no-fund
+          npm run check --prefix site
+      - name: Sign, notarize and prepare website
+        if: inputs.publish
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_BUILD: ${{ inputs.build }}
+          WAND_CERTIFICATE_BASE64: ${{ secrets.WAND_CERTIFICATE_BASE64 }}
+          WAND_CERTIFICATE_PASSWORD: ${{ secrets.WAND_CERTIFICATE_PASSWORD }}
+          WAND_NOTARY_KEY_BASE64: ${{ secrets.WAND_NOTARY_KEY_BASE64 }}
+          WAND_NOTARY_KEY_ID: ${{ secrets.WAND_NOTARY_KEY_ID }}
+          WAND_NOTARY_ISSUER_ID: ${{ secrets.WAND_NOTARY_ISSUER_ID }}
+          GH_RELEASE_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: python3 scripts/ci_release.py package
+      - name: Save verified release artifact
+        if: inputs.publish
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Wand-${{ inputs.version }}-build${{ inputs.build }}
+          path: dist/release/*
+          retention-days: 14
+      - name: Record release on main and deploy
+        if: inputs.publish
+        env:
+          GH_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: '4084f54ebeae91ba5d0692ad6df75d54'
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_BUILD: ${{ inputs.build }}
+        run: |
+          python3 scripts/ci_release.py publish
+          npm run deploy --prefix site
+          python3 scripts/ci_release.py verify
+      - name: Remove ephemeral signing files
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/wand-release.keychain-db" 2>/dev/null || true
+          rm -f "$RUNNER_TEMP/wand-signing.p12" "$RUNNER_TEMP/wand-notary.p8"
