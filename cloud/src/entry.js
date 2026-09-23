@@ -2,7 +2,7 @@ import {OAuthProvider} from '@cloudflare/workers-oauth-provider';
 import relay from './index.js';
 import {beginConsent,connectorPrincipal,RESOURCE,SCOPES} from './connections.js';
 import {failure,Failure,hash} from './common.js';
-export {Device,RateLimit} from './index.js';
+export {Device,RateLimit,Cleanup} from './index.js';
 export const options={
  apiRoute:'/connector/',
  apiHandler:{async fetch(request,env,ctx){try{
@@ -28,4 +28,9 @@ export const options={
  resourceMetadata:{resource:RESOURCE,authorization_servers:['https://api.getwand.app'],scopes_supported:SCOPES,resource_name:'Wand Mac control'}
 };
 const provider=new OAuthProvider(options);
-export default {fetch:(request,env,ctx)=>provider.fetch(request,env,ctx),scheduled:relay.scheduled};
+export default {
+ fetch:(request,env,ctx)=>provider.fetch(request,env,ctx),
+ // Compatibility only: Cloudflare currently rejects deleting the legacy cron at
+ // the account limit. It may ensure the alarm, but never runs database cleanup.
+ async scheduled(event,env){await env.CLEANUP.getByName('registry').ensure()}
+};

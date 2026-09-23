@@ -21,6 +21,10 @@
       {
         "name": "LIMITS",
         "class_name": "RateLimit"
+      },
+      {
+        "name": "CLEANUP",
+        "class_name": "Cleanup"
       }
     ]
   },
@@ -30,6 +34,12 @@
       "new_sqlite_classes": [
         "Device",
         "RateLimit"
+      ]
+    },
+    {
+      "tag": "v2-cleanup",
+      "new_sqlite_classes": [
+        "Cleanup"
       ]
     }
   ],
@@ -48,11 +58,6 @@
     "FIREBASE_APP_ID": "1:65004035287:web:6d1691580121e8301ce492",
     "MUSE_CLIENT_IDS": "",
     "FACEBOOK_ENABLED": "false"
-  },
-  "triggers": {
-    "crons": [
-      "0 * * * *"
-    ]
   },
   "observability": {
     "enabled": false

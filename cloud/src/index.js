@@ -4,6 +4,7 @@ import {connections,revokeOAuthGrants} from './connections.js';
 import {publicSpec} from './openapi.js';
 import {Failure,body,envelope,failure,hash,id,json,stamp,token} from './common.js';
 export {Device} from './device.js';
+export {Cleanup} from './cleanup.js';
 export class RateLimit extends DurableObject{
  constructor(ctx,env){super(ctx,env);ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS hits(t INTEGER NOT NULL)')}
  async take(limit,period){const sql=this.ctx.storage.sql;sql.exec('DELETE FROM hits WHERE t <= ?',Date.now()-period);if(sql.exec('SELECT COUNT(*) AS n FROM hits').one().n>=limit)return false;sql.exec('INSERT INTO hits VALUES(?)',Date.now());await this.ctx.storage.setAlarm(Date.now()+period+1000);return true}
@@ -18,7 +19,7 @@ async function publicDevice(env,d){const state=await env.DEVICES.getByName(d.id)
 export default{
  async fetch(request,env,ctx,principal){try{const url=new URL(request.url),path=url.pathname,method=request.method,ip=request.headers.get('CF-Connecting-IP')||'local';
   if(path==='/openapi.json'&&method==='GET')return json(publicSpec(env));
-  if(path==='/healthz'&&method==='GET')return json({status:'ok'});
+  if(path==='/healthz'&&method==='GET'){const cleanup=await env.CLEANUP.getByName('registry').ensure();const healthy=!cleanup.failures&&(!cleanup.last_success||Date.now()-cleanup.last_success<3*60*60*1000);return json({status:healthy?'ok':'degraded',cleanup},healthy?200:503)}
   if(path==='/config'&&method==='GET')return json({facebookEnabled:env.FACEBOOK_ENABLED==='true',firebase:{apiKey:env.FIREBASE_API_KEY,authDomain:env.FIREBASE_AUTH_DOMAIN,projectId:env.FIREBASE_PROJECT_ID,appId:env.FIREBASE_APP_ID}});
   if(path==='/v1/ws/device'){
    await limit(env,'hello:'+ip,10);
@@ -31,7 +32,7 @@ export default{
    return env.DEVICES.getByName(did).fetch(request);
   }
   if(path==='/v1/pairing/code'&&method==='POST'){
-   await limit(env,'enroll:'+ip,5);const b=await body(request,'PairingCodeRequest');const did=id(),bootstrap=token(),bootstrapHash=await hash(bootstrap),deadline=Date.now()+600000;
+   await limit(env,'enroll:'+ip,5);const b=await body(request,'PairingCodeRequest');await env.CLEANUP.getByName('registry').ensure();const did=id(),bootstrap=token(),bootstrapHash=await hash(bootstrap),deadline=Date.now()+600000;
    const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let code;
    for(let n=0;n<5;n++){code=Array.from(crypto.getRandomValues(new Uint8Array(6)),v=>alphabet[v%alphabet.length]).join('');if(!await row(env,'SELECT code FROM pairing WHERE code=?',code))break;if(n===4)throw new Failure('pairing_busy',503)}
    await env.DB.batch([env.DB.prepare('INSERT INTO devices VALUES(?,NULL,?,?,?,?,?,NULL)').bind(did,b.kind,b.device_name,b.agent_version,null,stamp()),env.DB.prepare('INSERT INTO pairing VALUES(?,?,?,?,NULL,NULL)').bind(code,did,bootstrapHash,deadline)]);
@@ -69,6 +70,5 @@ export default{
    await env.DB.batch([env.DB.prepare('DELETE FROM tokens WHERE device_id IN (SELECT id FROM devices WHERE user_id=?)').bind(u.user_id),env.DB.prepare('DELETE FROM pairing WHERE device_id IN (SELECT id FROM devices WHERE user_id=?)').bind(u.user_id),env.DB.prepare('DELETE FROM devices WHERE user_id=?').bind(u.user_id),env.DB.prepare('DELETE FROM deleting WHERE user_id=?').bind(u.user_id)]);return json({status:'deleted'});
   }
   throw new Failure('route_not_found',404);
- }catch(e){return failure(e)}},
- async scheduled(event,env,ctx){ctx.waitUntil(env.DB.batch([env.DB.prepare('DELETE FROM consent_requests WHERE expires_at<?').bind(Date.now()),env.DB.prepare('DELETE FROM devices WHERE user_id IS NULL AND id IN(SELECT device_id FROM pairing WHERE deadline<?)').bind(Date.now()),env.DB.prepare('DELETE FROM pairing WHERE deadline<?').bind(Date.now())]))}
+ }catch(e){return failure(e)}}
 };
