@@ -29,6 +29,9 @@ import MacBridgeNative
     private let connection = NSTextField(wrappingLabelWithString: "")
     private var connectButton: NSButton?
     private var pairingActions: NSStackView?
+    private var pairingFallback: NSStackView?
+    private var pairingHelpButton: NSButton?
+    private var copyPairingButton: NSButton?
     private var advancedView: NSView?
     private let pairingQR = NSImageView()
     private let phoneQR = NSImageView()
@@ -251,9 +254,22 @@ import MacBridgeNative
                 pairingQR.widthAnchor.constraint(equalToConstant: 144).isActive = true
                 pairingQR.heightAnchor.constraint(equalToConstant: 144).isActive = true
             }
-            let handoff = column([button("Continue in browser", #selector(continuePairing), symbol: "arrow.up.right"), pairingQR, label("Or scan with your phone. Code entry is available as a fallback.", size: 12, secondary: true), codeLabel, button("Cancel", #selector(cancelPairing))])
+            let copy = button("Copy code", #selector(copyPairingCode), symbol: "doc.on.doc")
+            copyPairingButton = copy
+            let fallback = column([
+                button("Open setup page again", #selector(continuePairing), symbol: "arrow.up.right"),
+                label("Or open the dashboard, choose Connect a Mac, and enter this code.", size: 12, secondary: true),
+                row(codeLabel, copy),
+                button("Open dashboard", #selector(dashboard), symbol: "arrow.up.right"),
+                pairingQR, label("You can also scan to finish on your phone.", size: 12, secondary: true)
+            ])
+            fallback.isHidden = true
+            pairingFallback = fallback
+            let help = button("Setup page didn’t open?", #selector(togglePairingHelp), symbol: "chevron.right")
+            pairingHelpButton = help
+            let handoff = column([label("Sign in and approve this Mac in your browser. Wand will connect automatically.", size: 13, secondary: true), help, fallback, button("Cancel", #selector(cancelPairing))])
             pairingActions = handoff
-            add(card("Connect your Mac", subtitle: "Approve this Mac in your browser. We’ll finish linking automatically.", views: [connect, connection, handoff]))
+            add(card("Connect your Mac", subtitle: "Click Connect, sign in, and approve this Mac.", views: [connect, connection, handoff]))
             add(label("Linking your Wand account prepares this Mac for remote control. Muse authorization requires the official connector; it is not included in this preview.", size: 12, secondary: true))
             phoneQR.setAccessibilityLabel("Scan to open Wand on your phone")
             if phoneQR.constraints.isEmpty {
@@ -309,6 +325,9 @@ import MacBridgeNative
         }
         if qrCode != agent.code {
             qrCode = agent.code; pairingQR.image = nil
+            pairingFallback?.isHidden = true
+            pairingHelpButton?.image = NSImage(systemSymbolName: "chevron.right", accessibilityDescription: nil)
+            copyPairingButton?.title = "Copy code"
             if let url = agent.pairingURL() {
                 let filter = CIFilter.qrCodeGenerator(); filter.message = Data(url.absoluteString.utf8)
                 if let output = filter.outputImage, let cg = CIContext().createCGImage(output.transformed(by: CGAffineTransform(scaleX: 6, y: 6)), from: output.extent.applying(CGAffineTransform(scaleX: 6, y: 6))) {
@@ -468,8 +487,23 @@ import MacBridgeNative
     }
     @objc private func pair() {
         guard let agent else { return }
-        if !agent.connectionReady { Task { @MainActor in await agent.startConnections(allowInteraction: true) } }
+        if !agent.connectionReady {
+            Task { @MainActor in
+                await agent.startConnections(allowInteraction: true)
+                if agent.connectionReady { agent.pair() }
+            }
+        }
         else { agent.pair() }
+    }
+    @objc private func togglePairingHelp() {
+        guard let fallback = pairingFallback else { return }
+        fallback.isHidden.toggle()
+        pairingHelpButton?.image = NSImage(systemSymbolName: fallback.isHidden ? "chevron.right" : "chevron.down", accessibilityDescription: nil)
+    }
+    @objc private func copyPairingCode() {
+        guard let agent, agent.pairing, !agent.code.isEmpty, pairingFallback?.isHidden == false else { return }
+        NSPasteboard.general.clearContents()
+        if NSPasteboard.general.setString(agent.code, forType: .string) { copyPairingButton?.title = "Copied" }
     }
     @objc private func continuePairing() { agent?.continuePairing() }
     @objc private func toggleAdvanced() { advancedView?.isHidden.toggle() }
