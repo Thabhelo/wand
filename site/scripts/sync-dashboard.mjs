@@ -1,2 +1,2 @@
 import { copyFile } from 'node:fs/promises';
-for (const [source,target] of [['phone-qr.png','phone-qr.png'],['index.html','dashboard.html'],['dashboard.css','dashboard.css'],['dashboard.js','dashboard.js'],['firebase-auth.js','firebase-auth.js'],['app-picker.js','app-picker.js']]) await copyFile(new URL('../../web/'+source, import.meta.url),new URL('../public/'+target,import.meta.url));
+for (const [source,target] of [['phone-qr.png','phone-qr.png'],['index.html','dashboard.html'],['dashboard.css','dashboard.css'],['dashboard.js','dashboard.js'],['control-feedback.js','control-feedback.js'],['firebase-auth.js','firebase-auth.js'],['app-picker.js','app-picker.js']]) await copyFile(new URL('../../web/'+source, import.meta.url),new URL('../public/'+target,import.meta.url));

@@ -26,12 +26,17 @@ import MacBridgeCore
             guard NSWorkspace.shared.open(url) else { throw ContractError(code: "action_failed") }
         case "open_app":
             let url = try await applicationURL(params)
-            _ = try await NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
+            let id = Bundle(url: url)?.bundleIdentifier ?? ""
+            let alreadyOpen = !NSRunningApplication.runningApplications(withBundleIdentifier: id).isEmpty
+            let config = NSWorkspace.OpenConfiguration(); config.activates = true
+            let app = try await NSWorkspace.shared.openApplication(at: url, configuration: config)
+            app.activate()
+            return .object(["already_open": .bool(alreadyOpen), "focused": .bool(app.isActive)])
         case "quit_app":
             let url = try await applicationURL(params)
             guard let id = Bundle(url: url)?.bundleIdentifier else { throw ContractError(code: "app_not_found") }
             let apps = NSRunningApplication.runningApplications(withBundleIdentifier: id)
-            guard !apps.isEmpty else { return .object([:]) }
+            guard !apps.isEmpty else { return .object(["already_closed": .bool(true)]) }
             guard apps.allSatisfy({ $0.terminate() }) else { throw ContractError(code: "quit_refused") }
             // terminate() only requests quit; never claim success if a save dialog keeps it alive.
             for _ in 0..<20 {
@@ -67,7 +72,7 @@ import MacBridgeCore
                 }
             }
             return .object(["screen_locked": .bool(false), "frontmost_app": NSWorkspace.shared.frontmostApplication?.localizedName.map { JSON.string(String($0.prefix(160))) } ?? .null,
-                            "now_playing": await NowPlayingReader.read(), "battery": battery, "running_apps": .array(apps.map(JSON.string)), "system": SystemStatus.read()])
+                            "now_playing": await NowPlayingReader.read(), "battery": battery, "running_apps": .array(apps.map(JSON.string)), "system": SystemStatus.read(), "audio": AudioStatus.read()])
         case "lock_screen": return try await SystemActions.lock()
         case "close_browser_tabs":
             if params["browser"]?.string == "chrome" { return try await SystemActions.chromeCleanup(keepPinned: params["keep_pinned"] != .bool(false)) }
@@ -80,9 +85,10 @@ import MacBridgeCore
         return .object([:])
     }
     private func applicationURL(_ params: JSON) async throws -> URL {
-        if let id = params["bundle_id"]?.string, let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: id) { return url }
+        if let id = params["bundle_id"]?.string, let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: id) { try AppTargetPolicy.check(url); return url }
         if let name = params["app_name"]?.string {
-            return try await AppInventory.resolve(name: name)
+            let url = try await AppInventory.resolve(name: name)
+            try AppTargetPolicy.check(url); return url
         }
         throw ContractError(code: "app_not_found_or_ambiguous")
     }

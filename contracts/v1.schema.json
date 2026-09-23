@@ -1647,6 +1647,9 @@
                         "Music",
                         "Spotify"
                       ]
+                    },
+                    "playing": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -1697,6 +1700,31 @@
             },
             "system": {
               "$ref": "#/$defs/SystemStatus"
+            },
+            "audio": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "volume": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "muted": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "volume",
+                    "muted"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           },
           "required": [
@@ -1978,13 +2006,48 @@
       ],
       "additionalProperties": false
     },
-    "ActionResult": {
+    "AppActionResult": {
       "oneOf": [
         {
           "type": "object",
           "properties": {},
           "required": [],
           "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "already_closed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "already_closed"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "already_open": {
+              "type": "boolean"
+            },
+            "focused": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "already_open",
+            "focused"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ActionResult": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/AppActionResult"
         },
         {
           "$ref": "#/$defs/State"

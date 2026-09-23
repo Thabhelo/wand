@@ -1,3 +1,4 @@
+import {protectedApp} from './app-policy.js';
 import {DurableObject} from 'cloudflare:workers';
 import {Failure,envelope,failure,hash,id,json,stamp,validate} from './common.js';
 export class Device extends DurableObject{
@@ -28,12 +29,12 @@ export class Device extends DurableObject{
   else if(m.type==='result'||m.type==='delivered'){
    const c=this.sql.exec('SELECT * FROM commands WHERE id=?',m.command_id).toArray()[0];if(!c||c.generation!==a.generation||!['dispatched','delivered'].includes(c.status))return;if(Date.now()>c.created+15000){this.finish(c,'failed','command_timeout');return}
    if(m.type==='delivered')this.sql.exec("UPDATE commands SET status='delivered' WHERE id=?",c.id);
-   else if(m.ok){const data=m.data||{};validate(c.action==='list_apps'?'AppList':c.action==='desktop_observe'?'DesktopObservation':c.action==='get_state'?'State':c.action==='lock_screen'?'LockResult':'ActionResult',data);if(!['get_state','lock_screen','desktop_observe','list_apps'].includes(c.action)&&Object.keys(data).length)throw new Failure('invalid_result');this.finish(c,'succeeded',null,data)}else this.finish(c,'failed',m.error_code);
+   else if(m.ok){const data=m.data||{};validate(['open_app','quit_app'].includes(c.action)?'AppActionResult':c.action==='list_apps'?'AppList':c.action==='desktop_observe'?'DesktopObservation':c.action==='get_state'?'State':c.action==='lock_screen'?'LockResult':'ActionResult',data);if(!['get_state','lock_screen','desktop_observe','list_apps','open_app','quit_app'].includes(c.action)&&Object.keys(data).length)throw new Failure('invalid_result');this.finish(c,'succeeded',null,data)}else this.finish(c,'failed',m.error_code);
   }else throw new Failure('invalid_message');await this.schedule();
  }catch{ws.close(4002,'invalid_message');const generation=ws.deserializeAttachment()?.generation;if(generation)this.failPending('device_disconnected',generation);await this.schedule()}}
  async webSocketClose(ws){const generation=ws.deserializeAttachment()?.generation;if(generation&&generation===this.get('generation'))this.failPending('device_disconnected',generation);await this.schedule()}
  async webSocketError(ws){ws.close(4002,'device_disconnected');await this.webSocketClose(ws)}
- async command(b){try{validate('CommandRequest',{device_id:b.device_id,action:b.action,params:b.params});const d=await this.env.DB.prepare('SELECT id FROM devices WHERE id=? AND user_id=? AND revoked_at IS NULL AND NOT EXISTS(SELECT 1 FROM deleting WHERE user_id=devices.user_id)').bind(b.device_id,b.user_id).first();if(!d||this.get('revoked')==='1')throw new Failure('device_not_found',404);if(!this.did())this.put('device_id',b.device_id);
+ async command(b){try{if(protectedApp(b.action,b.params))throw new Failure('protected_app',403);validate('CommandRequest',{device_id:b.device_id,action:b.action,params:b.params});const d=await this.env.DB.prepare('SELECT id FROM devices WHERE id=? AND user_id=? AND revoked_at IS NULL AND NOT EXISTS(SELECT 1 FROM deleting WHERE user_id=devices.user_id)').bind(b.device_id,b.user_id).first();if(!d||this.get('revoked')==='1')throw new Failure('device_not_found',404);if(!this.did())this.put('device_id',b.device_id);
   this.sql.exec('DELETE FROM hits WHERE t<=?',Date.now()-1000);if(this.sql.exec('SELECT COUNT(*) AS n FROM hits').one().n>=10)throw new Failure('rate_limited',429);this.sql.exec('INSERT INTO hits VALUES(?)',Date.now());
   const c={id:id(),user_id:b.user_id,action:b.action,status:'dispatched',error:null,generation:this.get('generation')||'',created:Date.now(),client_id:b.client_id,ip:b.ip};this.sql.exec('INSERT INTO commands VALUES(?,?,?,?,?,?,?,?,?)',c.id,c.user_id,c.action,c.status,c.error,c.generation,c.created,c.client_id,c.ip);
   if(!this.isOnline()){this.finish(c,'failed','device_offline');await this.schedule();throw new Failure('device_offline',409,{device_id:b.device_id,last_seen:this.get('last_seen')||null})}

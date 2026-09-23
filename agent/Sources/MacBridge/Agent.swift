@@ -276,10 +276,10 @@ import MacBridgeNative
             guard generation == captured, !pending, !suspended else { throw ContractError(code: "session_changed") }
             try validator.validate("ActionResult", safeData)
             try log.append(command: command, outcome: "succeeded", now: Date())
-            lastCommand = action + " — succeeded"
+            lastCommand = action.replacingOccurrences(of: "_", with: " ").capitalized + " completed"
             try await send(envelope("result", ["command_id": .string(id), "ok": .bool(true), "data": safeData]))
         } catch {
-            let outcome = safeError(error); lastCommand = action + " — " + outcome
+            let outcome = safeError(error); lastCommand = friendlyError(outcome)
             try log.append(command: command, outcome: outcome, now: Date())
             try await send(envelope("result", ["command_id": .string(id), "ok": .bool(false), "error_code": .string(outcome)]))
         }
@@ -375,7 +375,8 @@ import MacBridgeNative
         switch code {
         case "invalid_params", "invalid_message": return "Check the app name or website address, then try again."
         case "invalid_url": return "Enter a complete website address beginning with https:// or http://."
-        case "app_not_found", "app_not_found_or_ambiguous": return "App not found. Enter its exact installed name, such as Calculator."
+        case "protected_app": return "This is a macOS component. Wand cannot open or close it."
+        case "app_not_found", "app_not_found_or_ambiguous": return "App not found. Refresh the app list and choose it again."
         case "device_locked": return "Unlock this Mac locally before running this action."
         case "lock_state_unknown": return "Wand cannot verify this session. Return to this Mac and try again."
         case "media_app_not_running": return "Open Music or Spotify first, then try playback again."

@@ -25,3 +25,24 @@ final class AppInventoryTests: XCTestCase {
         XCTAssertEqual(last["apps"],.array([]));XCTAssertEqual(last["next_offset"],.null)
     }
 }
+
+final class AppTargetPolicyTests: XCTestCase {
+    func testSessionComponentsCannotBeTargeted() {
+        for path in ["/System/Library/CoreServices/loginwindow.app", "/System/Library/CoreServices/Dock.app", "/System/Library/CoreServices/SystemUIServer.app", "/usr/libexec/SecurityAgent.app"] {
+            XCTAssertFalse(AppTargetPolicy.allows(URL(fileURLWithPath:path)))
+            XCTAssertThrowsError(try AppTargetPolicy.check(URL(fileURLWithPath:path)))
+        }
+    }
+    func testRegularApplicationIsAllowed() {
+        XCTAssertTrue(AppTargetPolicy.allows(URL(fileURLWithPath:"/System/Applications/TextEdit.app")))
+    }
+}
+
+final class AudioStatusTests: XCTestCase {
+    @MainActor func testLiveVolumeIsBoundedAndDoesNotChangeSettings() throws {
+        let result = AudioStatus.read()
+        XCTAssertNotEqual(result, .null)
+        XCTAssertNotNil(result["muted"])
+        XCTAssertTrue((0...100).contains(result["volume"]?.number ?? -1))
+    }
+}

@@ -11,3 +11,5 @@
 .phone-handoff-content>img{box-sizing:content-box;width:160px;height:160px;padding:16px;background:#fff;border-radius:16px;image-rendering:pixelated;flex-shrink:0}
 .phone-handoff-content>div{flex:1;min-width:180px}
 @media(max-width:600px){.phone-handoff{display:none}}
+
+.state-warning dd{color:#9b420c;font-weight:600}#app-error{color:#a32b26}label:has(input[type="checkbox"]){display:flex;align-items:center;gap:.6rem}input[type="checkbox"]{width:auto;flex:0 0 auto}

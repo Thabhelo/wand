@@ -22,17 +22,17 @@ import MacBridgeCore
             let source = """
             with timeout of 1 seconds
                 tell application id "\(bundle)"
-                    if player state is not playing then return {}
-                    return {name of current track, artist of current track}
+                    if player state is stopped then return {}
+                    return {name of current track, artist of current track, player state is playing}
                 end tell
             end timeout
             """
             var error: NSDictionary?
             guard let script = NSAppleScript(source: source) else { continue }
             let result = script.executeAndReturnError(&error)
-            guard error == nil, result.numberOfItems == 2 else { continue }
+            guard error == nil, result.numberOfItems == 3 else { continue }
             let state = normalized(title: result.atIndex(1)?.stringValue, artist: result.atIndex(2)?.stringValue, source: name)
-            if state != .null { return state }
+            if var value = state.object { value["playing"] = .bool(result.atIndex(3)?.booleanValue ?? false); return .object(value) }
         }
         return .null
     }

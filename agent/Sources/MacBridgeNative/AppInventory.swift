@@ -23,7 +23,7 @@ public enum AppInventory {
     @MainActor public static func applications(refresh: Bool = false) async -> [Entry] {
         if !refresh && Date().timeIntervalSince(cachedAt) < 30 { return cached }
         let running = NSWorkspace.shared.runningApplications.compactMap { app -> Entry? in
-            guard let id = app.bundleIdentifier, let url = app.bundleURL else { return nil }
+            guard app.activationPolicy == .regular, let id = app.bundleIdentifier, let url = app.bundleURL, AppTargetPolicy.allows(url) else { return nil }
             return Entry(name: app.localizedName ?? id, bundleID: id, lastOpened: app.launchDate, running: true, url: url)
         }
         let entries = await Task.detached(priority: .userInitiated) { discover(running: running) }.value
@@ -41,7 +41,7 @@ public enum AppInventory {
                 if let path = MDItemCopyAttribute(item, kMDItemPath) as? String { urls.insert(URL(fileURLWithPath: path)) }
             }
         }
-        let roots = ["/Applications", "/System/Applications", "/System/Library/CoreServices", "/Users/Shared", NSHomeDirectory()+"/Applications"]
+        let roots = ["/Applications", "/System/Applications",  "/Users/Shared", NSHomeDirectory()+"/Applications"]
         for path in roots {
             let root = URL(fileURLWithPath: path)
             guard let scan = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isDirectoryKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) else { continue }
@@ -55,7 +55,7 @@ public enum AppInventory {
         }
         var byID: [String: Entry] = [:]
         for url in urls.sorted(by: { $0.path < $1.path }) {
-            guard FileManager.default.fileExists(atPath: url.path), let bundle = Bundle(url: url),
+            guard AppTargetPolicy.allows(url), FileManager.default.fileExists(atPath: url.path), let bundle = Bundle(url: url),
                   let id = bundle.bundleIdentifier, id.count <= 200,
                   id.range(of: "^[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$", options: .regularExpression) != nil,
                   bundle.object(forInfoDictionaryKey: "LSBackgroundOnly") as? Bool != true,

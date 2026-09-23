@@ -3,6 +3,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import secrets
 import time
 import uuid
@@ -238,6 +239,9 @@ def create_app(repository=None, authenticator=None):
     @app.post('/v1/commands',status_code=202)
     async def commands(request:Request):
         u=await principal(request);b=await body(request,'CommandRequest');d=owned(b['device_id'],u.user_id)
+        if b['action'] in ('open_app','quit_app'):
+            name=b['params'].get('app_name','').strip().lower().removesuffix('.app')
+            if name in ('loginwindow','dock','windowmanager','systemuiserver','controlcenter','securityagent','loginitems','spotlight','universalcontrol') or re.match(r'^com\.apple\.(loginwindow|dock|windowmanager|systemuiserver|controlcenter|securityagent)(\.|$)',b['params'].get('bundle_id',''),re.I):raise Failure('protected_app',403)
         if b['action'] not in u.actions:raise Failure('action_not_authorized',403)
         limits.check(('user',u.user_id),60,60);limits.check(('device',d['id']),10,1)
         peer=sockets.get(d['id'])
@@ -294,8 +298,8 @@ def create_app(repository=None, authenticator=None):
                     if m['type']=='delivered':c['status']='delivered';repo.put('commands',c['id'],c)
                     elif m['ok']:
                         data=m.get('data',{})
-                        validate('AppList' if c['action']=='list_apps' else 'State' if c['action']=='get_state' else 'LockResult' if c['action']=='lock_screen' else 'ActionResult',data)
-                        if c['action'] not in ('get_state','lock_screen','desktop_observe','list_apps') and data != {}:raise Failure('invalid_result')
+                        validate('AppActionResult' if c['action'] in ('open_app','quit_app') else 'AppList' if c['action']=='list_apps' else 'State' if c['action']=='get_state' else 'LockResult' if c['action']=='lock_screen' else 'ActionResult',data)
+                        if c['action'] not in ('get_state','lock_screen','desktop_observe','list_apps','open_app','quit_app') and data != {}:raise Failure('invalid_result')
                         finish(c,'succeeded',data=data)
                     else:finish(c,'failed',m['error_code'])
                 else:raise Failure('invalid_message')
