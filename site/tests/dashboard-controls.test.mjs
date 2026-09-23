@@ -6,7 +6,7 @@ const read=f=>fs.readFileSync(new URL('../../web/'+f,import.meta.url),'utf8');
 async function setup(saved){
  const dom=new JSDOM(read('index.html'),{url:'https://app.getwand.app',runScripts:'outside-only'}),w=dom.window,commands=[];
  if(saved)w.sessionStorage.setItem('wand-history-tester',saved);
- w.wandAuth={create:async()=>({isAuthenticated:async()=>true,getUser:async()=>({uid:'tester'}),getTokenSilently:async()=>'fake',logout:async()=>{}})};
+ w.wandAuth={create:async()=>({isAuthenticated:async()=>true,getUser:async()=>({uid:'tester',email:'beta-tester@example.com'}),getTokenSilently:async()=>'fake',logout:async()=>{}})};
  const state={screen_locked:false,frontmost_app:'TextEdit',running_apps:[],now_playing:{title:'Track',artist:'Artist',source_app:'Music'},battery:{percent:16,charging:false},audio:{volume:60,muted:true}};
  w.fetch=async(url,options={})=>{let data;if(url==='/config')data={firebase:{apiKey:'fake',projectId:'fake'}};else if(url==='/v1/devices')data=[{device_id:'mac',name:'Test Mac',online:true}];else if(url==='/v1/connections')data=[];else if(url==='/v1/commands'){commands.push(JSON.parse(options.body));data={command_id:String(commands.length-1)}}else if(url.startsWith('/v1/commands/')){const c=commands[Number(url.split('/').pop())];data={status:'succeeded',result:c.action==='get_state'?state:c.action==='list_apps'?{apps:[],next_offset:null}:{}}}return {ok:true,json:async()=>data}};
  for(const f of ['control-feedback.js','app-picker.js','dashboard.js'])w.eval(read(f));
@@ -19,4 +19,22 @@ test('dashboard initializes real audio and playback, flags battery, keeps histor
 });
 test('slider sends its latest value without a Set button',async()=>{
  const {dom,w,commands}=await setup();try{const slider=w.document.querySelector('#volume');slider.value='61';slider.dispatchEvent(new w.Event('input'));slider.value='63';slider.dispatchEvent(new w.Event('input'));await new Promise(r=>setTimeout(r,350));assert.deepEqual(commands.filter(c=>c.action==='set_volume').map(c=>c.params.level),[63]);assert.equal(w.document.querySelector('#volume-form button'),null)}finally{dom.window.close()}
+});
+test('missing app selection is reported next to the picker without sending a command',async()=>{
+ const {dom,w,commands}=await setup();try{
+  const form=w.document.querySelector('#app-form');
+  form.dispatchEvent(new w.SubmitEvent('submit',{bubbles:true,cancelable:true,submitter:form.querySelector('button[value="open_app"]')}));
+  assert.equal(form.querySelector('#app-error').textContent,'Choose an app first.');
+  assert.equal(form.querySelector('#app-error').getAttribute('role'),'alert');
+  assert.doesNotMatch(w.document.querySelector('#status').textContent,/Choose an app first/);
+  assert.equal(commands.filter(c=>c.action==='open_app').length,0);
+ }finally{dom.window.close()}
+});
+test('support points to the fixed Wand contact, not the signed-in account',async()=>{
+ const {dom,w}=await setup();try{
+  assert.equal(w.document.querySelector('#account').textContent,'beta-tester@example.com');
+  const link=w.document.querySelector('footer a[href^="mailto:"]');
+  assert.equal(link.getAttribute('href'),'mailto:thabheloduve@gmail.com');
+  assert.ok(!link.href.includes('beta-tester@example.com'));
+ }finally{dom.window.close()}
 });
