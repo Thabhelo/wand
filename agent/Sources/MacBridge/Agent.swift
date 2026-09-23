@@ -88,16 +88,10 @@ import MacBridgeNative
                 KeychainStore.setLegacyInteractionAllowed(allowInteraction)
                 defer { KeychainStore.setLegacyInteractionAllowed(false) }
                 let store = KeychainStore(service: "local.macbridge.agent", allowInteraction: allowInteraction)
-                let device = try store.read(account: "device-token")
-                let existingLocal = try store.read(account: "local-api-token")
-                let local = try existingLocal ?? KeychainStore.randomToken()
-                let bootstrap = device == nil ? try store.read(account: "bootstrap-token") : nil
-                let pendingDevice = bootstrap != nil ? try store.read(account: "pending-device-token") : nil
-                try store.consolidate(device: device, local: local, bootstrap: bootstrap, pending: pendingDevice)
-                return (device, local, bootstrap != nil)
+                return try store.connectionCredentials()
             }.value
-            token = credentials.0
-            let localToken = credentials.1
+            token = credentials.device
+            let localToken = credentials.local
             localServer = try LocalHTTPServer(port: UInt16(localPort), token: localToken) { [weak self] value in
                 guard let self else { return (503, .object([:])) }
                 return await self.localCommand(value)
@@ -105,7 +99,7 @@ import MacBridgeNative
             localServer?.start()
             connectionReady = true
             if pending { status = RevocationState.warning }
-            else if token == nil, credentials.2 { cancelPairing() }
+            else if token == nil, credentials.hasBootstrap { cancelPairing() }
             else { status = "Unpaired"; connect() }
         } catch {
             status = "Connection keys are locked. Click Connect to retry when you are ready. Local controls still work."

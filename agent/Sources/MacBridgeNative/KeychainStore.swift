@@ -66,6 +66,37 @@ public struct KeychainStore: Sendable {
         let raw = String(decoding: try JSONEncoder().encode(values), as: UTF8.self)
         try vaultStore.legacyWrite(raw, account: "credentials")
     }
+    /// One Keychain read per connection attempt, even when several tokens are needed.
+    /// Do not retain a process-wide cache: deletion and revocation must remain authoritative.
+    public func connectionCredentials() throws -> ConnectionCredentials {
+        Self.vaultLock.lock(); defer { Self.vaultLock.unlock() }
+        return try Self.prepareConnection(load: loadVault, readLegacy: { try legacyRead(account: $0) },
+                                          save: saveVault, generate: Self.randomToken)
+    }
+
+    static func prepareConnection(load: () throws -> [String: String]?,
+                                  readLegacy: (String) throws -> String?,
+                                  save: ([String: String]) throws -> Void,
+                                  generate: () throws -> String) throws -> ConnectionCredentials {
+        let existing = try load()
+        var values: [String: String]
+        if let existing {
+            values = existing
+        } else {
+            values = [:]
+            // Only installations without a vault need the old, separate items.
+            // Complete every read before writing; a denied read must not replace secrets.
+            for account in ["device-token", "local-api-token", "bootstrap-token", "pending-device-token"] {
+                values[account] = try readLegacy(account)
+            }
+        }
+        if values["local-api-token"] == nil { values["local-api-token"] = try generate() }
+        if existing != values { try save(values) }
+        guard let local = values["local-api-token"] else { throw ContractError(code: "keychain_credentials_invalid") }
+        return ConnectionCredentials(device: values["device-token"], local: local,
+                                     hasBootstrap: values["bootstrap-token"] != nil)
+    }
+
     public func read(account: String) throws -> String? {
         Self.vaultLock.lock(); defer { Self.vaultLock.unlock() }
         if let values = try loadVault() { return values[account] }
@@ -82,17 +113,11 @@ public struct KeychainStore: Sendable {
         if var values = try loadVault() { values.removeValue(forKey: account); try saveVault(values) }
         try legacyDelete(account: account)
     }
-    /// Call only after reading the existing credentials successfully. The default Keychain
-    /// access list belongs to this signed app; never grant access to all applications.
-    public func consolidate(device: String?, local: String, bootstrap: String?, pending: String?) throws {
-        Self.vaultLock.lock(); defer { Self.vaultLock.unlock() }
-        guard try loadVault() == nil else { return }
-        var values = ["local-api-token": local]
-        values["device-token"] = device
-        values["bootstrap-token"] = bootstrap
-        values["pending-device-token"] = pending
-        try saveVault(values)
-        guard try loadVault() == values else { throw ContractError(code: "keychain_credentials_invalid") }
-    }
 
+}
+
+public struct ConnectionCredentials: Sendable {
+    public let device: String?
+    public let local: String
+    public let hasBootstrap: Bool
 }

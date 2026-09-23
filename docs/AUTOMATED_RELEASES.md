@@ -44,3 +44,9 @@ Before announcing a feature, still run its live device tests. CI does not test a
 Notarization proves Apple's malware assessment and signing trust; it does not grant Keychain or desktop permissions. Moving from Thabhelo's development team to Ebuka's Developer ID team changes the app identity. Legacy credentials or one-time Allow decisions may produce more than one prompt. Six prompts are not the expected normal update experience. For a recognized Wand Keychain prompt, Always Allow remembers access for that item. Do not reset macOS permissions, disable Keychain protection, or store tokens in plaintext to suppress prompts. Verify restart/update persistence separately before calling the migration fixed.
 
 References: https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/sign-xcode-applications and https://developer.apple.com/documentation/security/customizing-the-notarization-workflow
+
+## Pending Keychain connection fix (after build 32)
+
+Connection setup now loads the consolidated credential item once, instead of reopening it for the device token, local token, and migration check. An existing complete vault is not rewritten. Legacy migration reads all old items before writing and stops on denied access without overwriting credentials. Regression tests count reads/writes and cover denied reads, migration, and new installations.
+
+This removes redundant authorization opportunities; it does not promise a particular number of macOS dialogs or change Keychain access controls. Release with the existing AX35NK3J3A Developer ID identity. Do not replace the installed notarized app with an Apple Development build to test this fix. After signing, verify Connect, quit, reopen, and reconnect with the existing Keychain item and record whether approval persists. Unit tests cannot verify macOS authorization persistence.
