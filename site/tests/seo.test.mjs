@@ -6,7 +6,7 @@ test('each sitemap destination declares itself as its canonical URL',()=>{
  const root=new URL('../public/',import.meta.url);
  const sitemap=readFileSync(new URL('sitemap.xml',root),'utf8');
  const urls=[...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(m=>m[1]);
- assert.equal(urls.length,5);
+ assert.equal(urls.length,6);
  for(const url of urls){
   const path=new URL(url).pathname;
   assert.ok(path.endsWith('/'),'sitemap must use the final static-assets URL');

@@ -30,11 +30,11 @@ test('missing app selection is reported next to the picker without sending a com
   assert.equal(commands.filter(c=>c.action==='open_app').length,0);
  }finally{dom.window.close()}
 });
-test('support points to the fixed Wand contact, not the signed-in account',async()=>{
+test('support opens the help page instead of an email composer',async()=>{
  const {dom,w}=await setup();try{
   assert.equal(w.document.querySelector('#account').textContent,'beta-tester@example.com');
-  const link=w.document.querySelector('footer a[href^="mailto:"]');
-  assert.equal(link.getAttribute('href'),'mailto:thabheloduve@gmail.com');
+  const link=w.document.querySelector('footer a[href="https://getwand.app/support"]');
+  assert.equal(link.getAttribute('href'),'https://getwand.app/support');
   assert.ok(!link.href.includes('beta-tester@example.com'));
  }finally{dom.window.close()}
 });
