@@ -25,7 +25,24 @@
 <details><summary>An action needs permission</summary><div><p>Open Wand on your Mac. Enable desktop control if you want it to click, type, or scroll. macOS may ask you to allow Accessibility or Screen Recording in System Settings → Privacy & Security.</p><p>If a Keychain prompt identifies Wand, choose Always Allow to remember that choice. If the prompts keep returning, send us a message. Don’t uninstall Wand or reset all your permissions to troubleshoot.</p></div></details>
 <details><summary>Music or volume isn’t working</summary><div><p>Open Music or Spotify on your Mac before using playback controls. Allow Wand’s Automation request on the Mac if one appears.</p><p>If the page says a volume reading is unavailable, your installed build may not support it yet. Check the <a href="/download">download page</a> for the current release.</p></div></details>
 <details><summary>An app won’t open or close</summary><div><p>Choose Refresh apps, then select the app again. Use Other… if it isn’t listed. macOS background components cannot be opened or closed through these controls.</p><p>An app may stay open while it asks you to save a document. Check the Mac for an open dialog.</p></div></details>
-<details><summary>How do I connect Muse?</summary><div><p>Muse access requires its connector registration and approval. Signing in to Wand doesn’t connect Muse automatically. You can use <a href="https://app.getwand.app/">Wand’s web controls</a> while that integration is being prepared.</p></div></details>
+<details id="connect-muse"><summary>How do I connect Muse?</summary><div><p>Muse can use Wand’s web controls today. Copy this prompt and send it to Muse to get started. The official native connection is still being prepared.</p>
+<button id="copy-muse-prompt" type="button">Copy setup prompt</button><p id="muse-copy-status" role="status" aria-live="polite"></p>
+<details id="muse-prompt-preview"><summary>View prompt</summary><div><textarea id="muse-setup-prompt" aria-label="Muse setup prompt" readonly rows="12">I want to set up Wand (https://getwand.app) so I can control my Mac from my phone, and so you can operate it for me.
+
+Wand is a menu-bar app for Mac with web controls at https://app.getwand.app. It lets you mute or lock my Mac, change volume, check battery, storage and memory, control playback, and open or close apps. These are examples, not the full list. Explore the web app to see what is available.
+
+I have already downloaded and opened Wand on my Mac. Do everything you can yourself. Only ask me for steps that require me:
+
+1. Open https://app.getwand.app and use Google sign-in. If you have a supported secure sign-in or vault interface, let me enter credentials there. Otherwise, let me take over Google&#x27;s sign-in screen. Never ask for a password in chat.
+2. Tell me to click Connect in the Wand Mac app and sign in with the same Google account. If my Mac is already connected, skip this step.
+3. Complete the web setup as far as your tools allow. Keep checking the device list for up to two minutes until my Mac is Online; don&#x27;t ask me to announce when it connects. If it stays offline, inspect the connection status and explain the next step. Ask for a pairing code only if automatic linking fails.
+4. Check my Mac&#x27;s battery and report the actual result. Don&#x27;t claim it works until you have a successful response.
+5. When I ask you to do something on my Mac, use Wand&#x27;s web controls and report what happened. Follow any confirmations and permissions required for the action.
+
+If Google requires two-factor approval or another security challenge, ask me to complete it in Google&#x27;s sign-in flow. Don&#x27;t read my emails to get around it. Troubleshoot other issues yourself where possible.
+
+This setup uses Wand&#x27;s website. It does not add Wand as a native Muse connection.</textarea></div></details>
+</div></details>
 <details><summary>I want to disconnect or delete my data</summary><div><p>In <a href="https://app.getwand.app/">Your Macs</a>, select your Mac and choose Disconnect. To delete your Wand records and disconnect all your Macs, open Account settings → Delete my Wand data.</p><p>See our <a href="/privacy#delete-data">privacy policy</a> for details.</p></div></details>
 </section>
 
