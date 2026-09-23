@@ -1,3 +1,4 @@
+import {supportEmail} from './email-template.js';
 const reply = (status, message) => Response.json({message}, {status, headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...(status===429?{'Retry-After':'60'}:{})}});
 const topics = new Set(['Connection','Mac controls','Account','Privacy','Something else']);
 export async function support(request, env) {
@@ -18,7 +19,7 @@ export async function support(request, env) {
     if(typeof name!=='string'||name.length>100||/[\r\n\x00-\x1f]/.test(name)||website||!topics.has(topic)) return reply(400,'Please check the form and try again.');
     if(typeof message!=='string'||message.trim().length<10||message.length>5000) return reply(400,'Write a message between 10 and 5,000 characters.');
     if(!env.SUPPORT_RECIPIENT||!env.SUPPORT_EMAIL) return reply(503,'Support is temporarily unavailable. Please try again shortly.');
-    await env.SUPPORT_EMAIL.send({from:{email:'support@getwand.app',name:'Wand Support'},to:env.SUPPORT_RECIPIENT,replyTo:email,subject:`Wand support: ${topic}`,text:`From: ${name.trim()||'Wand user'}\nReply to: ${email}\nTopic: ${topic}\n\n${message.trim()}`});
+    await env.SUPPORT_EMAIL.send({from:{email:'support@getwand.app',name:'Wand Support'},to:env.SUPPORT_RECIPIENT,replyTo:email,subject:`Wand support: ${topic}`,...supportEmail({name,email,topic,message})});
     return reply(200,'Message sent. We’ll reply to your email.');
   } catch {
     // Never log message contents, visitor addresses, or provider errors.
