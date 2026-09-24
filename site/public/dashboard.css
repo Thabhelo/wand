@@ -6,11 +6,7 @@
 
 .state-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px;margin:0}.state-grid>div{padding:14px 16px;border-radius:14px;background:var(--card);min-width:0}.state-grid dt{font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px}.state-grid dd{margin:0;font-size:15px;font-weight:550;line-height:1.5;overflow-wrap:anywhere}.state-grid .state-wide{grid-column:1/-1}.state-grid .state-wide dd{font-size:13px;font-weight:400;color:var(--muted)}
 
-.phone-handoff summary{cursor:pointer;font-weight:600;min-height:24px}
-.phone-handoff-content{display:flex;align-items:center;gap:24px;margin-top:20px;flex-wrap:wrap}
-.phone-handoff-content>img{box-sizing:content-box;width:160px;height:160px;padding:16px;background:#fff;border-radius:16px;image-rendering:pixelated;flex-shrink:0}
-.phone-handoff-content>div{flex:1;min-width:180px}
-@media(max-width:600px){.phone-handoff{display:none}}
+.phone-handoff{margin-top:22px;padding:20px}.phone-handoff h2{font-size:18px;letter-spacing:-.3px;margin:0 0 16px}.phone-handoff-content{display:flex;flex-direction:column;align-items:flex-start;gap:14px}.phone-handoff-content>img{width:192px;height:auto;max-width:100%;padding:16px;background:white;border-radius:16px;image-rendering:pixelated}.sidebar .phone-handoff p{display:block;font-size:13px;margin:0}.phone-handoff a{font-size:13px;overflow-wrap:anywhere}
 
 .state-warning dd{color:#9b420c;font-weight:600}#app-error{color:#a32b26}label:has(input[type="checkbox"]){display:flex;align-items:center;gap:.6rem}input[type="checkbox"]{width:auto;flex:0 0 auto}
 
