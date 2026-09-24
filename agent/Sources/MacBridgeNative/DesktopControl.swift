@@ -77,6 +77,108 @@ import MacBridgeCore
         guard text(w,kAXSubroleAttribute) != "AXSystemDialog" else { throw ContractError(code:"desktop_protected_ui") }
         return w
     }
+    struct ObservationWindow {
+        let processID: pid_t
+        let role: String
+        let subrole: String
+        let minimized: Bool?
+        let bounds: CGRect?
+        var usable: Bool {
+            guard role=="AXWindow", minimized==false, let bounds else { return false }
+            return bounds.minX.isFinite && bounds.minY.isFinite && bounds.width.isFinite && bounds.height.isFinite && bounds.width>0 && bounds.height>0
+        }
+    }
+    static func observationWindowIndex(_ windows: [ObservationWindow], processID: pid_t, focused: Int?, main: Int?) throws -> Int {
+        if let focused, windows.indices.contains(focused) {
+            let window=windows[focused]
+            guard window.processID==processID, window.subrole != "AXSystemDialog" else { throw ContractError(code:"desktop_protected_ui") }
+            guard window.usable else { throw ContractError(code:"desktop_window_unavailable") }
+            return focused
+        }
+        // With no focused window, never select a normal window behind protected UI.
+        guard !windows.contains(where:{$0.subrole=="AXSystemDialog"}) else { throw ContractError(code:"desktop_protected_ui") }
+        let eligible=windows.indices.filter { windows[$0].processID==processID && windows[$0].subrole=="AXStandardWindow" && windows[$0].usable }
+        if let main, eligible.contains(main) { return main }
+        guard eligible.count==1, let selected=eligible.first else { throw ContractError(code:"desktop_window_unavailable") }
+        return selected
+    }
+    private enum ObservationPreparationError: Error { case timeout }
+    private func observationWindow(_ app: NSRunningApplication, deadline: Date) throws -> AXUIElement {
+        let root=AXUIElementCreateApplication(app.processIdentifier)
+        AXUIElementSetMessagingTimeout(root,0.2)
+        func checkBudget() throws {
+            guard Date()<deadline else { throw ObservationPreparationError.timeout }
+        }
+        func read(_ element: AXUIElement, _ name: String) throws -> CFTypeRef? {
+            try checkBudget()
+            let value=attribute(element,name)
+            try checkBudget()
+            return value
+        }
+        func candidate(_ window: AXUIElement) throws -> ObservationWindow {
+            AXUIElementSetMessagingTimeout(window,0.2)
+            var processID:pid_t=0
+            try checkBudget()
+            _ = AXUIElementGetPid(window,&processID)
+            let role=try read(window,kAXRoleAttribute) as? String ?? ""
+            let subrole=try read(window,kAXSubroleAttribute) as? String ?? ""
+            let minimized=(try read(window,kAXMinimizedAttribute) as? NSNumber)?.boolValue
+            try checkBudget()
+            let bounds=rect(window)
+            try checkBudget()
+            return ObservationWindow(processID:processID,role:role,subrole:subrole,minimized:minimized,bounds:bounds)
+        }
+        if let focused=try read(root,kAXFocusedWindowAttribute), CFGetTypeID(focused)==AXUIElementGetTypeID() {
+            let window=focused as! AXUIElement
+            _ = try Self.observationWindowIndex([try candidate(window)],processID:app.processIdentifier,focused:0,main:nil)
+            return window
+        }
+        var windows=try read(root,kAXWindowsAttribute) as? [AXUIElement] ?? []
+        guard windows.count<=30 else { throw ContractError(code:"desktop_window_unavailable") }
+        var main:Int?
+        if let value=try read(root,kAXMainWindowAttribute), CFGetTypeID(value)==AXUIElementGetTypeID() {
+            let window=value as! AXUIElement
+            if let existing=windows.firstIndex(where:{CFEqual($0,window)}) { main=existing }
+            else { main=windows.count; windows.append(window) }
+        }
+        return windows[try Self.observationWindowIndex(windows.map(candidate),processID:app.processIdentifier,focused:nil,main:main)]
+    }
+    static func confirmObservationFocus(matches: () throws -> Bool,
+                                        pause: () async throws -> Void = { try await Task.sleep(for:.milliseconds(100)) }) async throws {
+        for attempt in 0..<12 {
+            if try matches() { return }
+            if attempt<11 { try await pause() }
+        }
+        throw ContractError(code:"desktop_focus_changed")
+    }
+    private func prepareObservationWindow(_ app: NSRunningApplication, capturedEpoch: UInt64) async throws -> AXUIElement {
+        var selected:AXUIElement?
+        let deadline=Date().addingTimeInterval(2)
+        for _ in 0..<12 {
+            try await Task.sleep(for:.milliseconds(100))
+            guard epoch==capturedEpoch else { throw ContractError(code:"desktop_permission_required") }
+            _ = try check(app.bundleIdentifier)
+            guard NSWorkspace.shared.frontmostApplication?.processIdentifier==app.processIdentifier else { continue }
+            do { selected=try observationWindow(app,deadline:deadline); break }
+            catch ObservationPreparationError.timeout { throw ContractError(code:"desktop_window_unavailable") }
+            catch let error as ContractError where error.code=="desktop_window_unavailable" { continue }
+        }
+        guard epoch==capturedEpoch else { throw ContractError(code:"desktop_permission_required") }
+        _ = try check(app.bundleIdentifier)
+        guard NSWorkspace.shared.frontmostApplication?.processIdentifier==app.processIdentifier else { throw ContractError(code:"desktop_focus_changed") }
+        guard let selected else { throw ContractError(code:"desktop_window_unavailable") }
+        // Activation alone can leave a visible window unfocused or on another Space.
+        // An AX acknowledgement is not proof: require this exact window to become focused.
+        _ = AXUIElementPerformAction(selected,kAXRaiseAction as CFString)
+        try await Self.confirmObservationFocus(matches:{
+            guard self.epoch==capturedEpoch else { throw ContractError(code:"desktop_permission_required") }
+            _ = try self.check(app.bundleIdentifier)
+            guard NSWorkspace.shared.frontmostApplication?.processIdentifier==app.processIdentifier else { return false }
+            do { return CFEqual(try self.safeWindow(app),selected) }
+            catch let error as ContractError where error.code=="desktop_window_unavailable" { return false }
+        })
+        return selected
+    }
     public func observe(_ params: JSON) async throws -> JSON {
         guard !observing else { throw ContractError(code:"desktop_busy") }
         observing = true; defer { observing = false }
@@ -84,17 +186,11 @@ import MacBridgeCore
         let capturedEpoch = epoch
         let observedBundle = app.bundleIdentifier ?? ""
         app.activate()
-        // Launching and switching Spaces can take longer than one animation frame.
-        for _ in 0..<12 {
-            try await Task.sleep(for:.milliseconds(100))
-            guard epoch == capturedEpoch else { throw ContractError(code:"desktop_permission_required") }
-            if NSWorkspace.shared.frontmostApplication?.processIdentifier == app.processIdentifier,
-               (try? safeWindow(app)) != nil { break }
-        }
+        let w=try await prepareObservationWindow(app,capturedEpoch:capturedEpoch)
         guard epoch == capturedEpoch else { throw ContractError(code:"desktop_permission_required") }
         _ = try check(observedBundle)
         guard NSWorkspace.shared.frontmostApplication?.processIdentifier == app.processIdentifier else { throw ContractError(code:"desktop_focus_changed") }
-        let w=try safeWindow(app);invalidate();window=w;pid=app.processIdentifier;observedTitle=text(w,kAXTitleAttribute)
+        invalidate();window=w;pid=app.processIdentifier;observedTitle=text(w,kAXTitleAttribute)
         let root = AXUIElementCreateApplication(app.processIdentifier)
         var output:[JSON]=[];var queue=[w];
         if params["include_menus"] == .bool(true), let menus = attribute(root, kAXMenuBarAttribute), CFGetTypeID(menus) == AXUIElementGetTypeID() { queue.append(menus as! AXUIElement) };var visited=Set<CFHashCode>();var count=0

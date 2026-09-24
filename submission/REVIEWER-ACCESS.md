@@ -17,7 +17,7 @@ Closing the tab disconnects the simulated device. Remove any leftover device thr
 
 This tests hosted authentication, pairing, device ownership, outbound WebSocket routing, results, offline handling and revocation. It does not prove macOS execution or Muse integration.
 
-The September 24 run passed status, mute, unapproved-Shortcut rejection, approved Shortcut execution, offline rejection, reconnect, repeated lock, minimal locked state, rejection of mute while locked, and revocation. An old-socket status race was found and a correction deployed; final retesting of that correction is pending.
+The September 24 run passed status, mute, unapproved-Shortcut rejection, approved Shortcut execution, offline rejection, reconnect, repeated lock, minimal locked state, rejection of mute while locked, and revocation. An old-socket status race was corrected and deployed. After reconnect and several minutes, status commands succeeded while the page remained online. All task-created review devices were revoked; the page confirmed final revocation and hid the device controls.
 
 ## Physical Mac
 
@@ -33,7 +33,9 @@ For a bounded desktop check:
 4. Quit and reopen Wand. Wait for automatic reconnection, then make a fresh observation of the same document and request another image if that permission is enabled.
 5. Pause desktop control when finished and discard only the disposable test content.
 
-Text observation, real window images, independently verified text input and scrolling, and unchanged-app restart persistence passed on the developer's build 33 installation on September 24. Keychain, Accessibility and Screen Recording survived that restart. Fresh-user setup, a full Mac reboot and a future same-team binary update remain separate checks. The full evidence and remaining coverage are in [PERMISSION_LIFECYCLE.md](../docs/PERMISSION_LIFECYCLE.md#september-24-owner-signing-build-33). Report setup problems through https://getwand.app/support/ without sending passwords, device tokens or connection codes.
+Text observation, real window images, independently verified text input and scrolling, and unchanged-app restart persistence passed on the developer's build 33 installation on September 24. Keychain, Accessibility and Screen Recording survived that restart; disposable TextEdit test content was deleted and absence verified. Build 33 Focus on/off also passed independent verification. A same-team build 34 candidate connected without a new Keychain prompt, captured Safari after manual window focus, and passed real relay lock/repeated-lock and local pinned-Safari cleanup tests. It remains unpublished while window focus and the final artifact are checked.
+
+Fresh-user or second-Mac setup, a full Mac reboot and sustained sleep/offline recovery remain open. The sleep test entered sleep but immediate trackpad activity woke the Mac; it does not establish a sustained offline interval. The full evidence and remaining coverage are in [PERMISSION_LIFECYCLE.md](../docs/PERMISSION_LIFECYCLE.md#september-24-same-team-build-34-candidate) and [DESKTOP_ACCEPTANCE.md](../docs/DESKTOP_ACCEPTANCE.md#september-24-current-release-and-candidate-results). Report setup problems through https://getwand.app/support/ without sending passwords, device tokens or connection codes.
 
 Support-form delivery to the operator's inbox was independently confirmed on September 24, including HTML/plain-text content and passing SPF, DKIM and DMARC checks.
 

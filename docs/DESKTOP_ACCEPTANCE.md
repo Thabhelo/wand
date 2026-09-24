@@ -1,8 +1,27 @@
-# Desktop acceptance — September 20, 2026
+# Desktop acceptance — evidence through September 24, 2026
 
-Meta submission remains on hold at the owner's request. These are Wand dashboard → production relay → installed Mac agent tests, not a real Muse integration test. Input delivery alone is not a passing result.
+The dated records below distinguish production-relay tests, local native actions and compatibility experiments. They do not establish registered native Muse integration. Input delivery alone is not a passing result.
 
-## Current live results
+## September 24: current release and candidate results
+
+Public download remains **0.13.0 (33)**, Developer ID signed by the owner team `58XWD3LBSS` and notarized. A same-team **0.13.1 (34) candidate** is installed for testing; it is not published. The initial [build 34 CI run](https://github.com/Thabhelo/wand/actions/runs/35972120037), based on source `ccdba33`, passed signing and notarization. Publication is held while a window-focus repair and replacement artifact are completed.
+
+| Case | Current evidence | Result |
+|---|---|---|
+| Build 33 desktop and restart | Real TextEdit image; 45 typed lines independently checked through native accessibility; scrollbar moved from `1` to `0`; fresh image/text after confirmed quit/relaunch without a password | Pass on this installation; disposable fixture deleted and file absence verified |
+| Same-team candidate update | Build 34 requirement matches installed build 33; automatic connection without a new Keychain prompt; Safari screenshot after manually raising the window | Connection/capture observed; automatic window focus and final artifact verification pending |
+| Focus on/off | Build 33 dedicated controls succeeded; independent Control Center inspection verified Do Not Disturb on and then off; popover dismissed | Pass for this tested path |
+| Safari pinned-tab cleanup | Candidate local command `bc1e8ce1`, `keep_pinned: true`, logged success from `07:55:58.737` to `07:55:59.768`; native inspection confirmed the disposable example tab gone, pinned tab retained and Safari's automatic Start Page | Pass for this local native path; not a relay/Muse result |
+| Real relay lock | Candidate command `d299b81e` received `07:57:05.051`, succeeded `07:57:05.683`; dashboard showed Mac locked | Pass |
+| Repeated real relay lock | `aee0e4ff` received `07:57:29.671`, succeeded `07:57:30.069`; dashboard reported already locked and minimal locked state was verified; owner later unlocked | Pass |
+| Sleep request | `558c9e9a` accepted from `07:46:09.704` to `07:46:10.071`; `powerd` logged `SystemWillSleep` at `07:46:10.037` and display-off with `SoftwareSleep` | Sleep entry observed; immediate WindowServer trackpad activity woke the Mac within about a second; sustained sleep/offline and wake recovery not certified |
+| Reviewer simulator reconnect | After the socket-race fix, status commands `1adaf22c` and `8500ab11` succeeded after reconnect and several minutes; page remained online | Retest passed; all task-created review devices revoked, with final revocation confirmed by the page and controls hidden |
+
+The simulator also passed status, mute, unapproved-Shortcut rejection, approved synthetic Shortcut execution, offline rejection, reconnect, repeated lock, minimal locked state and rejection of mute while locked. These are hosted-flow results, not physical Mac execution. The timestamps above are recorded log times and command prefixes identify the test evidence without exposing device credentials.
+
+Remaining checks include the repaired candidate's automatic window focus and final signed artifact, sustained sleep/offline recovery, a full reboot, and fresh-user or second-Mac installation. Chrome cleanup and Safari `keep_pinned: false` are not established by the pinned-Safari case. Native Muse authorization and tool/image compatibility still await verified client registration details. Earlier dated results below remain historical evidence rather than new release claims.
+
+## September 20 live results
 
 | Case | Evidence | Result |
 |---|---|---|

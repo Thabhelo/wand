@@ -21,6 +21,7 @@ After recording, pause desktop control and discard only the disposable document.
 - A browser-sandbox segment may show offline rejection, unapproved-Shortcut rejection, simulated lock behavior and revocation. Label it **simulated device** throughout; it proves the hosted flow, not physical macOS execution.
 - A real TextEdit image and image capture after app restart passed on the developer's current signing identity. The recording must still show its actual returned image; keep unrelated content outside the captured window.
 - Add physical lock, sleep, browser cleanup or Shortcut execution only after that exact demonstrated path passes and the owner is available to recover the Mac. Historical local-action results are not a new production-relay result.
+- The unpublished build 34 candidate has real relay lock/repeated-lock evidence and local Safari pinned-tab cleanup evidence. Do not present it as the downloadable release or imply its local cleanup test traversed the relay. Its window-focus repair and final artifact checks remain pending. The sleep test showed sleep entry followed by an immediate trackpad wake; it does not support a sustained sleep/offline demonstration claim.
 
 ## Native Muse demo after registration
 
