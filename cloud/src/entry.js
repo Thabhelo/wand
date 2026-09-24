@@ -7,7 +7,7 @@ export const options={
  apiRoute:'/connector/',
  apiHandler:{async fetch(request,env,ctx){try{
   const url=new URL(request.url),path=url.pathname.slice('/connector'.length);
-  if(!((request.method==='GET'&&(path==='/v1/devices'||/^\/v1\/commands\/[0-9a-f-]{36}$/i.test(path)))||(request.method==='POST'&&path==='/v1/commands')))throw new Failure('route_not_found',404);
+  if(!((request.method==='GET'&&(path==='/v1/devices'||/^\/v1\/devices\/[0-9a-f-]{36}\/capabilities$/i.test(path)||/^\/v1\/commands\/[0-9a-f-]{36}$/i.test(path)))||(request.method==='POST'&&path==='/v1/commands')))throw new Failure('route_not_found',404);
   const principal=await connectorPrincipal(env,ctx.props);url.pathname=path;
   return relay.fetch(new Request(url,request),env,ctx,principal);
  }catch(e){return failure(e)}}},

@@ -53,6 +53,12 @@ export default{
    const marker=stamp()+':'+id();const results=await env.DB.batch([env.DB.prepare('UPDATE pairing SET claimed_at=? WHERE code=? AND claimed_at IS NULL AND deadline>? AND NOT EXISTS(SELECT 1 FROM deleting WHERE user_id=?)').bind(marker,b.code,Date.now(),u.user_id),env.DB.prepare('UPDATE devices SET user_id=? WHERE id=? AND revoked_at IS NULL AND EXISTS(SELECT 1 FROM pairing WHERE device_id=devices.id AND claimed_at=?)').bind(u.user_id,p.device_id,marker)]);if(!results[0].meta.changes)throw new Failure('pairing_code_invalid',409);return json({device_id:p.device_id,status:'claimed'});
   }
   if(path==='/v1/devices'&&method==='GET'){const {results}=await env.DB.prepare('SELECT * FROM devices WHERE user_id=? AND revoked_at IS NULL').bind(u.user_id).all();return json(await Promise.all(results.filter(d=>!u.device_ids||u.device_ids.includes(d.id)).map(d=>publicDevice(env,d))))}
+  const capabilitiesPath=path.match(/^\/v1\/devices\/([0-9a-f-]{36})\/capabilities$/i);
+  if(capabilitiesPath&&method==='GET'){
+   const did=capabilitiesPath[1];if(u.device_ids&&!u.device_ids.includes(did))throw new Failure('device_not_found',404);
+   await owned(env,did,u.user_id);await limit(env,'capabilities:'+u.user_id,120);
+   const result=await env.DEVICES.getByName(did).capabilities(u.actions||null);return json({...result,device_id:did});
+  }
   const devicePath=path.match(/^\/v1\/devices\/([0-9a-f-]{36})$/i);
   if(devicePath){const d=await owned(env,devicePath[1],u.user_id);if(method==='PATCH'){const b=await body(request,'RenameDeviceRequest');await env.DB.prepare('UPDATE devices SET name=? WHERE id=?').bind(b.name,d.id).run();return json(await publicDevice(env,{...d,name:b.name}))}if(method==='DELETE'){await revoke(env,d.id);return json({device_id:d.id,status:'revoked'})}}
   if(path==='/v1/commands'&&method==='POST'){const b=await body(request,'CommandRequest');if(u.device_ids&&(!u.device_ids.includes(b.device_id)||!u.actions.includes(b.action)))throw new Failure('action_not_authorized',403);const d=await owned(env,b.device_id,u.user_id);await limit(env,'commands:'+u.user_id,60);const result=await env.DEVICES.getByName(d.id).command({...b,...u,ip});return new Response(result.body,{status:result.status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}})}

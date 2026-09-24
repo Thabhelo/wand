@@ -153,7 +153,7 @@ import MacBridgeNative
                 _ = try origin(); UserDefaults.standard.set(relay, forKey: "relay")
                 while !Task.isCancelled && generation == captured {
                     status = "Requesting a pairing code…"
-                    let enrollment = try await request("v1/pairing/code", body: .object(["device_name": .string(Host.current().localizedName ?? "Mac"), "kind": .string("mac"), "agent_version": .string("0.11.0")]))
+                    let enrollment = try await request("v1/pairing/code", body: .object(["device_name": .string(Host.current().localizedName ?? "Mac"), "kind": .string("mac"), "agent_version": .string(DeviceCapabilityReport.version)]))
                     guard !Task.isCancelled, generation == captured else { return }
                     try validator.validate("PairingCodeResponse", enrollment)
                     guard let bootstrap = enrollment["bootstrap_token"]?.string, let expiryText = enrollment["expires_at"]?.string,
@@ -231,14 +231,14 @@ import MacBridgeNative
         let ws = session.webSocketTask(with: request); ws.maximumMessageSize = 65536
         socket = ws; ws.resume(); status = "Connecting…"
         guard let token else { return }
-        try await send(envelope("hello", ["device_token": .string(token), "agent_version": .string("0.11.0"), "device_name": .string(Host.current().localizedName ?? "Mac"), "macos_version": .string(ProcessInfo.processInfo.operatingSystemVersionString.prefix(40).description)]))
-        try await send(envelope("heartbeat"))
+        try await send(envelope("hello", ["device_token": .string(token), "agent_version": .string(DeviceCapabilityReport.version), "device_name": .string(Host.current().localizedName ?? "Mac"), "macos_version": .string(ProcessInfo.processInfo.operatingSystemVersionString.prefix(40).description), "capabilities": DeviceCapabilityReport.read(desktopEnabled: executor.desktop.desktopWide)]))
+        try await send(envelope("heartbeat", ["capabilities": DeviceCapabilityReport.read(desktopEnabled: executor.desktop.desktopWide)]))
         let readinessTimeout = Task {
             do { try await Task.sleep(for: .seconds(10)) } catch { return }
             if generation == captured && !online { ws.cancel(with: .goingAway, reason: nil) }
         }
         let heartbeat = Task {
-            do { while !Task.isCancelled { try await Task.sleep(for: .seconds(25)); try await send(envelope("heartbeat")) } }
+            do { while !Task.isCancelled { try await Task.sleep(for: .seconds(25)); try await send(envelope("heartbeat", ["capabilities": DeviceCapabilityReport.read(desktopEnabled: executor.desktop.desktopWide)])) } }
             catch { ws.cancel(with: .goingAway, reason: nil) }
         }
         defer { readinessTimeout.cancel(); heartbeat.cancel(); ws.cancel(with: .goingAway, reason: nil); if generation == captured { socket = nil; online = false } }

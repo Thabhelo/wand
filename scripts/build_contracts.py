@@ -84,12 +84,21 @@ D['PairingRedeemRequest']=obj({'device_token':TOKEN})
 D['PairingRedeemResponse']=obj({'device_id':UUID,'status':{'const':'paired'}})
 D['RenameDeviceRequest']=obj({'name':string()})
 D['RevocationResponse']=obj({'device_id':UUID,'status':{'const':'revoked'}})
+# Reports describe implementation, not successful execution or user authorization.
+cap_actions={'type':'array','items':enum(*(a['name'] for a in catalog)),'uniqueItems':True,'maxItems':len(catalog)}
+cap_features={'type':'array','items':enum('audio_output_state','playback_state','app_inventory','desktop_images','system_status'),'uniqueItems':True,'maxItems':5}
+D['CapabilityPermissions']=obj({key:enum('granted','denied','unknown') for key in ('desktop_control','accessibility','screen_recording')})
+D['CapabilityReport']=obj({'schema_version':{'const':1},'agent_version':string(40),'agent_build':nullable(string(40)),'actions':cap_actions,'features':cap_features,'permissions':ref('CapabilityPermissions')})
+D['ActionCapability']=obj({'name':enum(*(a['name'] for a in catalog)),'support':enum('supported','unsupported','unknown'),'authorized':BOOL})
+D['DeviceCapabilities']=obj({'device_id':UUID,'online':BOOL,'source':enum('device','unknown'),'reported_at':nullable(TIME),'stale':BOOL,'agent_version':nullable(string(40)),'agent_build':nullable(string(40)),'actions':{'type':'array','items':ref('ActionCapability')},'features':obj({key:enum('supported','unsupported','unknown') for key in ('audio_output_state','playback_state','app_inventory','desktop_images','system_status')}),'permissions':ref('CapabilityPermissions')})
 D['Hello']=env('hello',{'device_token':TOKEN,'agent_version':string(40),'device_name':string(),'macos_version':string(40)})
 D['PairingCancelRequest']=obj()
 D['PairingCancelResponse']=obj({'status':{'const':'cancelled'}})
 D['Ready']=env('ready',{'device_id':UUID})
 D['PairingPreviewResponse']=obj({'device_name':string(),'expires_at':TIME})
 D['Heartbeat']=env('heartbeat')
+for name in ('Hello','Heartbeat'):
+    D[name]['properties']['capabilities']=ref('CapabilityReport')
 D['RevokeSelf']=env('revoke_self')
 D['Delivered']=env('delivered',{'command_id':UUID})
 D['Result']={'oneOf':[env('result',{'command_id':UUID,'ok':{'const':True},'data':ref('ActionResult')}),env('result',{'command_id':UUID,'ok':{'const':False},'error_code':string(80)})]}

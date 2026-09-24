@@ -97,3 +97,5 @@ Do not claim first physical-device connector, guaranteed featuring, verified pla
 - 2026-09-20: Desktop-wide persistent consent replaces per-app timed grants at the owner's request; ordinary LLM navigation uses session consent, consequential actions still require operator confirmation. Lock/sleep suspend execution without erasing consent; Pause/revoke erase it.
 
 - 2026-09-21: Keep the same Apple Development identity and installed app path; cancel new signing when Keychain authorization is required instead of causing another permission-reset loop. Publish the previously verified signed build separately from unverified system-action changes.
+
+- 2026-09-23: Keep Raw API + OpenAPI as the Muse submission path. Add authenticated per-device capability advertisements rather than infer features from older agents' hard-coded versions. Treat support, OAuth authority and live permissions separately; preserve legacy commands when support is unknown. MCP remains an optional adapter, not a submission prerequisite.

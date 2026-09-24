@@ -39,6 +39,10 @@ it('exchanges a real code and enforces device, action, admin and revoke boundari
  const {id,code}=await approve(),response=await exchange(code);expect(response.status).toBe(200);const credentials=await response.json();expect(credentials.access_token).toBeTruthy();
  expect((await request('/v1/connections/consent','POST',{id,decision:'allow',device_ids:[did],actions:['mute']})).status).toBe(410);
  const bearer=credentials.access_token;
+ const caps=await request('/connector/v1/devices/'+did+'/capabilities','GET',undefined,bearer);expect(caps.status).toBe(200);const report=await caps.json();expect(report.actions.find(a=>a.name==='mute').authorized).toBe(true);expect(report.actions.find(a=>a.name==='get_state').authorized).toBe(false);
+ expect((await request('/connector/v1/devices/'+other+'/capabilities','GET',undefined,bearer)).status).toBe(404);
+ expect((await request('/connector/v1/devices/'+did+'/capabilities','GET',undefined,'alice')).status).toBe(401);
+
  expect((await(await request('/connector/v1/devices','GET',undefined,bearer)).json()).map(d=>d.device_id)).toEqual([did]);
  expect((await request('/connector/v1/account','DELETE',undefined,bearer)).status).toBe(404);
  expect((await request('/v1/devices','GET',undefined,bearer)).status).toBe(401);

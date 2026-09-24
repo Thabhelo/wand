@@ -3,7 +3,7 @@ import {publicSpec} from '../src/openapi.js';
 it('publishes only scoped connector operations',()=>{
  const spec=publicSpec({});expect(spec.servers[0].url).toBe('https://api.getwand.app/connector');
  expect(spec['x-wand-auth-configured']).toBe(false);
- expect(Object.keys(spec.paths).sort()).toEqual(['/v1/commands','/v1/commands/{cid}','/v1/devices']);
+ expect(Object.keys(spec.paths).sort()).toEqual(['/v1/commands','/v1/commands/{cid}','/v1/devices','/v1/devices/{device_id}/capabilities']);
  expect(spec.paths['/v1/commands'].post.responses['202']).toBeDefined();
  expect(JSON.stringify(spec)).not.toContain('YOUR_AUTH0_DOMAIN');
 });

@@ -2272,6 +2272,287 @@
       ],
       "additionalProperties": false
     },
+    "CapabilityPermissions": {
+      "type": "object",
+      "properties": {
+        "desktop_control": {
+          "enum": [
+            "granted",
+            "denied",
+            "unknown"
+          ]
+        },
+        "accessibility": {
+          "enum": [
+            "granted",
+            "denied",
+            "unknown"
+          ]
+        },
+        "screen_recording": {
+          "enum": [
+            "granted",
+            "denied",
+            "unknown"
+          ]
+        }
+      },
+      "required": [
+        "desktop_control",
+        "accessibility",
+        "screen_recording"
+      ],
+      "additionalProperties": false
+    },
+    "CapabilityReport": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "agent_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "agent_build": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "lock_screen",
+              "sleep_mac",
+              "media_play_pause",
+              "media_next",
+              "media_previous",
+              "set_volume",
+              "mute",
+              "unmute",
+              "close_browser_tabs",
+              "quit_app",
+              "open_app",
+              "open_url",
+              "run_shortcut",
+              "toggle_do_not_disturb",
+              "list_apps",
+              "get_state",
+              "desktop_observe",
+              "desktop_act",
+              "desktop_stop"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 19
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "audio_output_state",
+              "playback_state",
+              "app_inventory",
+              "desktop_images",
+              "system_status"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 5
+        },
+        "permissions": {
+          "$ref": "#/$defs/CapabilityPermissions"
+        }
+      },
+      "required": [
+        "schema_version",
+        "agent_version",
+        "agent_build",
+        "actions",
+        "features",
+        "permissions"
+      ],
+      "additionalProperties": false
+    },
+    "ActionCapability": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "enum": [
+            "lock_screen",
+            "sleep_mac",
+            "media_play_pause",
+            "media_next",
+            "media_previous",
+            "set_volume",
+            "mute",
+            "unmute",
+            "close_browser_tabs",
+            "quit_app",
+            "open_app",
+            "open_url",
+            "run_shortcut",
+            "toggle_do_not_disturb",
+            "list_apps",
+            "get_state",
+            "desktop_observe",
+            "desktop_act",
+            "desktop_stop"
+          ]
+        },
+        "support": {
+          "enum": [
+            "supported",
+            "unsupported",
+            "unknown"
+          ]
+        },
+        "authorized": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "support",
+        "authorized"
+      ],
+      "additionalProperties": false
+    },
+    "DeviceCapabilities": {
+      "type": "object",
+      "properties": {
+        "device_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "online": {
+          "type": "boolean"
+        },
+        "source": {
+          "enum": [
+            "device",
+            "unknown"
+          ]
+        },
+        "reported_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stale": {
+          "type": "boolean"
+        },
+        "agent_version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "agent_build": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ActionCapability"
+          }
+        },
+        "features": {
+          "type": "object",
+          "properties": {
+            "audio_output_state": {
+              "enum": [
+                "supported",
+                "unsupported",
+                "unknown"
+              ]
+            },
+            "playback_state": {
+              "enum": [
+                "supported",
+                "unsupported",
+                "unknown"
+              ]
+            },
+            "app_inventory": {
+              "enum": [
+                "supported",
+                "unsupported",
+                "unknown"
+              ]
+            },
+            "desktop_images": {
+              "enum": [
+                "supported",
+                "unsupported",
+                "unknown"
+              ]
+            },
+            "system_status": {
+              "enum": [
+                "supported",
+                "unsupported",
+                "unknown"
+              ]
+            }
+          },
+          "required": [
+            "audio_output_state",
+            "playback_state",
+            "app_inventory",
+            "desktop_images",
+            "system_status"
+          ],
+          "additionalProperties": false
+        },
+        "permissions": {
+          "$ref": "#/$defs/CapabilityPermissions"
+        }
+      },
+      "required": [
+        "device_id",
+        "online",
+        "source",
+        "reported_at",
+        "stale",
+        "agent_version",
+        "agent_build",
+        "actions",
+        "features",
+        "permissions"
+      ],
+      "additionalProperties": false
+    },
     "Hello": {
       "type": "object",
       "properties": {
@@ -2307,6 +2588,9 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 40
+        },
+        "capabilities": {
+          "$ref": "#/$defs/CapabilityReport"
         }
       },
       "required": [
@@ -2405,6 +2689,9 @@
         "ts": {
           "type": "string",
           "format": "date-time"
+        },
+        "capabilities": {
+          "$ref": "#/$defs/CapabilityReport"
         }
       },
       "required": [

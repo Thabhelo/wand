@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {JSDOM} from 'jsdom';
 const read=f=>fs.readFileSync(new URL('../../web/'+f,import.meta.url),'utf8');
-async function setup(saved,override={}){
+async function setup(saved,override={},capabilities=null){
  const dom=new JSDOM(read('index.html'),{url:'https://app.getwand.app',runScripts:'outside-only'}),w=dom.window,commands=[];
  if(saved)w.sessionStorage.setItem('wand-history-tester',saved);
  w.wandAuth={create:async()=>({isAuthenticated:async()=>true,getUser:async()=>({uid:'tester',email:'beta-tester@example.com'}),getTokenSilently:async()=>'fake',logout:async()=>{}})};
  const state={screen_locked:false,frontmost_app:'TextEdit',running_apps:[],now_playing:{title:'Track',artist:'Artist',source_app:'Music'},battery:{percent:16,charging:false},audio:{volume:60,muted:true}};
  Object.assign(state,override);if(override.audio===undefined&&Object.hasOwn(override,'audio'))delete state.audio;
- w.fetch=async(url,options={})=>{let data;if(url==='/config')data={firebase:{apiKey:'fake',projectId:'fake'}};else if(url==='/v1/devices')data=[{device_id:'mac',name:'Test Mac',online:true}];else if(url==='/v1/connections')data=[];else if(url==='/v1/commands'){commands.push(JSON.parse(options.body));data={command_id:String(commands.length-1)}}else if(url.startsWith('/v1/commands/')){const c=commands[Number(url.split('/').pop())];data={status:'succeeded',result:c.action==='get_state'?state:c.action==='list_apps'?{apps:[],next_offset:null}:{}}}return {ok:true,json:async()=>data}};
+ w.fetch=async(url,options={})=>{let data;if(url==='/config')data={firebase:{apiKey:'fake',projectId:'fake'}};else if(url==='/v1/devices')data=[{device_id:'mac',name:'Test Mac',online:true}];else if(url==='/v1/devices/mac/capabilities')data=capabilities;else if(url==='/v1/connections')data=[];else if(url==='/v1/commands'){commands.push(JSON.parse(options.body));data={command_id:String(commands.length-1)}}else if(url.startsWith('/v1/commands/')){const c=commands[Number(url.split('/').pop())];data={status:'succeeded',result:c.action==='get_state'?state:c.action==='list_apps'?{apps:[],next_offset:null}:{}}}return {ok:true,json:async()=>data}};
  for(const f of ['control-feedback.js','app-picker.js','dashboard.js'])w.eval(read(f));
  await new Promise(r=>setTimeout(r,350));return {dom,w,commands};
 }
@@ -54,4 +54,10 @@ test('missing track data does not claim a running player is closed or paused',as
   assert.equal(w.document.querySelector('#now-playing').textContent,'No track information available.');
   assert.doesNotMatch(w.document.querySelector('#state-result').textContent,/Nothing playing/);
  }finally{dom.window.close()}
+});
+
+test('fresh explicit capability gaps disable actions, unknown legacy support stays usable',async()=>{
+ for(const [report,disabled] of [[{stale:false,actions:[{name:'mute',support:'unsupported',authorized:true}]},true],[{stale:true,actions:[{name:'mute',support:'unsupported',authorized:true}]},false],[{stale:true,actions:[{name:'mute',support:'unknown',authorized:true}]},false]]){
+  const {dom,w}=await setup(null,{},report);try{assert.equal(w.document.querySelector('[data-action="mute"]').disabled,disabled)}finally{dom.window.close()}
+ }
 });

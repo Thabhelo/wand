@@ -1,3 +1,4 @@
+import schema from '../../contracts/v1.schema.json' with {type:'json'};
 import base from '../../connector/openapi.json' with {type:'json'};
 import catalog from '../../contracts/actions.json' with {type:'json'};
 const SCOPES=catalog.map(a=>'wand:'+a.name);
@@ -13,5 +14,8 @@ export function publicSpec(env) {
   operation.responses['403']={description:'The device or action is outside the user’s approved permissions'};
   operation.responses['503']={description:'Service temporarily unavailable'};
  }
+ const convert=value=>JSON.parse(JSON.stringify(value).replaceAll('#/$defs/','#/components/schemas/'));
+ for(const name of ['DeviceCapabilities','CapabilityPermissions','ActionCapability'])spec.components.schemas[name]=convert(schema.$defs[name]);
+ spec.paths['/v1/devices/{device_id}/capabilities']={get:{operationId:'getDeviceCapabilities',summary:'Check this Mac’s implemented actions, features and current permission report',description:'Check before offering actions. Unknown means this agent does not report capabilities; never infer support from its version. Supported does not mean authorized or ready. Permission reports become unknown when stale; execution always rechecks. Metadata does not grant access.',security:[{userOAuth:[]}],parameters:[{name:'device_id',in:'path',required:true,schema:{type:'string',format:'uuid'}}],responses:{'200':{description:'Device capability report',content:{'application/json':{schema:{$ref:'#/components/schemas/DeviceCapabilities'}}}},'401':{description:'Authentication required'},'404':{description:'Device not found or outside consent'},'429':{description:'Too many capability requests'}}}};
  return spec;
 }
