@@ -5,7 +5,7 @@ Goal: normal launches and same-identity updates reuse granted permissions withou
 ## Implementation
 
 - One `credentials` item under `local.macbridge.agent.credentials-v2` stores Wand's credential dictionary in Keychain. No credentials move to preferences, files, URLs, or logs.
-- Existing credentials are copied only after authorized reads; the saved dictionary is read back and compared before migration completes. Legacy records remain untouched during migration, preserving rollback. Once a vault exists, missing entries do not fall back to legacy records.
+- Existing credentials are copied only after all authorized reads finish successfully; the dictionary is saved only when its values change. The current implementation does not read it back after saving. Legacy records remain untouched during migration, preserving rollback. Once a vault exists, missing entries do not fall back to legacy records.
 - Access uses the new item's default app-owned Keychain access list. No all-applications access is granted.
 - Background startup forbids authentication UI. An explicit Connect retries authorized access; this is recovery, not a substitute for passing silent startup.
 - Desktop consent stays in the existing preferences; no TCC reset or permission entry deletion is part of installation.
@@ -39,4 +39,13 @@ Build 21 failed check 3: after the owner approved existing credential access and
 - A remote press test was rejected by the existing active-window guard; no input success is claimed for that attempt.
 - Three real codesign guard tests pass (same requirement, changed requirement, unsigned candidate); 14 Swift tests passed on the storage change.
 
-This demonstrates app restart and signed-update persistence on the owner's existing installation. After a full Mac reboot, Wand was opened manually and the owner confirmed it connected without a password prompt. Automatic launch at login, fresh-user setup, and post-reboot desktop capture/input remain unverified. Build 23 is published at https://getwand.app/download/. The downloaded public DMG matches the verified package. Cloudflare deployment: 8435171f-0813-4e7f-aeb9-7148c2eea2c2.
+This demonstrates app restart and signed-update persistence on the owner's existing installation. After a full Mac reboot, Wand was opened manually and the owner confirmed it connected without a password prompt. Automatic launch at login, fresh-user setup, and post-reboot desktop capture/input remain unverified. Build 23 was published at https://getwand.app/download/. The downloaded public DMG matches the verified package. Cloudflare deployment: 8435171f-0813-4e7f-aeb9-7148c2eea2c2.
+
+
+## September 24: owner signing, build 33
+
+- Wand 0.13.0 (33) is signed by Thabhelo Duve, team `58XWD3LBSS`. Apple accepted the app and DMG; stapling, signature, Gatekeeper, and public-download checksum checks passed. Build 33 is published at https://getwand.app/download/.
+- The update is installed at `~/Applications/Wand.app`. This deliberately changes build 32's signing team, so earlier same-identity persistence results do not establish this migration's success.
+- Explicit access restored the live connection, but unchanged-app relaunch still reported unavailable connection keys. Accessibility also reported missing access. Silent reconnection and desktop-control acceptance remain **unpassed** for this migration.
+- A metadata-only check found the login Keychain unlocked and the credential vault's sole trusted-app reference pointing to `/Users/Shared/Wand.app`. That reference failed validation against the installed build; a reference created from the installed app passed its positive control. The owner team already appears in the partition list. No secrets were read and no access lists or permissions were changed.
+- Next verification: grant persistent access to the installed app using **Always Allow** when its Keychain prompt appears, then repeat unchanged-app relaunch. Verify Accessibility and Screen Recording separately. Do not reset TCC or expand the vault to all applications. If access still fails, capture the failing stage and OSStatus: the current connection message also covers local-server initialization failures.
