@@ -22,6 +22,82 @@ test('dashboard initializes real audio and playback, flags battery, keeps histor
 test('slider sends its latest value without a Set button',async()=>{
  const {dom,w,commands}=await setup();try{const slider=w.document.querySelector('#volume');slider.value='61';slider.dispatchEvent(new w.Event('input'));slider.value='63';slider.dispatchEvent(new w.Event('input'));await new Promise(r=>setTimeout(r,350));assert.deepEqual(commands.filter(c=>c.action==='set_volume').map(c=>c.params.level),[63]);assert.equal(w.document.querySelector('#volume-form button'),null)}finally{dom.window.close()}
 });
+async function until(check){for(let i=0;i<150;i++){if(check())return;await new Promise(r=>setTimeout(r,20))}assert.fail('Dashboard did not reach the expected state')}
+test('slider retains focus and coalesces changes while a volume command is in flight',async()=>{
+ const {dom,w,commands}=await setup();let release;
+ try{
+  const slider=w.document.querySelector('#volume'),fetch=w.fetch;
+  const held=new Promise(resolve=>release=resolve);
+  w.fetch=async(url,options)=>{if(url.startsWith('/v1/commands/')&&commands[Number(url.split('/').pop())]?.action==='set_volume')await held;return fetch(url,options)};
+  // Even briefly disabling the range blurs it in browsers; jsdom does not model that behavior.
+  const descriptor=Object.getOwnPropertyDescriptor(w.HTMLInputElement.prototype,'disabled'),disabledWrites=[];
+  Object.defineProperty(slider,'disabled',{get(){return descriptor.get.call(this)},set(value){disabledWrites.push(value);descriptor.set.call(this,value)}});
+  slider.focus();slider.value='61';slider.dispatchEvent(new w.Event('input'));
+  await until(()=>commands.some(c=>c.action==='set_volume'));
+  assert.equal(slider.disabled,false);assert.equal(w.document.activeElement,slider);
+  slider.value='62';slider.dispatchEvent(new w.Event('input'));
+  slider.value='63';slider.dispatchEvent(new w.Event('input'));
+  assert.equal(w.document.querySelector('#volume-value').textContent,'63%');
+  release();await until(()=>commands.filter(c=>c.action==='set_volume').length===2);
+  await until(()=>w.document.querySelector('#status').textContent.includes('63%'));
+  assert.deepEqual(commands.filter(c=>c.action==='set_volume').map(c=>c.params.level),[61,63]);
+  assert.ok(!disabledWrites.includes(true),'Volume sends must never disable the focused slider');
+  assert.equal(w.document.activeElement,slider);
+ }finally{release?.();await new Promise(r=>setTimeout(r,0));dom.window.close()}
+});
+test('volume input stops when the Mac loses its capability during a send',async()=>{
+ const {dom,w,commands}=await setup();let release;
+ try{
+  const fetch=w.fetch,slider=w.document.querySelector('#volume'),held=new Promise(resolve=>release=resolve);
+  let blocked=false;
+  w.fetch=async(url,options)=>{
+   if(url==='/v1/devices/mac/capabilities'&&blocked)return {ok:true,json:async()=>({...available,actions:available.actions.map(a=>a.name==='set_volume'?{...a,availability:'blocked',reason:'device_locked'}:a)})};
+   if(url.startsWith('/v1/commands/')&&commands[Number(url.split('/').pop())]?.action==='set_volume')await held;
+   return fetch(url,options);
+  };
+  slider.value='61';slider.dispatchEvent(new w.Event('input'));
+  await until(()=>commands.some(c=>c.action==='set_volume'));
+  slider.value='63';slider.dispatchEvent(new w.Event('input'));
+  blocked=true;w.document.querySelector('#refresh').click();
+  await until(()=>slider.disabled);
+  release();await until(()=>!w.document.querySelector('[data-action="get_state"]').disabled);
+  await new Promise(r=>setTimeout(r,1600));
+  assert.deepEqual(commands.filter(c=>c.action==='set_volume').map(c=>c.params.level),[61]);
+ }finally{release?.();await new Promise(r=>setTimeout(r,0));dom.window.close()}
+});
+test('dashboard shows this Mac’s reported version and build without guessing missing metadata',async()=>{
+ for(const [fields,expected] of [
+  [{agent_version:'0.13.1',agent_build:'34'},'Wand 0.13.1 · Build 34'],
+  [{agent_version:'0.13.1',agent_build:null},'Wand 0.13.1'],
+  [{agent_version:null,agent_build:'34'},'Build 34'],
+  [{agent_version:'0.13.1',agent_build:'34',stale:true},'Last reported: Wand 0.13.1 · Build 34'],
+  [{source:'unknown'},'Version not reported'],
+  [{agent_version:'<b>dev</b>',agent_build:'<i>34</i>'},'Wand <b>dev</b> · Build <i>34</i>']
+ ]){
+  const {dom,w}=await setup(null,{},{...available,...fields});
+  try{const version=w.document.querySelector('#device-version');assert.equal(version.textContent,expected);assert.equal(version.children.length,0)}finally{dom.window.close()}
+ }
+});
+test('switching Macs clears the previous build and ignores its late capability response',async()=>{
+ const {dom,w}=await setup(null,{},{...available,agent_version:'0.13.1',agent_build:'34'});let release;
+ try{
+  const fetch=w.fetch,held=new Promise(resolve=>release=resolve);let pending=false;
+  w.fetch=async(url,options)=>{
+   if(url==='/v1/devices')return {ok:true,json:async()=>[{device_id:'mac',name:'Test Mac',online:true},{device_id:'other',name:'Other Mac',online:true}]};
+   if(url==='/v1/devices/other/capabilities'){pending=true;await held;return {ok:true,json:async()=>({...available,agent_version:'0.12.0',agent_build:'31'})}}
+   return fetch(url,options);
+  };
+  w.document.querySelector('#refresh').click();
+  await until(()=>w.document.querySelectorAll('.device').length===2&&!w.document.querySelector('#refresh').disabled);
+  w.document.querySelectorAll('.device')[1].click();
+  assert.equal(w.document.querySelector('#device-version').textContent,'Version not reported');
+  await until(()=>pending);
+  w.document.querySelectorAll('.device')[0].click();
+  await until(()=>w.document.querySelector('#device-version').textContent==='Wand 0.13.1 · Build 34');
+  release();await new Promise(r=>setTimeout(r,30));
+  assert.equal(w.document.querySelector('#device-version').textContent,'Wand 0.13.1 · Build 34');
+ }finally{release?.();await new Promise(r=>setTimeout(r,0));dom.window.close()}
+});
 test('missing app selection is reported next to the picker without sending a command',async()=>{
  const {dom,w,commands}=await setup();try{
   const form=w.document.querySelector('#app-form');
