@@ -4,14 +4,14 @@ Updated September 24, 2026. **This is an outline, not a recording or a completed
 
 ## Record the working web-to-Mac flow
 
-Use Wand 0.13.0, build 33, a connected Mac you control, and a new disposable TextEdit document. Complete sign-in and macOS approvals before recording; keep passwords, connection codes, private documents and unrelated windows out of view. Dispatch the demonstrated actions through Wand, then independently show their effects on the Mac.
+Use the published Wand version shown on the download page, a connected Mac you control, and a new disposable TextEdit document. Show the exact installed version in the recording. Complete sign-in and macOS approvals before recording; keep passwords, connection codes, private documents and unrelated windows out of view. Dispatch the demonstrated actions through Wand, then independently show their effects on the Mac.
 
 | Time | Show | Accurate narration |
 |---|---|---|
 | 0:00–0:15 | Installed Wand version and its connected Mac in the web dashboard | “This is Wand's current Mac beta. Native Muse connector registration is pending; this demonstration uses Wand's web controls and production relay.” |
 | 0:15–0:30 | Read the Mac's current status and desktop capability state | Explain that available actions depend on the selected Mac, local consent and current permissions. |
 | 0:30–1:00 | Observe the disposable TextEdit document with a window image, enter a harmless phrase, then observe again | Show the returned text/image and actual document. Explain that an input acknowledgement alone does not establish the intended result. |
-| 1:00–1:30 | Quit/reopen Wand, wait for automatic reconnection, then observe and capture the same document again | Report only what happens in this recording. The developer's unchanged build 33 retained Keychain, Accessibility and Screen Recording access through this sequence on September 24. |
+| 1:00–1:30 | Quit/reopen Wand, wait for automatic reconnection, then observe and capture the same document again | Report only what happens in this recording. The developer's final build 34 retained Keychain, Accessibility and Screen Recording access through this sequence on September 24. |
 | 1:30–1:45 | Show the download, reviewer sandbox and support links | “Reviewers can use their own Mac or the explicitly simulated browser sandbox. Native Muse OAuth and tool/image compatibility are the next integration step.” |
 
 After recording, pause desktop control and discard only the disposable document. Close the test tab and remove task-only recording intermediates while retaining the final recording. Watch the exported video before linking it in a form. Do not provide a demo URL until the actual recording is available.
@@ -21,7 +21,7 @@ After recording, pause desktop control and discard only the disposable document.
 - A browser-sandbox segment may show offline rejection, unapproved-Shortcut rejection, simulated lock behavior and revocation. Label it **simulated device** throughout; it proves the hosted flow, not physical macOS execution.
 - A real TextEdit image and image capture after app restart passed on the developer's current signing identity. The recording must still show its actual returned image; keep unrelated content outside the captured window.
 - Add physical lock, sleep, browser cleanup or Shortcut execution only after that exact demonstrated path passes and the owner is available to recover the Mac. Historical local-action results are not a new production-relay result.
-- The unpublished build 34 candidate has real relay lock/repeated-lock evidence and local Safari pinned-tab cleanup evidence. Do not present it as the downloadable release or imply its local cleanup test traversed the relay. Its window-focus repair and final artifact checks remain pending. The sleep test showed sleep entry followed by an immediate trackpad wake; it does not support a sustained sleep/offline demonstration claim.
+- The final build 34 CI app passed first-request Safari/TextEdit capture without manual window raising, independently verified text input, and the native volume-display check. A confirmed unchanged-app restart reconnected without Keychain or privacy prompts and returned a first-request Safari image; disposable fixtures were removed and absence verified. Candidate lock/repeated-lock tests traversed the relay; pinned-Safari cleanup was a local native test. A second sleep test verified about 43 seconds asleep and reconnect, but did not establish the 75-second missed-heartbeat/offline interval. Report those distinct outcomes accurately if demonstrating these actions.
 
 ## Native Muse demo after registration
 

@@ -1,6 +1,6 @@
 # Wand security and incident response
 
-Updated September 24, 2026. Describes the current Cloudflare/Firebase implementation and Wand 0.13.0, build 33. The repository also retains an older FastAPI reference; its Auth0 and process-local limiter descriptions do not describe the deployed service.
+Updated September 24, 2026. Describes the current Cloudflare/Firebase implementation and Wand 0.13.1, build 34. The repository also retains an older FastAPI reference; its Auth0 and process-local limiter descriptions do not describe the deployed service.
 
 ## Identity and access
 
@@ -8,7 +8,7 @@ Owners sign in through Firebase Google authentication. Assistant clients use a s
 
 Device credentials are random 256-bit opaque tokens. The Mac stores credentials in Keychain; the relay stores token hashes. A leaked device token can impersonate the device and forge its results, but cannot authenticate as an owner to issue commands. Revoke and re-pair to replace it. A compromised authorized assistant account can exercise its granted capabilities; operator confirmations are a UX layer, not an independent security boundary.
 
-Build 33 deliberately changes the Developer ID signing team to the owner's `58XWD3LBSS`. Existing Keychain and macOS privacy grants may refer to an older signing identity. On the tested installation, the owner's persistent Keychain approval and targeted repairs of Wand's stale Accessibility and Screen Recording entries restored access. After confirmed process exit and relaunch, Keychain access, text observation and real window capture persisted without another password prompt. A same-team build 34 candidate subsequently connected without a new Keychain prompt and captured Safari after manual window focus; it remains unpublished pending a focus repair and final artifact verification. This is evidence for that installation, not a guarantee of migration on every Mac. Credentials were not exported or moved to files, and no blanket Keychain or privacy reset was used. Fresh-user setup, a full reboot and final-candidate update checks remain open.
+Build 33 deliberately changed the Developer ID signing team to the owner's `58XWD3LBSS`. Existing Keychain and macOS privacy grants may refer to an older signing identity. On the tested installation, the owner's persistent Keychain approval and targeted repairs of Wand's stale Accessibility and Screen Recording entries restored access. After confirmed process exit and relaunch, Keychain access, text observation and real window capture persisted without another password prompt. The final same-team build 34 CI app subsequently reconnected without a permission prompt and passed first-request Safari/TextEdit capture plus independently verified text input. After a confirmed unchanged-app restart it reconnected without Keychain or privacy prompts and returned a fresh Safari image; disposable fixtures were removed. This is evidence for that installation, not a guarantee of migration on every Mac. Credentials were not exported or moved to files, and no blanket Keychain or privacy reset was used. Fresh-user setup and a full reboot remain separate checks.
 
 ## Transport and execution
 

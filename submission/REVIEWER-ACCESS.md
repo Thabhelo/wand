@@ -1,6 +1,6 @@
 # Review Wand
 
-Updated September 24, 2026. Public Mac release: **0.13.0, build 33**.
+Updated September 24, 2026. Public Mac release: **0.13.1, build 34**.
 
 ## Browser sandbox
 
@@ -21,7 +21,7 @@ The September 24 run passed status, mute, unapproved-Shortcut rejection, approve
 
 ## Physical Mac
 
-Download https://getwand.app/download/. Build 33 is signed by Thabhelo Duve and notarized, for Apple silicon and macOS 26+. Install, open Wand, choose **Connect**, sign in with Google and approve your Mac. Use a test Mac with disposable documents/tabs. Updating from build 32 changes the signing identity, so macOS may request approval again. Enter passwords only in the macOS dialog; **Always Allow** remembers access to Wand's connection keys. Do not reset existing permissions as a routine installation step.
+Download https://getwand.app/download/. Build 34 is signed by Thabhelo Duve and notarized, for Apple silicon and macOS 26+. Install, open Wand, choose **Connect**, sign in with Google and approve your Mac. Use a test Mac with disposable documents/tabs. Updating from build 32 changes the signing identity, so macOS may request approval again. Enter passwords only in the macOS dialog; **Always Allow** remembers access to Wand's connection keys. Do not reset existing permissions as a routine installation step.
 
 Use https://app.getwand.app/ for physical controls. Native desktop access requires local consent plus macOS Accessibility; screenshots also require Screen Recording. Neither the sandbox nor a support request grants access to the developer's Mac.
 
@@ -33,9 +33,11 @@ For a bounded desktop check:
 4. Quit and reopen Wand. Wait for automatic reconnection, then make a fresh observation of the same document and request another image if that permission is enabled.
 5. Pause desktop control when finished and discard only the disposable test content.
 
-Text observation, real window images, independently verified text input and scrolling, and unchanged-app restart persistence passed on the developer's build 33 installation on September 24. Keychain, Accessibility and Screen Recording survived that restart; disposable TextEdit test content was deleted and absence verified. Build 33 Focus on/off also passed independent verification. A same-team build 34 candidate connected without a new Keychain prompt, captured Safari after manual window focus, and passed real relay lock/repeated-lock and local pinned-Safari cleanup tests. It remains unpublished while window focus and the final artifact are checked.
+Text observation, real window images, independently verified input and scrolling, and unchanged-app restart persistence passed on the developer's build 33 installation on September 24. Keychain, Accessibility and Screen Recording survived that restart; its disposable TextEdit fixture was deleted and absence verified. Build 33 Focus on/off also passed independent verification. Build 34 candidate tests passed real relay lock/repeated-lock and local pinned-Safari cleanup.
 
-Fresh-user or second-Mac setup, a full Mac reboot and sustained sleep/offline recovery remain open. The sleep test entered sleep but immediate trackpad activity woke the Mac; it does not establish a sustained offline interval. The full evidence and remaining coverage are in [PERMISSION_LIFECYCLE.md](../docs/PERMISSION_LIFECYCLE.md#september-24-same-team-build-34-candidate) and [DESKTOP_ACCEPTANCE.md](../docs/DESKTOP_ACCEPTANCE.md#september-24-current-release-and-candidate-results). Report setup problems through https://getwand.app/support/ without sending passwords, device tokens or connection codes.
+The final build 34 CI app was verified and installed with the same signing requirement, then reconnected without a permission prompt. Its first Safari and TextEdit image requests passed without manual window raising, and native inspection confirmed two relay-entered TextEdit lines. Native volume correctly displayed `100` without changing it. After confirmed exit/relaunch, it reconnected without Keychain or privacy prompts and returned a complete Safari image on the first request. The disposable TextEdit fixtures were removed and file absence verified.
+
+Fresh-user or second-Mac setup and a full Mac reboot remain open. A second sleep test verified about 43 seconds asleep and subsequent reconnect with normal unlocked state. It did not reach the 75-second missed-heartbeat threshold, so the live offline interval and recovery from it remain unverified. The full evidence and remaining coverage are in [PERMISSION_LIFECYCLE.md](../docs/PERMISSION_LIFECYCLE.md#september-24-same-team-build-34) and [DESKTOP_ACCEPTANCE.md](../docs/DESKTOP_ACCEPTANCE.md#september-24-build-34-release-results). Report setup problems through https://getwand.app/support/ without sending passwords, device tokens or connection codes.
 
 Support-form delivery to the operator's inbox was independently confirmed on September 24, including HTML/plain-text content and passing SPF, DKIM and DMARC checks.
 

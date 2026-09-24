@@ -2,24 +2,31 @@
 
 The dated records below distinguish production-relay tests, local native actions and compatibility experiments. They do not establish registered native Muse integration. Input delivery alone is not a passing result.
 
-## September 24: current release and candidate results
+## September 24: build 34 release results
 
-Public download remains **0.13.0 (33)**, Developer ID signed by the owner team `58XWD3LBSS` and notarized. A same-team **0.13.1 (34) candidate** is installed for testing; it is not published. The initial [build 34 CI run](https://github.com/Thabhelo/wand/actions/runs/35972120037), based on source `ccdba33`, passed signing and notarization. Publication is held while a window-focus repair and replacement artifact are completed.
+Published **0.13.1 (34)** source `0d7960f` passed [CI run 35975546500](https://github.com/Thabhelo/wand/actions/runs/35975546500), including signing and notarization. App/DMG strict signatures, stapled tickets and Gatekeeper passed; DMG SHA-256 is `b0d2c1c060ce4f2a530bca7ff41d4aa16f4ba3db79e44b70dae0db358dccdf5f`. The exact app is installed at the existing path with owner team `58XWD3LBSS` and the same designated requirement. Unchanged-app restart, capture after restart and disposable-fixture cleanup also passed.
 
 | Case | Current evidence | Result |
 |---|---|---|
 | Build 33 desktop and restart | Real TextEdit image; 45 typed lines independently checked through native accessibility; scrollbar moved from `1` to `0`; fresh image/text after confirmed quit/relaunch without a password | Pass on this installation; disposable fixture deleted and file absence verified |
-| Same-team candidate update | Build 34 requirement matches installed build 33; automatic connection without a new Keychain prompt; Safari screenshot after manually raising the window | Connection/capture observed; automatic window focus and final artifact verification pending |
+| Final same-team build 34 update | Exact `0d7960f` CI app installed at `~/Applications/Wand.app`, unchanged designated requirement, automatic reconnect without a permission prompt | Pass on this installation |
+| Final Safari capture | First image request `f3cce53a`, 08:33:42.467–08:33:43.221 UTC, returned a rendered image and Example Domain without manual window raising | Pass |
+| Final TextEdit capture and input | First image request `81d41698`, 08:34:25.458–08:34:26.159 UTC, returned a complete 586 × 488 image; input `64439b8f`, 08:34:46.661–08:34:47.084 UTC, entered two test lines independently confirmed through native accessibility | Pass; disposable fixtures removed and absence verified |
+| Final unchanged-app restart | Process exit confirmed, then automatic reconnect without Keychain or privacy prompts; first Safari image `9c685c88`, 08:36:47.937–08:36:48.705 UTC, returned Example Domain and a complete 640 × 357 image | Pass; native volume remained `100` |
+| Native volume display | Final app showed `100`, matching actual dashboard volume `100`; no volume change performed | Display pass; not a drag/action regression test |
 | Focus on/off | Build 33 dedicated controls succeeded; independent Control Center inspection verified Do Not Disturb on and then off; popover dismissed | Pass for this tested path |
 | Safari pinned-tab cleanup | Candidate local command `bc1e8ce1`, `keep_pinned: true`, logged success from `07:55:58.737` to `07:55:59.768`; native inspection confirmed the disposable example tab gone, pinned tab retained and Safari's automatic Start Page | Pass for this local native path; not a relay/Muse result |
 | Real relay lock | Candidate command `d299b81e` received `07:57:05.051`, succeeded `07:57:05.683`; dashboard showed Mac locked | Pass |
 | Repeated real relay lock | `aee0e4ff` received `07:57:29.671`, succeeded `07:57:30.069`; dashboard reported already locked and minimal locked state was verified; owner later unlocked | Pass |
 | Sleep request | `558c9e9a` accepted from `07:46:09.704` to `07:46:10.071`; `powerd` logged `SystemWillSleep` at `07:46:10.037` and display-off with `SoftwareSleep` | Sleep entry observed; immediate WindowServer trackpad activity woke the Mac within about a second; sustained sleep/offline and wake recovery not certified |
+| Second sleep and reconnect test | `SystemWillSleep` at 03:06:50 local (08:06:50 UTC); actual sleep entry at 03:06:55.323; `SystemHasPoweredOn` at 03:07:38.109; dashboard afterward showed the Mac online with normal unlocked front-app state | Actual sleep of about 43 seconds and reconnect passed; keyboard/UserActivity wake recorded; 75-second missed-heartbeat/offline interval not observed live |
 | Reviewer simulator reconnect | After the socket-race fix, status commands `1adaf22c` and `8500ab11` succeeded after reconnect and several minutes; page remained online | Retest passed; all task-created review devices revoked, with final revocation confirmed by the page and controls hidden |
 
 The simulator also passed status, mute, unapproved-Shortcut rejection, approved synthetic Shortcut execution, offline rejection, reconnect, repeated lock, minimal locked state and rejection of mute while locked. These are hosted-flow results, not physical Mac execution. The timestamps above are recorded log times and command prefixes identify the test evidence without exposing device credentials.
 
-Remaining checks include the repaired candidate's automatic window focus and final signed artifact, sustained sleep/offline recovery, a full reboot, and fresh-user or second-Mac installation. Chrome cleanup and Safari `keep_pinned: false` are not established by the pinned-Safari case. Native Muse authorization and tool/image compatibility still await verified client registration details. Earlier dated results below remain historical evidence rather than new release claims.
+Remaining checks include the 75-second missed-heartbeat/offline interval and recovery from it, a full reboot, and fresh-user or second-Mac installation. In the second sleep test no test UI interaction occurred for 90 seconds, but the machine woke after about 43 seconds. Power logs recorded `MTP.DOCK.CHANNELS.AP0.IRQ` / `nub-spmi-a0.0x2B` and an `RTP.keyboard/UserActivity` assertion; the UI pause was not a 90-second sleep result. Chrome cleanup and Safari `keep_pinned: false` are not established by the pinned-Safari case. Native Muse authorization and tool/image compatibility still await verified client registration details. Earlier dated results below remain historical evidence rather than new release claims.
+
+Earlier unpublished build 34 candidates needed manual Safari window raising or returned `desktop_window_unavailable` on an initial request. The final artifact's first-request results above supersede those capture failures; they do not retroactively turn the earlier attempts into passes.
 
 ## September 20 live results
 

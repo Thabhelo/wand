@@ -1,6 +1,6 @@
 # Wand connector review package
 
-Updated September 24, 2026. Public Mac release: **Wand 0.13.0, build 33**. This packet requests connector review and verified client-registration details; it does not claim Meta approval or completed native Muse integration.
+Updated September 24, 2026. Public Mac release: **Wand 0.13.1, build 34**. This packet requests connector review and verified client-registration details; it does not claim Meta approval or completed native Muse integration.
 
 ## Product
 
@@ -13,8 +13,8 @@ The native app supports a fixed action catalog plus locally approved desktop obs
 ## Review links
 
 - Website: https://getwand.app/
-- Native download: https://getwand.app/download/ (signed and notarized 0.13.0, build 33; Apple silicon, macOS 26+)
-- Release checksum: https://getwand.app/releases/Wand-0.13.0-build33.sha256
+- Native download: https://getwand.app/download/ (signed and notarized 0.13.1, build 34; Apple silicon, macOS 26+)
+- Release checksum: https://getwand.app/releases/Wand-0.13.1-build34.sha256
 - API base: https://api.getwand.app/connector
 - OpenAPI: https://api.getwand.app/openapi.json
 - OAuth discovery: https://api.getwand.app/.well-known/oauth-authorization-server
@@ -38,10 +38,11 @@ Client admission is manual; there is no public dynamic registration. We request 
 
 ## Current evidence
 
-- Build 33 is Developer ID signed by Thabhelo Duve, team `58XWD3LBSS`, and notarized. App/DMG signatures, stapled tickets and the public-download checksum were verified.
-- On September 24, Wand's web dashboard and production relay returned real TextEdit observations and a window image. Native inspection independently confirmed 45 input test lines and scrolling from the document's bottom to top. Image-coordinate click and Return-key commands acknowledged delivery; their intended effects were not separately certified. Expired snapshots and changed-window attempts were rejected.
+- Build 34 is Developer ID signed by Thabhelo Duve, team `58XWD3LBSS`, and notarized. App/DMG signatures, stapled tickets and the public-download checksum were verified.
+- With build 33 on September 24, Wand's web dashboard and production relay returned real TextEdit observations and a window image. Native inspection independently confirmed 45 input test lines and scrolling from the document's bottom to top. Image-coordinate click and Return-key commands acknowledged delivery; their intended effects were not separately certified. Expired snapshots and changed-window attempts were rejected.
 - After confirmed process exit and relaunch, the unchanged installed build reconnected without another password prompt and returned the test document and text through a new relay observation and screenshot. This establishes Keychain, Accessibility and Screen Recording restart persistence on that installation after its signing-identity repairs. See [permission lifecycle evidence](../docs/PERMISSION_LIFECYCLE.md#september-24-owner-signing-build-33).
-- Build 33 Focus-on and Focus-off controls passed with independent Control Center verification. A same-team 0.13.1 (34) candidate connected without a new Keychain prompt and returned a Safari image after manual window focus. Its local Safari pinned-tab cleanup and real relay lock/repeated-lock checks passed, with minimal locked state verified. The candidate is not published: a window-focus repair and final artifact verification remain pending. The initial candidate CI artifact passed signing and notarization.
+- Build 33 Focus on/off passed independent Control Center verification. Build 34 candidate tests passed local Safari pinned-tab cleanup and real relay lock/repeated-lock with minimal locked state.
+- Final build 34 source `0d7960f` passed CI signing/notarization and exact-artifact signature, staple, Gatekeeper and checksum verification. The contained app was installed with the same designated requirement and reconnected without a permission prompt. Its first Safari and TextEdit image requests passed without manual window raising; two relay-entered lines were independently verified in TextEdit. The native volume display matched the reported volume without changing it. After confirmed exit/relaunch, it reconnected without Keychain or privacy prompts and its first Safari image passed. Disposable fixtures were removed and absence verified; [release evidence](../docs/RELEASE_0_13_1.md) identifies the exact artifact.
 - Muse has already used Wand through the web controls in prompt-based testing, as confirmed by the owner; its feedback drove dashboard fixes. This is distinct from registered native OAuth/direct-tool integration.
 - Public health, OpenAPI and OAuth discovery endpoints have been checked without login. Unauthenticated connector access returned 401; unknown OAuth clients returned 403. The September 23 run passed 42 Cloudflare runtime tests, including OAuth exchange, PKCE/replay checks, device/action restrictions and revocation. Its test clients were not Meta clients.
 - A separate September 24 automated verification run passed 173 tests and 58 shared contract fixtures. These results do not replace physical-device, reviewer-journey or native Muse acceptance.
@@ -50,7 +51,7 @@ Client admission is manual; there is no public dynamic registration. We request 
 
 ## Limits disclosed for review
 
-Fresh-user or second-Mac installation and a full Mac reboot have not been revalidated for the owner signing identity. The build 34 same-team update has connection/capture evidence, but its window-focus repair and final release checks are still open. A sleep request reached macOS sleep entry, then trackpad activity woke the Mac within about a second; sustained sleep, the 75-second offline interval and recovery from it remain unverified. See [desktop acceptance](../docs/DESKTOP_ACCEPTANCE.md#september-24-current-release-and-candidate-results) for the bounded results. Capability discovery is required before dispatch; signing and notarization do not establish action availability.
+Fresh-user or second-Mac installation and a full Mac reboot have not been revalidated for the owner signing identity. A second sleep test verified about 43 seconds of actual sleep followed by an online, unlocked Mac in the dashboard. The machine woke before the 75-second missed-heartbeat interval, so live offline-state and recovery behavior at that threshold remain unverified. See [desktop acceptance](../docs/DESKTOP_ACCEPTANCE.md#september-24-build-34-release-results) for the bounded results. Capability discovery is required before dispatch; signing and notarization do not establish action availability.
 
 Native Muse OAuth authorization and direct tool-result/image compatibility await verified registration details. No recorded native-connector demo is available, and the marketing animation is not execution evidence. [DEMO.md](DEMO.md) describes a short recording of the existing web-to-Mac flow; recording that outline does not establish native Muse integration.
 
