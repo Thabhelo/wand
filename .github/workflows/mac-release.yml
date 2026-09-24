@@ -24,6 +24,8 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: macos-26
     timeout-minutes: 90
+    env:
+      WAND_SIGNING_TEAM_ID: ${{ vars.WAND_SIGNING_TEAM_ID }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:

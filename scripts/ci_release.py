@@ -13,7 +13,19 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
-TEAM = 'AX35NK3J3A'  # Build 32 identity. Changing this is an explicit migration.
+LEGACY_TEAM = 'AX35NK3J3A'  # Preserve build 32's identity until an explicit migration.
+
+def signing_team_id():
+    team = os.environ.get('WAND_SIGNING_TEAM_ID') or LEGACY_TEAM
+    if not re.fullmatch(r'[A-Z0-9]{10}', team):
+        raise SystemExit('WAND_SIGNING_TEAM_ID must be Apple\'s 10-character uppercase Team ID.')
+    return team
+
+def signing_identity(identities, team):
+    matches = re.findall(r'([A-F0-9]{40}) "Developer ID Application: [^"\n]+ \('+re.escape(team)+r'\)"', identities)
+    if len(matches) != 1:
+        raise SystemExit(f'Expected exactly one Developer ID Application signing identity for team {team}.')
+    return matches[0]
 
 def run(*args, capture=False, **kw):
     return subprocess.run(args, check=True, text=True, capture_output=capture, **kw)
@@ -25,6 +37,7 @@ def release():
     return version, int(build), f'Wand-{version}-build{build}'
 
 def validate():
+    signing_team_id()
     version, build, _ = release()
     page = (ROOT/'site/public/download/index.html').read_text()
     old = re.search(r'Build (\d+)', page)
@@ -36,6 +49,7 @@ def validate():
 
 def package():
     validate()
+    team = signing_team_id()
     required = ['WAND_CERTIFICATE_BASE64', 'WAND_CERTIFICATE_PASSWORD', 'WAND_NOTARY_KEY_BASE64',
                 'WAND_NOTARY_KEY_ID', 'WAND_NOTARY_ISSUER_ID', 'GH_RELEASE_TOKEN', 'CLOUDFLARE_API_TOKEN']
     missing = [key for key in required if not os.environ.get(key)]
@@ -53,9 +67,7 @@ def package():
     run('security', 'set-key-partition-list', '-S', 'apple-tool:,apple:,codesign:', '-k', password, str(keychain))
     run('security', 'list-keychains', '-d', 'user', '-s', str(keychain))
     ids = run('security', 'find-identity', '-v', '-p', 'codesigning', str(keychain), capture=True).stdout
-    matches = re.findall(r'([A-F0-9]{40}) "Developer ID Application: [^"\n]+ \('+TEAM+r'\)"', ids)
-    if len(matches) != 1: raise SystemExit('Expected exactly one build-32-team Developer ID signing identity.')
-    identity = matches[0]
+    identity = signing_identity(ids, team)
     binpath = run('swift', 'build', '--package-path', 'agent', '-c', 'release', '--show-bin-path', capture=True).stdout.strip()
     version, build, name = release()
     run('python3', 'scripts/package_agent.py', '--binary', str(Path(binpath)/'MacBridge'), '--identity', identity,
