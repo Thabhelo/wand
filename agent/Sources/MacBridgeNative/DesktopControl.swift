@@ -221,32 +221,46 @@ import MacBridgeCore
         let sid=UUID().uuidString.lowercased();snapshotID=sid;snapshotAt=Date()
         var result:[String:JSON]=["snapshot_id":.string(sid),"bundle_id":.string(observedBundle),"expires_at":.string(WireTime.text(snapshotAt.addingTimeInterval(30))),"elements":.array(output),"truncated":.bool(!queue.isEmpty)]
         if params["include_image"] == .bool(true) {
-            guard rect(w) != nil else { throw ContractError(code:"desktop_window_unavailable") }
+            guard let currentBounds=rect(w) else { throw ContractError(code:"desktop_capture_window_mismatch") }
+            func validateCapture() throws {
+                guard epoch==capturedEpoch else { throw ContractError(code:"desktop_permission_required") }
+                _ = try check(observedBundle)
+                guard NSWorkspace.shared.frontmostApplication?.processIdentifier==app.processIdentifier,
+                      CFEqual(try safeWindow(app),w),text(w,kAXTitleAttribute)==observedTitle,
+                      let bounds=rect(w),Self.sameBounds(bounds,currentBounds) else { throw ContractError(code:"desktop_focus_changed") }
+            }
             // ScreenCaptureKit is the authority for its own permission. The legacy
             // CoreGraphics preflight can disagree with the grant shown by macOS.
-            let content: SCShareableContent
-            do { content=try await SCShareableContent.excludingDesktopWindows(true,onScreenWindowsOnly:true) }
-            catch {
-                invalidate()
-                if (error as NSError).code == -3801 { throw ContractError(code:"screen_recording_permission_required") }
-                throw ContractError(code:"desktop_capture_failed")
-            }
-            guard let currentBounds=rect(w), CFEqual(try safeWindow(app),w) else { throw ContractError(code:"desktop_focus_changed") }
-            // Only normal app windows: Finder also exposes non-content capture layers.
-            let windows=content.windows.filter{$0.owningApplication?.processID==app.processIdentifier}
-            guard windows.contains(where:{$0.windowLayer==0}) else { throw ContractError(code:"desktop_window_unavailable") }
-            let candidates=windows.map{CaptureWindow(id:$0.windowID,bounds:$0.frame,layer:$0.windowLayer,title:$0.title ?? "")}
-            guard let targetID=Self.captureWindow(candidates,bounds:currentBounds,title:text(w,kAXTitleAttribute)),
-                  let target=windows.first(where:{$0.windowID==targetID}) else {
-                if defaults?.bool(forKey:"capture-diagnostics") == true {
-                    let report="AX \(currentBounds); SC \(windows.map{"id=\($0.windowID) layer=\($0.windowLayer) frame=\($0.frame)"})"
-                    let directory=FileManager.default.urls(for:.applicationSupportDirectory,in:.userDomainMask)[0].appendingPathComponent("MacBridge")
-                    try? report.write(to:directory.appendingPathComponent("capture-geometry.txt"),atomically:true,encoding:.utf8)
+            var unavailableCode="desktop_capture_failed"
+            let target:SCWindow? = try await Self.awaitCaptureTarget(lookup:{
+                let content:SCShareableContent
+                do { content=try await SCShareableContent.excludingDesktopWindows(true,onScreenWindowsOnly:true) }
+                catch {
+                    self.invalidate()
+                    if (error as NSError).code == -3801 { throw ContractError(code:"screen_recording_permission_required") }
+                    throw ContractError(code:"desktop_capture_failed")
                 }
-                throw ContractError(code:"desktop_capture_window_mismatch")
+                try validateCapture()
+                // A newly raised window can be absent from SCK's first enumeration.
+                // Retry only the same app/window; never broaden capture to another layer.
+                let windows=content.windows.filter{$0.owningApplication?.processID==app.processIdentifier}
+                guard windows.contains(where:{$0.windowLayer==0}) else { unavailableCode="desktop_capture_failed"; return nil }
+                let candidates=windows.map{CaptureWindow(id:$0.windowID,bounds:$0.frame,layer:$0.windowLayer,title:$0.title ?? "")}
+                guard let targetID=Self.captureWindow(candidates,bounds:currentBounds,title:self.text(w,kAXTitleAttribute)),
+                      let target=windows.first(where:{$0.windowID==targetID}) else {
+                    unavailableCode="desktop_capture_window_mismatch"
+                    return nil
+                }
+                return target
+            },validate:validateCapture)
+            guard let target else {
+                invalidate()
+                throw ContractError(code:unavailableCode)
             }
+            try validateCapture()
             let config=SCStreamConfiguration();let scale=min(1,640/max(currentBounds.width,currentBounds.height));config.width=max(1,Int(currentBounds.width*scale));config.height=max(1,Int(currentBounds.height*scale));config.showsCursor=false;config.ignoreShadowsSingleWindow=true
             let image=try await SCScreenshotManager.captureImage(contentFilter:SCContentFilter(desktopIndependentWindow:target),configuration:config)
+            try validateCapture()
             let encoded=try Self.encodeScreenshot(image)
             imageSize=encoded.size;imageBounds=currentBounds
             result["image"] = .object(["mime_type":.string("image/jpeg"),"base64":.string(encoded.data.base64EncodedString()),"width":.number(Double(encoded.size.width)),"height":.number(Double(encoded.size.height))])
@@ -256,6 +270,21 @@ import MacBridgeCore
         guard CFEqual(try safeWindow(app),w),text(w,kAXTitleAttribute)==observedTitle else { invalidate();throw ContractError(code:"desktop_focus_changed") }
         let data=JSON.object(result);guard try data.data().count<58000 else { invalidate();throw ContractError(code:"desktop_observation_too_large") }
         return data
+    }
+    static func awaitCaptureTarget<T>(lookup: () async throws -> T?, validate: () throws -> Void,
+                                      pause: () async throws -> Void = { try await Task.sleep(for:.milliseconds(200)) },
+                                      now: () -> Date = Date.init) async throws -> T? {
+        let deadline=now().addingTimeInterval(2)
+        for attempt in 0..<3 {
+            try validate()
+            guard now()<deadline else { return nil }
+            let target=try await lookup()
+            try validate()
+            guard now()<deadline else { return nil }
+            if let target { return target }
+            if attempt<2 { try await pause() }
+        }
+        return nil
     }
     struct CaptureWindow {
         let id:CGWindowID
@@ -273,7 +302,6 @@ import MacBridgeCore
         // A title can disambiguate same-geometry windows, but never override geometry.
         let named=exact.filter{!title.isEmpty && $0.title==title}
         if named.count==1 { return named[0].id }
-        if exact.isEmpty && candidates.count==1 { return candidates[0].id }
         return nil
     }
     static func encodeScreenshot(_ image:CGImage,byteLimit:Int=24000) throws -> (data:Data,size:CGSize) {

@@ -4,6 +4,16 @@ import CoreImage.CIFilterBuiltins
 import MacBridgeCore
 import MacBridgeNative
 
+@MainActor private final class VolumeSlider: NSSlider {
+    private(set) var isTrackingPointer = false
+
+    override func mouseDown(with event: NSEvent) {
+        isTrackingPointer = true
+        defer { isTrackingPointer = false }
+        super.mouseDown(with: event)
+    }
+}
+
 @MainActor final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var agent: Agent?
     private var window: NSWindow?
@@ -51,7 +61,8 @@ import MacBridgeNative
     private let cleanupBrowser = NSPopUpButton(frame: .zero, pullsDown: false)
     private let shortcutsList = NSStackView()
     private let activityList = NSStackView()
-    private let volume = NSSlider(value: 30, minValue: 0, maxValue: 100, target: nil, action: nil)
+    private let volume = VolumeSlider(value: 0, minValue: 0, maxValue: 100, target: nil, action: nil)
+    private var volumeRefreshPending = false
     private var navigation: [NSButton] = []
     private var controls: [NSButton] = []
     private var readButton: NSButton?
@@ -73,7 +84,7 @@ import MacBridgeNative
                 agent = try Agent()
                 buildPage()
                 observation = agent?.objectWillChange.sink { [weak self] _ in
-                    Task { @MainActor in self?.render() }
+                    Task { @MainActor in self?.agentDidChange() }
                 }
                 render(); agent?.refreshDeviceState()
                 Task { @MainActor in await agent?.startConnections() }
@@ -85,7 +96,7 @@ import MacBridgeNative
         }
     }
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool { showWindow(); return true }
-    func applicationDidBecomeActive(_ notification: Notification) { render() }
+    func applicationDidBecomeActive(_ notification: Notification) { refreshDisplayedState(); render() }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
     @objc func showWindow() { window?.makeKeyAndOrderFront(nil); NSApplication.shared.activate(ignoringOtherApps: true) }
     private func label(_ text: String, size: CGFloat = 13, weight: NSFont.Weight = .regular, secondary: Bool = false) -> NSTextField {
@@ -302,6 +313,23 @@ import MacBridgeNative
 
         }
     }
+    private func refreshDisplayedState() {
+        guard let agent, !agent.readingState else { return }
+        agent.readingState = true
+        Task { @MainActor in
+            defer { agent.readingState = false }
+            let (code, value) = await agent.localCommand(.object(["action": .string("get_state"), "params": .object([:])]))
+            // Automatic refresh must not replace an audio action's feedback.
+            agent.deviceState = code == 200 ? value : nil
+        }
+    }
+    private func agentDidChange() {
+        if let agent, volumeRefreshPending && !agent.actionRunning && !agent.readingState {
+            volumeRefreshPending = false
+            refreshDisplayedState()
+        }
+        render()
+    }
     private func render() {
         guard let agent else { return }
         loginToggle.state = StartupSettings.enabled ? .on : .off
@@ -313,7 +341,15 @@ import MacBridgeNative
         state.textColor = agent.screenState == .unlocked ? .systemGreen : .secondaryLabelColor
         state.isHidden = agent.screenState == .unlocked
         showFeedback(agent.lastCommand)
-        volume.isEnabled = !agent.actionRunning && agent.screenState == .unlocked
+        let reportedVolume = agent.screenState == .unlocked && agent.deviceState?["screen_locked"] != .bool(true)
+            ? agent.deviceState?["audio"]?["volume"]?.number : nil
+        let available = reportedVolume.map { $0.isFinite && (0...100).contains($0) } ?? false
+        volume.isEnabled = available && !agent.actionRunning && !agent.readingState
+        if !volume.isTrackingPointer && !agent.actionRunning && !agent.readingState {
+            volume.doubleValue = available ? reportedVolume! : 0
+        }
+        volume.toolTip = available ? "Output volume: \(Int(reportedVolume!.rounded()))%" : "Output volume unavailable"
+        volume.setAccessibilityLabel(available ? "Output volume" : "Output volume unavailable")
         readButton?.title = agent.readingState ? "Reading…" : "Refresh"; readButton?.isEnabled = !agent.readingState
         controls.forEach { $0.isEnabled = !agent.actionRunning && agent.screenState == .unlocked }
         connection.stringValue = agent.pending ? RevocationState.warning : agent.status == "Unpaired" ? "" : agent.status
@@ -474,9 +510,14 @@ import MacBridgeNative
     @objc private func playPause() { agent?.runLocalAction("media_play_pause") }
     @objc private func previous() { agent?.runLocalAction("media_previous") }
     @objc private func next() { agent?.runLocalAction("media_next") }
-    @objc private func muteSound() { agent?.runLocalAction("mute") }
-    @objc private func unmuteSound() { agent?.runLocalAction("unmute") }
-    @objc private func setVolumeAction() { agent?.runLocalAction("set_volume", params: .object(["level": .number(volume.doubleValue.rounded())])) }
+    private func runAudioAction(_ action: String, params: JSON = .object([:])) {
+        guard let agent, !agent.actionRunning else { return }
+        volumeRefreshPending = true
+        agent.runLocalAction(action, params: params)
+    }
+    @objc private func muteSound() { runAudioAction("mute") }
+    @objc private func unmuteSound() { runAudioAction("unmute") }
+    @objc private func setVolumeAction() { runAudioAction("set_volume", params: .object(["level": .number(volume.doubleValue.rounded())])) }
     @objc private func openWebsite() { agent?.runLocalAction("open_url", params: .object(["url": .string(website.stringValue.trimmingCharacters(in: .whitespacesAndNewlines))])) }
     @objc private func enableDesktop() {
         guard confirm("Allow Muse-connected callers to control this Mac?", detail: "Desktop control covers applications across this Mac, including System Settings. Connected callers can read window contents, click, scroll and type, which can change files, send information or run code in capable apps. Content passes through Wand's relay. Access stays enabled across restarts and resumes after you unlock this Mac. Pause it anytime in Wand's menu. Password prompts and the lock screen remain yours to handle.", button: "Enable desktop control") else { return }
