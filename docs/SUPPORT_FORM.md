@@ -16,3 +16,9 @@ Sending to an existing verified destination works on the free plan. Do not enabl
 Submit one clearly labeled test through the live form and verify its arrival in the owner's inbox. A successful API response means Cloudflare accepted the message; inbox delivery is checked separately. Failed sends preserve the form and display an error.
 
 Messages are not stored in D1 or application logs. They remain in the support mailbox. The endpoint limits payload size, checks origin and fields, rejects a honeypot, and limits submissions to three per minute per IP per Cloudflare location. This is basic abuse protection, not a guarantee against distributed spam.
+
+### September 24, 2026: live delivery check
+
+A test sent through the live support form at **07:23:42 UTC** was independently found in the owner's Gmail inbox with the **INBOX** label. The sender was **Wand Support <support@getwand.app>**, with subject **Wand support: Connection**. The message contained branded HTML and a plain-text alternative. Gmail's authentication results reported **SPF: pass, DKIM: pass, DMARC: pass**.
+
+This confirms inbox delivery and formatting for that test, beyond the form's provider-acceptance response.

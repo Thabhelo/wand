@@ -62,3 +62,8 @@ test('capability gaps and unknown legacy support fail closed while status stays 
   const {dom,w}=await setup(null,{},report);try{assert.equal(w.document.querySelector('[data-action="mute"]').disabled,disabled);assert.equal(w.document.querySelector('[data-action="get_state"]').disabled,false)}finally{dom.window.close()}
  }
 });
+test('permission-blocked dashboard actions identify the required macOS permission',async()=>{
+ const report={...available,stale:false,permissions:{accessibility:'denied',screen_recording:'granted'},actions:available.actions.map(item=>item.name==='lock_screen'?{...item,availability:'blocked',reason:'permission_denied',required_permissions:['accessibility']}:item)};
+ const {dom,w,commands}=await setup(null,{},report);
+ try{const lock=w.document.querySelector('[data-action="lock_screen"]');assert.equal(lock.disabled,true);assert.match(lock.title,/Accessibility/);assert.doesNotMatch(lock.title,/Screen Recording/);assert.equal(commands.filter(c=>c.action==='lock_screen').length,0)}finally{dom.window.close()}
+});

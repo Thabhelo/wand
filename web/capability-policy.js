@@ -11,5 +11,15 @@ window.WandCapabilities={
   if(report.stale)return report.online===false?'device_offline':'stale_report';
   return item.availability==='available'?null:item.reason||'capability_unreported';
  },
- message(reason){return this.messages[reason]||'This action is unavailable. Refresh and try again.'}
+ message(reason,report,entry){
+  // Name only denied permissions required by this action or optional feature.
+  if(reason==='permission_denied'&&report?.contract_version===1&&report.stale===false&&report.online!==false&&Array.isArray(entry?.required_permissions)){
+   const denied=entry.required_permissions.filter(name=>report.permissions?.[name]==='denied');
+   const accessibility=denied.includes('accessibility'),screen=denied.includes('screen_recording');
+   if(accessibility&&screen)return 'macOS isn’t allowing Wand to control or capture apps. Check Accessibility and Screen Recording in System Settings → Privacy & Security. You can turn off images to skip Screen Recording.';
+   if(accessibility)return 'macOS isn’t allowing Wand to control apps. Check Wand in System Settings → Privacy & Security → Accessibility.';
+   if(screen)return 'macOS isn’t allowing Wand to capture app windows. Check Wand in System Settings → Privacy & Security → Screen Recording, or turn off images.';
+  }
+  return Object.hasOwn(this.messages,reason)?this.messages[reason]:'This action is unavailable. Refresh and try again.';
+ }
 };

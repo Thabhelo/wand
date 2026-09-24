@@ -15,6 +15,9 @@ import urllib.request
 ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 LEGACY_TEAM = 'AX35NK3J3A'  # Preserve build 32's identity until an explicit migration.
+SIGNING_SECRETS = ('WAND_CERTIFICATE_BASE64', 'WAND_CERTIFICATE_PASSWORD', 'WAND_NOTARY_KEY_BASE64',
+                   'WAND_NOTARY_KEY_ID', 'WAND_NOTARY_ISSUER_ID')
+PUBLICATION_SECRETS = ('GH_RELEASE_TOKEN', 'CLOUDFLARE_API_TOKEN')
 
 def signing_team_id():
     team = os.environ.get('WAND_SIGNING_TEAM_ID') or LEGACY_TEAM
@@ -48,13 +51,15 @@ def validate():
     if old_version and tuple(map(int, version.split('.'))) < tuple(map(int, old_version[1].split('.'))):
         raise SystemExit('Version cannot decrease.')
 
-def package():
+def preflight(publish=False):
     validate()
-    team = signing_team_id()
-    required = ['WAND_CERTIFICATE_BASE64', 'WAND_CERTIFICATE_PASSWORD', 'WAND_NOTARY_KEY_BASE64',
-                'WAND_NOTARY_KEY_ID', 'WAND_NOTARY_ISSUER_ID', 'GH_RELEASE_TOKEN', 'CLOUDFLARE_API_TOKEN']
+    required = SIGNING_SECRETS + (PUBLICATION_SECRETS if publish else ())
     missing = [key for key in required if not os.environ.get(key)]
     if missing: raise SystemExit('Missing release secrets: ' + ', '.join(missing))
+
+def package():
+    preflight()
+    team = signing_team_id()
     temp = Path(os.environ['RUNNER_TEMP'])
     cert, key, keychain = temp/'wand-signing.p12', temp/'wand-notary.p8', temp/'wand-release.keychain-db'
     for path, variable in [(cert, 'WAND_CERTIFICATE_BASE64'), (key, 'WAND_NOTARY_KEY_BASE64')]:
@@ -141,4 +146,5 @@ class DownloadLinks(HTMLParser):
             if href: self.hrefs.add(href)
 
 if __name__ == '__main__':
-    {'validate':validate, 'package':package, 'publish':publish, 'verify':verify}[sys.argv[1]]()
+    {'validate':validate, 'preflight':preflight, 'preflight-publish':lambda: preflight(publish=True),
+     'package':package, 'publish':publish, 'verify':verify}[sys.argv[1]]()

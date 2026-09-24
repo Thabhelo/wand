@@ -31,9 +31,14 @@ import MacBridgeCore
         guard let down=CGEvent(keyboardEventSource:nil,virtualKey:12,keyDown:true),let up=CGEvent(keyboardEventSource:nil,virtualKey:12,keyDown:false) else { throw ContractError(code:"action_failed") }
         down.flags=[.maskControl,.maskCommand]; up.flags=[.maskControl,.maskCommand]
         down.post(tap:.cghidEventTap); up.post(tap:.cghidEventTap)
-        for _ in 0..<30 {
-            if LockStateReader.read() == .locked { return .object(["screen_locked":.bool(true)]) }
-            try await Task.sleep(for:.milliseconds(100))
+        return try await confirmLock()
+    }
+    static func confirmLock(readState: () -> ScreenState = LockStateReader.read,
+                            pause: () async throws -> Void = { try await Task.sleep(for:.milliseconds(100)) }) async throws -> JSON {
+        for attempt in 0..<30 {
+            // The relay expects LockResult; the locked get_state shape is a different result.
+            if readState() == .locked { return .object(["already_locked":.bool(false)]) }
+            if attempt<29 { try await pause() }
         }
         throw ContractError(code:"lock_not_confirmed")
     }
@@ -158,7 +163,26 @@ import MacBridgeCore
             }
             throw ContractError(code:"browser_cleanup_pending_user_attention")
         }
-        var targets:[(AXUIElement,String)]=[]
+        func closeAction(_ tab: AXUIElement) -> String? {
+            var actions:CFArray?; AXUIElementCopyActionNames(tab,&actions)
+            return (actions as? [String] ?? []).first { name in
+                var description:CFString?; AXUIElementCopyActionDescription(tab,name as CFString,&description)
+                return name=="AXClose" || (description as String?)?.lowercased()=="close tab"
+            }
+        }
+        func currentTabs() throws -> [AXUIElement] {
+            guard let currentWindows=value(root,kAXWindowsAttribute) as? [AXUIElement] else { throw ContractError(code:"browser_window_unavailable") }
+            guard currentWindows.count<=20 else { throw ContractError(code:"browser_cleanup_limit_exceeded") }
+            var tabs:[AXUIElement]=[]
+            for window in currentWindows {
+                guard text(window,kAXSubroleAttribute)=="AXStandardWindow",!children(window).contains(where:{text($0,kAXRoleAttribute)=="AXSheet"}) else { throw ContractError(code:"browser_cleanup_pending_user_attention") }
+                let traversal=scan(window)
+                guard traversal.complete else { throw ContractError(code:"browser_cleanup_limit_exceeded") }
+                tabs += traversal.nodes.filter { text($0,kAXIdentifierAttribute).hasPrefix("TabBarTab?") }
+            }
+            return tabs
+        }
+        var targets:[AXUIElement]=[]
         // Preflight every tab before closing any. Never read URLs or page content.
         for window in windows {
             let traversal=scan(window)
@@ -171,28 +195,36 @@ import MacBridgeCore
                 let identifier=text(tab,kAXIdentifierAttribute)
                 guard let pinned=pinnedState(identifier) else { throw ContractError(code:"pinned_tab_detection_unverified") }
                 if keepPinned && pinned { continue }
-                var actions:CFArray?; AXUIElementCopyActionNames(tab,&actions)
-                let close=(actions as? [String] ?? []).first { name in
-                    var description:CFString?; AXUIElementCopyActionDescription(tab,name as CFString,&description)
-                    return name=="AXClose" || (description as String?)?.lowercased()=="close tab"
-                }
-                guard let close else { throw ContractError(code:"browser_tab_close_unavailable") }
-                targets.append((tab,close))
+                guard closeAction(tab) != nil else { throw ContractError(code:"browser_tab_close_unavailable") }
+                if !targets.contains(where:{CFEqual($0,tab)}) { targets.append(tab) }
             }
         }
         guard targets.count <= 80 else { throw ContractError(code:"browser_cleanup_limit_exceeded") }
-        for (tab,action) in targets.reversed() {
+        for target in targets.reversed() {
             try check()
+            // Safari may replace tab objects and custom actions after each close.
+            guard let tab=try currentTabs().first(where:{CFEqual($0,target)}) else { continue }
             guard pinnedState(text(tab,kAXIdentifierAttribute)) == false else { throw ContractError(code:"browser_tabs_changed") }
-            guard AXUIElementPerformAction(tab,action as CFString) == .success else { throw ContractError(code:"browser_cleanup_partial") }
-            try await Task.sleep(for:.milliseconds(80))
+            let accepted=closeAction(tab).map { AXUIElementPerformAction(tab,$0 as CFString) == .success } ?? false
+            try await confirmSafariTabClosure(accepted:accepted,stillPresent:{
+                try currentTabs().contains(where:{CFEqual($0,target)})
+            },pause:{ try await Task.sleep(for:.milliseconds(80)) })
         }
         for _ in 0..<10 {
-            let remaining=(value(root,kAXWindowsAttribute) as? [AXUIElement] ?? []).flatMap { descendants($0) }.filter { text($0,kAXIdentifierAttribute).hasPrefix("TabBarTab?") && (!keepPinned || pinnedState(text($0,kAXIdentifierAttribute)) == false) }
-            if !remaining.contains(where: { current in targets.contains(where: { CFEqual(current,$0.0) }) }) { return .object([:]) }
+            let remaining=try currentTabs()
+            if !remaining.contains(where: { current in targets.contains(where: { CFEqual(current,$0) }) }) { return .object([:]) }
             try await Task.sleep(for:.milliseconds(100))
         }
         throw ContractError(code:"browser_cleanup_pending_user_attention")
+    }
+    static func confirmSafariTabClosure(accepted:Bool,stillPresent:() throws -> Bool,pause:() async throws -> Void) async throws {
+        // Closing the last ordinary tab can replace it with a new Start Page and
+        // invalidate the AX action response. Only removal of the original proves closure.
+        for attempt in 0..<10 {
+            if try !stillPresent() { return }
+            if attempt<9 { try await pause() }
+        }
+        throw ContractError(code:accepted ? "browser_cleanup_pending_user_attention":"browser_cleanup_partial")
     }
     public static func pinnedState(_ identifier:String) -> Bool? {
         guard identifier.hasPrefix("TabBarTab?") else { return nil }

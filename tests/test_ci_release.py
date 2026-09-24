@@ -58,6 +58,47 @@ class SigningIdentity(unittest.TestCase):
             with self.subTest(identities=ids):
                 with self.assertRaises(SystemExit): m.signing_identity(ids, 'AB12CD34EF')
 
+class ReleaseCredentials(unittest.TestCase):
+    def environment(self):
+        return dict(RELEASE_VERSION='999.0.0', RELEASE_BUILD='999999',
+                    WAND_SIGNING_TEAM_ID='58XWD3LBSS',
+                    **{key: 'Zml4dHVyZQ==' for key in m.SIGNING_SECRETS})
+
+    def test_artifact_preflight_accepts_only_apple_secrets(self):
+        with patch.dict(os.environ, self.environment(), clear=True), patch.object(m, 'run') as command:
+            m.preflight()
+            command.assert_not_called()
+
+    def test_missing_apple_credentials_fail_without_commands_or_secret_values(self):
+        for value in (None, ''):
+            environment = self.environment()
+            if value is None: environment.pop('WAND_NOTARY_KEY_BASE64')
+            else: environment['WAND_NOTARY_KEY_BASE64'] = value
+            with self.subTest(value=value), patch.dict(os.environ, environment, clear=True), patch.object(m, 'run') as command:
+                with self.assertRaises(SystemExit) as error: m.preflight()
+                self.assertEqual(str(error.exception), 'Missing release secrets: WAND_NOTARY_KEY_BASE64')
+                command.assert_not_called()
+
+    def test_publish_preflight_requires_deployment_credentials_before_commands(self):
+        with patch.dict(os.environ, self.environment(), clear=True), patch.object(m, 'run') as command:
+            with self.assertRaises(SystemExit) as error: m.preflight(publish=True)
+            self.assertEqual(str(error.exception), 'Missing release secrets: GH_RELEASE_TOKEN, CLOUDFLARE_API_TOKEN')
+            command.assert_not_called()
+
+    def test_publish_preflight_accepts_all_seven_secrets(self):
+        environment = self.environment() | {key: 'fixture' for key in m.PUBLICATION_SECRETS}
+        with patch.dict(os.environ, environment, clear=True), patch.object(m, 'run') as command:
+            m.preflight(publish=True)
+            command.assert_not_called()
+
+    def test_package_reaches_signing_setup_without_deployment_credentials(self):
+        class StopBeforeSigning(Exception): pass
+        with tempfile.TemporaryDirectory(prefix='wand-release-credentials-test-') as folder:
+            environment = self.environment() | {'RUNNER_TEMP': folder}
+            with patch.dict(os.environ, environment, clear=True), patch.object(m, 'run', side_effect=StopBeforeSigning) as command:
+                with self.assertRaises(StopBeforeSigning): m.package()
+                self.assertEqual(command.call_args.args[:2], ('security', 'create-keychain'))
+
 class PublishedRelease(unittest.TestCase):
     name = 'Wand-0.13.0-build33'
     artifact = b'notarized release fixture'

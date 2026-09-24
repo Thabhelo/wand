@@ -20,3 +20,26 @@ test('status fallback never bypasses an explicit scope denial',()=>{
 test('both web entry points load the shared capability policy',()=>{
  for(const path of ['../../web/index.html','../public/desktop/index.html'])assert.match(fs.readFileSync(new URL(path,import.meta.url),'utf8'),/src="\/capability-policy.js"/);
 });
+test('permission guidance names the denied permission required by the requested feature',()=>{
+ const image={required_permissions:['desktop_control','accessibility','screen_recording']};
+ const observe={required_permissions:['desktop_control','accessibility']};
+ const captureDenied={...report,permissions:{desktop_control:'granted',accessibility:'granted',screen_recording:'denied'}};
+ const message=policy.message('permission_denied',captureDenied,image);
+ assert.match(message,/Screen Recording/);
+ assert.match(message,/turn off images/);
+ assert.doesNotMatch(message,/Accessibility/);
+ assert.equal(policy.message('permission_denied',captureDenied,observe),policy.messages.permission_denied);
+ const axDenied={...captureDenied,permissions:{...captureDenied.permissions,accessibility:'denied',screen_recording:'granted'}};
+ assert.match(policy.message('permission_denied',axDenied,observe),/Accessibility/);
+ assert.doesNotMatch(policy.message('permission_denied',axDenied,observe),/Screen Recording/);
+ const bothDenied={...captureDenied,permissions:{...captureDenied.permissions,accessibility:'denied'}};
+ assert.match(policy.message('permission_denied',bothDenied,image),/Accessibility and Screen Recording/);
+});
+test('incomplete or stale permission reports never invent a permission-specific fix',()=>{
+ const entry={required_permissions:['screen_recording']};
+ for(const data of [null,{...report,permissions:{screen_recording:'unknown'}},{...report,stale:true,permissions:{screen_recording:'denied'}},{...report,online:false,permissions:{screen_recording:'denied'}},{...report,contract_version:2,permissions:{screen_recording:'denied'}}]){
+  assert.equal(policy.message('permission_denied',data,entry),policy.messages.permission_denied);
+ }
+ assert.equal(policy.message('permission_denied',report,{}),policy.messages.permission_denied);
+ assert.equal(policy.message('constructor'),'This action is unavailable. Refresh and try again.');
+});
