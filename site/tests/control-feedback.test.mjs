@@ -14,3 +14,19 @@ test('feedback distinguishes no-ops and actual focus',()=>{
  assert.equal(f.success('open_app',{already_open:true,focused:false}),'App is already open.');
  assert.equal(f.success('set_volume',{},null,{level:60}),'Volume set to 60%.');
 });
+test('permission feedback describes denial without claiming the user never approved it',()=>{
+ const message=f.error('accessibility_permission_required');
+ assert.match(message,/macOS isn’t allowing Wand/);
+ assert.doesNotMatch(message,/not enabled|never approved|reinstall|reset|quit/i);
+ assert.doesNotMatch(message,/accessibility_permission_required/);
+});
+test('unknown wire errors never become customer-facing codes',()=>{
+ for(const code of ['new_internal_error',undefined,'constructor','__proto__'])assert.equal(f.error(code),'Wand couldn’t confirm the result. Check your Mac before trying again.');
+});
+test('desktop controls and confirmations use human labels',()=>{
+ assert.equal(f.role('AXTextArea'),'Text area');
+ assert.equal(f.role('AXFutureControl'),'Control');
+ assert.equal(f.interaction({operation:'key',key:'select_all'}),'Send “Select all” to this app.');
+ assert.equal(f.interaction({operation:'key',key:'future_raw_key'}),'Send the selected key to this app.');
+ assert.equal(f.interaction({operation:'click',click_count:2}),'Double-click this point in the app.');
+});

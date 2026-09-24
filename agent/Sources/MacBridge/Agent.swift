@@ -143,7 +143,7 @@ import MacBridgeNative
         guard connectionReady, !pending, token == nil, !pairing else { return }
         do {
             if try secrets.read(account: "bootstrap-token") != nil { cancelPairing(); return }
-        } catch { status = safeError(error); return }
+        } catch { status = friendlyError(safeError(error)); return }
         guard (try? origin()) != nil else { status = "Online setup is not available in this build yet. Local controls still work."; return }
         pairing = true
         worker?.cancel(); generation &+= 1
@@ -187,7 +187,7 @@ import MacBridgeNative
     func cancelPairing() {
         guard token == nil else { return }
         worker?.cancel(); generation &+= 1; code = ""
-        do { try revocation.begin(); pending = true } catch { status = safeError(error); return }
+        do { try revocation.begin(); pending = true } catch { status = friendlyError(safeError(error)); return }
         status = "Cancelling connection…"
         Task {
             do {
@@ -210,7 +210,7 @@ import MacBridgeNative
             var attempt = 0
             while !Task.isCancelled && generation == captured && token != nil && !pending {
                 do { try await connected(captured); attempt = 0 }
-                catch { if !Task.isCancelled { status = safeError(error) } }
+                catch { if !Task.isCancelled { status = friendlyError(safeError(error)) } }
                 guard !Task.isCancelled, generation == captured, token != nil, !pending else { return }
                 attempt = min(attempt + 1, 6)
                 try? await Task.sleep(for: .seconds(Double.random(in: 0.5...min(60, pow(2, Double(attempt))))))
@@ -290,7 +290,7 @@ import MacBridgeNative
             guard generation == captured, !pending, !suspended else { throw ContractError(code: "session_changed") }
             try validator.validate("ActionResult", safeData)
             try log.append(command: command, outcome: "succeeded", now: Date())
-            lastCommand = action.replacingOccurrences(of: "_", with: " ").capitalized + " completed"
+            lastCommand = CommandFeedback.success(action: action, result: safeData)
             try await send(envelope("result", ["command_id": .string(id), "ok": .bool(true), "data": safeData]))
         } catch {
             let outcome = safeError(error); lastCommand = friendlyError(outcome)
@@ -314,7 +314,7 @@ import MacBridgeNative
             } catch { try log.append(command: command, outcome: safeError(error), now: Date()); throw error }
         } catch {
             let code = safeError(error)
-            return (409, .object(["error": .object(["code": .string(code), "message": .string(code.replacingOccurrences(of: "_", with: " "))])]))
+            return (409, .object(["error": .object(["code": .string(code), "message": .string(friendlyError(code))])]))
         }
     }
     func privacyChecked(_ data: JSON, action: String) throws -> JSON {
@@ -331,8 +331,7 @@ import MacBridgeNative
             defer { actionRunning = false }
             let (status, result) = await localCommand(.object(["action": .string(action), "params": params]))
             if status == 200 {
-                let descriptions = ["open_app": "Application opened", "open_url": "Website opened", "mute": "Audio muted", "unmute": "Audio unmuted", "set_volume": "Volume changed", "quit_app": "Application quit", "run_shortcut": "Shortcut completed", "media_play_pause": "Playback toggled", "media_next": "Skipped to next track", "media_previous": "Returned to previous track"]
-                lastCommand = descriptions[action] ?? "Completed"
+                lastCommand = CommandFeedback.success(action: action, result: result)
             } else {
                 lastCommand = friendlyError(result["error"]?["code"]?.string ?? "action_failed")
             }
@@ -344,14 +343,14 @@ import MacBridgeNative
         Task {
             defer { readingState = false }
             let (code, result) = await localCommand(.object(["action": .string("get_state"), "params": .object([:])]))
-            if code == 200 { deviceState = result; lastCommand = "Mac status updated" }
+            if code == 200 { deviceState = result; lastCommand = CommandFeedback.success(action: "get_state", result: result) }
             else { deviceState = nil; lastCommand = friendlyError(result["error"]?["code"]?.string ?? "action_failed") }
             screenState = LockStateReader.read()
         }
     }
     func revoke() {
         do { try revocation.begin(); pending = true; status = RevocationState.warning }
-        catch { status = safeError(error); return }
+        catch { status = friendlyError(safeError(error)); return }
         Task {
             let timeout = Task {
                 try? await Task.sleep(for: .seconds(5))
@@ -360,7 +359,7 @@ import MacBridgeNative
             defer { timeout.cancel() }
             if socket != nil { try? await send(envelope("revoke_self")) }
             do { try secrets.delete(account: "device-token"); token = nil }
-            catch { status = safeError(error) }
+            catch { status = friendlyError(safeError(error)) }
             try? await Task.sleep(for: .seconds(5))
             if pending { generation &+= 1; worker?.cancel(); socket?.cancel(with: .goingAway, reason: nil); socket = nil }
         }
@@ -376,7 +375,7 @@ import MacBridgeNative
         alert.informativeText = "Only confirm after the dashboard reports revocation. This clears the local warning; it cannot revoke the old server credential while offline."
         alert.addButton(withTitle: "I revoked it in the dashboard"); alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else { return }
-        do { try wipe() } catch { status = safeError(error) }
+        do { try wipe() } catch { status = friendlyError(safeError(error)) }
     }
     func dashboard() { do { let u = try dashboardOrigin(); NSWorkspace.shared.open(u) } catch { status = "Enter your HTTPS relay address first." } }
     func saveShortcut(_ name: String) {
@@ -386,20 +385,7 @@ import MacBridgeNative
     }
     func removeShortcut(_ name: String) { shortcuts.removeAll { Array($0.utf8) == Array(name.utf8) }; UserDefaults.standard.set(shortcuts, forKey: "shortcuts") }
     func friendlyError(_ code: String) -> String {
-        switch code {
-        case "invalid_params", "invalid_message": return "Check the app name or website address, then try again."
-        case "invalid_url": return "Enter a complete website address beginning with https:// or http://."
-        case "protected_app": return "This is a macOS component. Wand cannot open or close it."
-        case "app_not_found", "app_not_found_or_ambiguous": return "App not found. Refresh the app list and choose it again."
-        case "device_locked": return "Unlock this Mac locally before running this action."
-        case "lock_state_unknown": return "Wand cannot verify this session. Return to this Mac and try again."
-        case "media_app_not_running": return "Open Music or Spotify first, then try playback again."
-        case "automation_failed_or_permission_required", "permission_required": return "Allow Wand in System Settings → Privacy & Security → Automation, then retry."
-        case "action_not_allowlisted": return "Add this exact Shortcut name in Shortcuts before running it."
-        case "quit_pending_user_attention": return "The app is still open. Check it for a save dialog."
-        case "action_timeout_outcome_unknown": return "This action took too long. Check the Mac before retrying; its outcome is unknown."
-        default: return "Could not complete: " + code.replacingOccurrences(of: "_", with: " ")
-        }
+        CommandFeedback.error(code)
     }
     func safeError(_ error: Error) -> String { (error as? ContractError)?.code ?? "connection_or_storage_failed" }
 }

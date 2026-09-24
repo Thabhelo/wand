@@ -59,6 +59,7 @@ import MacBridgeNative
     private var activitySnapshot = ""
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        ApplicationMenus.install()
         buildWindow(); buildMenu()
         // First launch shows setup; later launches run quietly. The menu icon and
         // reopening the app always provide an explicit way to show the window.
@@ -84,12 +85,14 @@ import MacBridgeNative
         }
     }
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool { showWindow(); return true }
+    func applicationDidBecomeActive(_ notification: Notification) { render() }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
     @objc func showWindow() { window?.makeKeyAndOrderFront(nil); NSApplication.shared.activate(ignoringOtherApps: true) }
     private func label(_ text: String, size: CGFloat = 13, weight: NSFont.Weight = .regular, secondary: Bool = false) -> NSTextField {
         let view = NSTextField(wrappingLabelWithString: text)
         view.font = .systemFont(ofSize: size, weight: weight)
         view.textColor = secondary ? .secondaryLabelColor : .labelColor
+        view.isSelectable = true
         return view
     }
     private func button(_ title: String, _ action: Selector, symbol: String? = nil, primary: Bool = false) -> NSButton {
@@ -168,6 +171,7 @@ import MacBridgeNative
         body.orientation = .vertical; body.alignment = .leading; body.spacing = 24; body.translatesAutoresizingMaskIntoConstraints = false
         document.addSubview(body); scroll.documentView = document; root.addSubview(scroll)
         result.font = .systemFont(ofSize: 12, weight: .medium); result.textColor = .secondaryLabelColor; result.isSelectable = true
+        for text in [state, desktopStatus, connection, loginStatus] { text.isSelectable = true }
         result.translatesAutoresizingMaskIntoConstraints = false; root.addSubview(result)
         sidebarWidth = sidebar.widthAnchor.constraint(equalToConstant: 214)
         contentTop = scroll.topAnchor.constraint(equalTo: root.topAnchor, constant: 40)
@@ -302,7 +306,9 @@ import MacBridgeNative
         guard let agent else { return }
         loginToggle.state = StartupSettings.enabled ? .on : .off
         loginStatus.stringValue = StartupSettings.message
-        desktopStatus.stringValue = agent.executor.desktop.desktopWide ? "Desktop control enabled · apps across this Mac" : "Desktop control paused · enable once to get started"
+        desktopStatus.stringValue = !agent.executor.desktop.desktopWide ? "Desktop control paused" :
+            !AXIsProcessTrusted() ? "Desktop control needs Accessibility access" :
+            agent.screenState != .unlocked ? "Desktop control paused while this Mac is locked or inactive" : "Desktop control enabled"
         state.stringValue = agent.screenState == .unlocked ? "" : agent.screenState == .locked ? "Screen locked · information hidden" : "Session unavailable · actions paused"
         state.textColor = agent.screenState == .unlocked ? .systemGreen : .secondaryLabelColor
         state.isHidden = agent.screenState == .unlocked
@@ -396,11 +402,11 @@ import MacBridgeNative
     private func showFeedback(_ message: String) {
         guard displayedCommand != message else { return }
         displayedCommand = message; feedbackTask?.cancel()
-        let quiet = message == "None" || message.isEmpty || message.hasSuffix(" — succeeded")
+        let quiet = message == "None" || message.isEmpty
         result.stringValue = quiet ? "" : message
         result.isHidden = quiet
         // Errors persist until the next action. Routine feedback fades after a moment.
-        let brief = ["Application opened", "Website opened", "Audio muted", "Audio unmuted", "Volume changed", "Application quit", "Shortcut completed", "Playback toggled", "Skipped to next track", "Returned to previous track", "Completed", "Shortcut added to your allowlist"]
+        let brief = ["App opened", "App already open · brought to front", "App was already open", "Website opened", "Audio muted", "Audio unmuted", "Volume changed", "App closed", "App was already closed", "Shortcut completed", "Playback toggled", "Skipped to next track", "Returned to previous track", "Completed", "Shortcut added to your allowlist"]
         if brief.contains(message) {
             feedbackTask = Task { [weak self] in
                 do { try await Task.sleep(for: .seconds(3)) } catch { return }
@@ -577,10 +583,10 @@ import MacBridgeNative
             let entries = try data.split(separator: 10).suffix(120).map { try JSON.parse(Data($0)) }.filter { $0["outcome"]?.string != "received" }.suffix(20).reversed()
             if entries.isEmpty { activityList.addArrangedSubview(label("Nothing here yet. Your next action will appear here.", secondary: true)) }
             for entry in entries {
-                let name = (entry["action"]?.string ?? "Command").replacingOccurrences(of: "_", with: " ").capitalized
+                let name = CommandFeedback.actionName(entry["action"]?.string ?? "")
                 let outcome = entry["outcome"]?.string ?? "Unknown"
                 let time = entry["created_at"]?.string.flatMap(WireTime.parse).map { $0.formatted(date: .abbreviated, time: .shortened) } ?? ""
-                activityList.addArrangedSubview(column([label(name, weight: .medium), label(time + " · " + (outcome == "succeeded" ? "Completed" : outcome.replacingOccurrences(of: "_", with: " ")), size: 12, secondary: true)], spacing: 3))
+                activityList.addArrangedSubview(column([label(name, weight: .medium), label(time + " · " + CommandFeedback.outcome(outcome), size: 12, secondary: true)], spacing: 3))
             }
         } catch { activityList.addArrangedSubview(label("The local log could not be read. Your commands have not been altered.", secondary: true)) }
     }
