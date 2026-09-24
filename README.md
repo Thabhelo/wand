@@ -10,6 +10,8 @@ The owner submitted the Muse connector application on **September 24, 2026**; it
 
 [Current status and remaining checks](docs/BUILD_STATUS.md) is the single release-status source. See [build 34 evidence](docs/RELEASE_0_13_1.md) for the exact artifact and [desktop acceptance](docs/DESKTOP_ACCEPTANCE.md) for tested actions and limits. Older build notes are retained in Git history, not as active checklists.
 
+The relay's background checks skip completed command history to reduce database reads. This server update needs no Mac reinstall or permission changes; [55 cloud tests cover the fix and existing behavior](cloud/README.md#database-read-costs).
+
 ## Project layout
 
 - `agent/`: Swift menu-bar app, native actions, Keychain storage and loopback API.

@@ -3,7 +3,17 @@ import {protectedApp} from './app-policy.js';
 import {DurableObject} from 'cloudflare:workers';
 import {Failure,envelope,failure,hash,id,json,stamp,validate} from './common.js';
 export class Device extends DurableObject{
- constructor(ctx,env){super(ctx,env);this.sql=ctx.storage.sql;this.results=new Map();this.messageQueue=Promise.resolve();this.sql.exec('CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY,v TEXT NOT NULL)');this.sql.exec('CREATE TABLE IF NOT EXISTS commands(id TEXT PRIMARY KEY,user_id TEXT NOT NULL,action TEXT NOT NULL,status TEXT NOT NULL,error TEXT,generation TEXT,created INTEGER NOT NULL,client_id TEXT NOT NULL,ip TEXT NOT NULL)');this.sql.exec('CREATE TABLE IF NOT EXISTS audit(id TEXT PRIMARY KEY,command_id TEXT NOT NULL,user_id TEXT NOT NULL,device_id TEXT NOT NULL,action TEXT NOT NULL,params_json TEXT NOT NULL,result_summary TEXT NOT NULL,ip TEXT NOT NULL,oauth_client_id TEXT NOT NULL,created INTEGER NOT NULL)');this.sql.exec('CREATE INDEX IF NOT EXISTS audit_created ON audit(created)');this.sql.exec('CREATE INDEX IF NOT EXISTS command_created ON commands(created)');this.sql.exec('CREATE TABLE IF NOT EXISTS hits(t INTEGER NOT NULL)')}
+ constructor(ctx,env){
+  super(ctx,env);this.sql=ctx.storage.sql;this.results=new Map();this.messageQueue=Promise.resolve();
+  this.sql.exec('CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY,v TEXT NOT NULL)');
+  this.sql.exec('CREATE TABLE IF NOT EXISTS commands(id TEXT PRIMARY KEY,user_id TEXT NOT NULL,action TEXT NOT NULL,status TEXT NOT NULL,error TEXT,generation TEXT,created INTEGER NOT NULL,client_id TEXT NOT NULL,ip TEXT NOT NULL)');
+  this.sql.exec('CREATE TABLE IF NOT EXISTS audit(id TEXT PRIMARY KEY,command_id TEXT NOT NULL,user_id TEXT NOT NULL,device_id TEXT NOT NULL,action TEXT NOT NULL,params_json TEXT NOT NULL,result_summary TEXT NOT NULL,ip TEXT NOT NULL,oauth_client_id TEXT NOT NULL,created INTEGER NOT NULL)');
+  this.sql.exec('CREATE INDEX IF NOT EXISTS audit_created ON audit(created)');
+  this.sql.exec('CREATE INDEX IF NOT EXISTS command_created ON commands(created)');
+  // Heartbeats and timeouts must skip completed history, retained for 90 days.
+  this.sql.exec("CREATE INDEX IF NOT EXISTS commands_pending ON commands(created) WHERE status IN ('dispatched','delivered')");
+  this.sql.exec('CREATE TABLE IF NOT EXISTS hits(t INTEGER NOT NULL)');
+ }
  get(k){return this.sql.exec('SELECT v FROM meta WHERE k=?',k).toArray()[0]?.v}
  put(k,v){this.sql.exec('INSERT OR REPLACE INTO meta VALUES(?,?)',k,String(v))}
  did(){return this.get('device_id')}

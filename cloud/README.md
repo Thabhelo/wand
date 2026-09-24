@@ -22,5 +22,11 @@ Wand's separate connector OAuth service is implemented and tested with a fake cl
 
 See [the transport contract](../contracts/TRANSPORT.md) for device routing. No offline queue or reconnect replay. Cloud command/audit records contain no raw params or state. Device alarms purge commands/audits after 90 days; the [registry alarm](../docs/REGISTRY_CLEANUP.md) expires pairing and consent records hourly. Restoring provider backups needs deletion replay before service resumes. The signed, notarized Mac release is available from [the download page](https://getwand.app/download/); [release evidence](../docs/RELEASE_0_13_1.md) records what was tested and what remains open.
 
+## Database read costs
+
+The `commands_pending` partial index includes only dispatched and delivered commands. Heartbeat scheduling, timeouts and reconnect handling use it to skip completed history. Existing device databases create the index when their object next starts; no records are removed, and the 90-day retention period stays unchanged.
+
+`tests/device-storage.test.js` measures actual Workers SQLite `rowsRead` with 5,000 completed commands. It also checks index creation after an existing object restarts, timeout handling and generation fencing. Keep these checks when changing the command queries: an unindexed status filter can scan the whole history on every heartbeat.
+
 ## Facebook activation
 The browser adapter supports Facebook sign-in and explicit linking from an existing signed-in account. Configure a dedicated Meta Facebook Login app, register `https://wand-getwand.firebaseapp.com/__/auth/handler` as its exact redirect, and save its app ID/secret in Firebase Authentication (not in this repository). After verification, set FACEBOOK_ENABLED to true and deploy. No email-based account merging occurs in Wand. Facebook linking and sign-in were verified for the developer account on 2026-09-20. FACEBOOK_ENABLED is now false to keep public onboarding Google-only. The Firebase provider is retained for existing linked accounts; Meta verification is not on the release critical path.
