@@ -1,9 +1,22 @@
 # Wand website
 
-Run `npm ci` then `npm run dev` in this directory. `npm run check` checks host routing and the unavailable-service boundary. `npm run deploy` publishes the Worker and its static assets once Wrangler is authorized for the domain-owning Cloudflare account.
+Cloudflare serves the public site at `getwand.app` and the account dashboard at `app.getwand.app`. `www.getwand.app` is also routed through this Worker. Google sign-in is configured through Firebase. Account API requests are proxied to the relay at `https://api.getwand.app`; the Mac connects to that relay directly over HTTPS and outbound WebSockets.
 
-Domains: getwand.app and www.getwand.app serve the public site; app.getwand.app serves the account dashboard. The Mac app connects directly to api.getwand.app over HTTPS and outbound WebSockets. The dashboard proxies its API requests through this Worker to the same relay. Dashboard HTML is synchronized from ../web/index.html before development and deployment.
+## Develop and deploy
 
-RELAY_ORIGIN points to the deployed Cloudflare relay at https://api.getwand.app. Sign-in is still disabled until its hosted authentication configuration is supplied. Without a relay origin, account API requests fail closed with 503. No credentials belong in this file. Request observability is disabled to avoid recording authorization callback parameters.
+Run these commands from `site/`:
 
-The download page deliberately has no public installer until Developer ID signing and Apple notarization pass. The local dist/Wand.dmg is an ad-hoc signed developer build, not a public release.
+```sh
+npm ci
+npm run dev
+```
+
+`npm run check` runs the website, dashboard, routing and feedback tests. `npm run deploy` publishes the Worker and static assets using the authorized Cloudflare account. Both development and deployment first synchronize the shared dashboard assets from `../web`; edit those source files rather than their generated copies in `public/`.
+
+`wrangler.jsonc` defines the production domains, `RELAY_ORIGIN`, support-email binding and support rate limit. Without a relay origin, account API requests fail closed with 503. Request observability stays disabled to avoid recording authorization callback parameters. The support form setup is documented in [SUPPORT_FORM.md](../docs/SUPPORT_FORM.md).
+
+## Downloads and connection status
+
+The download page serves signed, notarized Wand installers from `public/releases/`, with a SHA-256 manifest. Use the [release workflow](../docs/AUTOMATED_RELEASES.md) to prepare a new installer and verify it before publication. Do not publish an arbitrary local development build.
+
+Muse can use the web controls today. Its native connector application has been submitted; client registration and native connection testing remain pending. Keep public copy consistent with [BUILD_STATUS.md](../docs/BUILD_STATUS.md).

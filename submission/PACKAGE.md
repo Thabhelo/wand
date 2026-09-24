@@ -1,6 +1,6 @@
 # Wand connector review package
 
-Updated September 24, 2026. Public Mac release: **Wand 0.13.1, build 34**. This packet requests connector review and verified client-registration details; it does not claim Meta approval or completed native Muse integration.
+Updated September 24, 2026. Public Mac release: **Wand 0.13.1, build 34**, signed and notarized. **The Muse connector application has been submitted and is awaiting review**, as confirmed by the owner on this date. Native client registration and end-to-end Muse OAuth/tool testing remain pending; submission is not approval.
 
 ## Product
 
@@ -30,6 +30,8 @@ The native app supports a fixed action catalog plus locally approved desktop obs
 
 No payment is required for this beta. The sandbox uses a reviewer's own Google login and a simulated device. It exercises real hosted pairing, routing, results, offline rejection and revocation without granting access to a personal Mac.
 
+The linked privacy policy and terms are the published legal documents. Their source is in `site/public/privacy/index.html` and `site/public/terms/index.html`; do not substitute an old draft or infer legal review from publication.
+
 ## Authentication and registration
 
 Production uses Firebase Google sign-in for owners and a separate Wand OAuth server for assistant clients. Authorization code, PKCE S256, state, the resource `https://api.getwand.app/connector`, and action scopes `wand:<action>` are required. Owners choose permitted Macs and actions. Connector tokens cannot administer the owner's account.
@@ -55,6 +57,6 @@ Fresh-user or second-Mac installation and a full Mac reboot have not been revali
 
 Native Muse OAuth authorization and direct tool-result/image compatibility await verified registration details. No recorded native-connector demo is available, and the marketing animation is not execution evidence. [DEMO.md](DEMO.md) describes a short recording of the existing web-to-Mac flow; recording that outline does not establish native Muse integration.
 
-## Review-request description
+## Submitted review scope
 
 Wand connects an assistant to a user's own Mac through a signed, notarized menu-bar app and an outbound relay connection. The public beta provides Mac status and app controls, plus locally approved desktop observation and input. Owners control device/action consent and can pause or revoke access. We are requesting review of the deployed API, OAuth service, reviewer sandbox and Mac beta, together with verified Muse client/callback requirements so we can complete native authorization and tool-result testing.

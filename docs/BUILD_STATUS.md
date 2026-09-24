@@ -1,60 +1,39 @@
-# Current production authentication
+# Wand status
 
-As of 2026-09-20, production uses Firebase Google sign-in and a separate Wand OAuth consent service. See [Firebase connections](FIREBASE_CONNECTIONS.md) and [cloud deployment](../cloud/README.md). Earlier FastAPI/Auth0 descriptions below refer to the retained reference implementation, not the deployed service.
+Updated **September 24, 2026**. This is the current status page; dated acceptance records describe the exact build and path tested, not a rolling claim that every action was retested.
 
-# Current hosted status
+## Shipped
 
-See [Wand launch status](../deploy/WAND_LAUNCH.md) for the current Cloudflare deployment and sign-in blocker. The entries below are chronological history and do not override the current status.
+| Component | Current state |
+| --- | --- |
+| Mac app | **0.13.1, build 34**, Apple-silicon/macOS 26+ public beta; owner Developer ID signing and Apple notarization verified. Direct download, not a Mac App Store listing. |
+| Website and dashboard | Live at [getwand.app](https://getwand.app) and [app.getwand.app](https://app.getwand.app). |
+| Backend | Cloudflare Workers, D1 and per-device Durable Objects at `api.getwand.app`; Firebase Google sign-in. Python/FastAPI is the reference implementation only. |
+| Pairing | Connect in Wand → Google sign-in → approve the Mac. The setup link carries the code; manual code entry is a fallback. |
+| Actions | Status, audio/media, app discovery/open/close, URLs, allowlisted Shortcuts, lock, sleep, browser cleanup, Focus and permissioned desktop tools are implemented. Per-device capabilities determine current availability. |
+| Native permissions | Build 34 retained the owner's signing identity and reconnected after an app restart without new Keychain or privacy prompts in the recorded test. macOS owns permissions; this is not a promise that prompts can never recur. |
+| Release workflow | GitHub signing, notarization and publication succeeded for build 34 using the owner's team. Ebuka's credentials are no longer the current release dependency. |
+| Muse application | **Submitted and awaiting review**, reported by the owner on September 24. This records the owner's confirmation; it is not a Meta approval receipt. |
+| Muse connection | Web-based Muse-to-Mac use has been tested. Raw API/OpenAPI and Wand OAuth exist; official native Muse client registration and connection testing remain pending. |
 
-# Connected build status — 2026-09-20
+## Latest verified changes
 
-## Implemented
-- Shared schema-validated REST/device protocol and closed action catalog.
-- FastAPI relay: Auth0 JWT validation, two-authority pairing/redemption, hashed device tokens, in-memory WebSockets, generation fencing, heartbeats, result polling/timeouts, ownership checks, rate limits, redacted audits, device/account revocation and active-data deletion.
-- SQLite behind a repository boundary, single-process deployment configuration, Docker/Fly recipe and Render guidance.
-- Web dashboard with Auth0 sign-in, pairing, device status/rename/revoke and data deletion.
-- Separate MacBridge Swift app with real HTTPS pairing, Keychain credentials, WSS reconnect/heartbeat, session fencing, local forensic logs, allowlist settings, offline-revoke warning and loopback bearer API.
-- Native execution implementations for URL/app opening, graceful app quit, allowlisted Shortcut invocation, volume/mute, supported media controls and minimized device state. These use an explicit OS lock flag plus matching active-session ownership checks. A native read-only execution has passed; physical control behavior remains unverified.
-- OpenAPI generated from canonical contracts, internal action manifest, operator instructions, security/privacy/terms drafts, demo script and clearly labeled loopback reviewer sandbox.
+- Native release source `0d7960f`, publication `59e4a6d`: [build 34 artifact and test evidence](RELEASE_0_13_1.md), including CI notarization, window capture, text input and restart persistence.
+- Website source `7e0b398`: repeated volume arrow keys retain focus; the selected Mac shows its reported version/build. All **54 website tests** passed. Live volume changes **50% → 51% → 53%** were confirmed without refocusing, then restored to **50%**. Website deployment: `2918cddf-53a4-4df0-b212-61e450c557f8`.
+- Lock and repeated lock passed through the production relay on the build 34 candidate. Safari pinned-tab preservation passed through the local action path. Focus on/off has independently verified results. Sleep and reconnect passed; the owner manually woke the Mac after about 43 seconds. These are implemented actions, not unfinished OS work. [Detailed acceptance and path limits](DESKTOP_ACCEPTANCE.md).
 
-## Explicitly incomplete
-- The active/unlocked case now passes using IOConsoleLocked and two matching session-ownership checks. This OS implementation property is undocumented, and actual lock/unlock transitions and macOS 27 runtime behavior still require verification. Missing, malformed or conflicting signals fail closed.
-- Real lock invocation, pinned-tab handling, Focus/DND changes and sleep/wake behavior need empirical implementation/verification; these return specific errors.
-- Now-playing readout is currently null. Media player selection currently prioritizes a running Music process before Spotify; active playback preference needs verification.
-- Hosted Auth0 configuration, TLS deployment/domain, platform connector import format and phone-to-Mac run are not configured/verified.
-- Offline local revoke remains blocked until the user explicitly confirms completing dashboard revocation. This is a user acknowledgment, not independently verified server evidence.
-- Agent token rotation is revoke/re-pair, not seamless rotation. Bootstrap recovery across agent restart needs further hardening.
-- Signed/notarized distribution requires the owner's Apple Developer identity. The local packaged build is ad-hoc only.
-- Real demo video and externally accessible reviewer sandbox have not been produced/deployed.
-- Backup deletion replay and hosted identity deletion are not implemented. Data deletion covers active MacBridge application records.
+## Remaining checks and dependencies
 
-The build is not a finished MVP and must not be presented as such. Tests establish protocol behavior, not physical Mac actions or Meta acceptance.
+1. Meta's review outcome and verified native OAuth client/callback registration, followed by an actual native Muse connection test. Do not invent callbacks or equate web use with native integration.
+2. Fresh-user or second-Mac installation, a full Mac reboot under the current signing identity, and the live 75-second missed-heartbeat/offline interval. The manual wake ended the sleep test before that interval; it was not an unintended wake.
+3. Broader compatibility: Chrome's dedicated cleanup, Safari cleanup without pinned preservation, other macOS versions/locales, and representative app workflows. Existing passes do not certify every app or action combination.
 
-## Verification in this build
-- 38 Python tests passed, including RSA JWT rejection cases, real relay integration, shared contracts and Swift protocol-peer checks.
-- 6 Swift native tests passed, including loopback bearer authentication, browser-origin rejection and unsafe executor input rejection.
-- Swift app build succeeded; ad-hoc packaging and strict code-signature verification passed at `/private/tmp/macbridge-test-session-20260920/MacBridge.app`.
-- The reviewer sandbox's browser get_state command visibly reached `succeeded` through the real relay. A later browser-native confirmation dialog stalled the computer-use tool; simulated lock was not counted as a completed browser test.
-- No physical lock/sleep/tab-close/quit/Shortcut action was executed on the main Mac session. No hosted deployment, notarization or Meta submission occurred.
+The current release remains a **public beta**. Signing/notarization, Muse review, and Mac App Store publication are separate processes.
 
+## Where to look
 
-## Update: real native state read (2026-09-20, 12:20 local)
-- Added LockStateReader with strict CFBoolean handling, current UID matching, exactly-one-active-console validation and conflict rejection. No missing-key default to unlocked.
-- Replaced the hardcoded unknown state in agent/local request paths. get_state checks again after collection to avoid releasing a snapshot after locking or switching users.
-- Added Read this Mac to the real app, using its production command/log path. It does not require relay enrollment.
-- NativeStateProbe and the live XCTest executed the actual native get_state implementation on the current Mac: valid schema, screen_locked:false, battery present, four running app names collected (names not printed or saved in evidence).
-- Eight Swift tests passed, including fail-closed lock-signal cases and the live read-only test. No physical control action ran. Earlier Python results were not rerun because relay/contracts were unchanged.
-- App 0.4.0 is packaged and signature-verified at /Users/Shared/MacBridge.app. Atomic bundle replacement avoids overwriting a running executable. Existing processes must reopen to load the update.
-- Computer-use launched the app process but its accessibility inspection timed out twice. A stack sample showed the normal application event loop. Therefore button-click/visual verification is still not claimed; the native execution path was verified independently.
+- [Action catalog](../contracts/actions.json), [capability contract](../contracts/CAPABILITIES.md), [OpenAPI](../connector/openapi.json).
+- [Release workflow](AUTOMATED_RELEASES.md), [permission lifecycle](PERMISSION_LIFECYCLE.md), [cloud deployment](../cloud/README.md).
+- [Submission package](../submission/PACKAGE.md), [reviewer access](../submission/REVIEWER-ACCESS.md), [security model](../submission/SECURITY.md).
 
-
-## Update: installed native window repaired (0.5.0)
-- Replaced the SwiftUI scene/window lifecycle with an explicit AppKit application delegate, NSWindow and standard target/action controls. Finder reopen raises the existing window.
-- Installed app visibly displayed actual battery/frontmost/running-app information and `Read this Mac — succeeded` during computer-use verification. This supersedes the previous unverified-button limitation.
-- Added local Calculator launch, mute/unmute, volume and HTTP(S) website controls with visible progress/outcome text. They use the existing schema-validated, logged, lock-guarded native command path. The real local API separately returned HTTP 200 with a state result.
-- The local audit recorded open_app received/succeeded during UI testing; Calculator's continued running state was not confirmed. Audio unmuted feedback was visible while the user was interacting; this is not an acoustic measurement.
-- Existing main-user development instance was stopped for installation, preserving Keychain and settings. The updated installed app is open at /Users/Shared/MacBridge.app.
-- Real remote pairing/deployment and lock/sleep/pinned-tab/Focus actions remain incomplete. No change to those claims.
-
-## Update: polished local preview (0.6.0)
-Four native pages, automatic real state reading, playback/app/Shortcut controls, confirmations, activity history and clearer connection setup are installed in `/Users/Shared/MacBridge.app`. The dashboard has responsive light/dark styling and better sign-in/submit states. See `RELEASE_0_6.md` for exact verification and remaining blockers; remote deployment and four OS-dependent actions are still incomplete.
+Update this page when a release, deployment, acceptance result or submission status changes. Keep exact test evidence in the acceptance/release documents; remove superseded blocker lists instead of appending contradictory updates.

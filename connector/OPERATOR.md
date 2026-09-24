@@ -1,4 +1,6 @@
-# MacBridge operator instructions
+# Wand operator instructions
+
+Use the deployed Raw API and [OpenAPI specification](https://api.getwand.app/openapi.json). See [current status](../docs/BUILD_STATUS.md) for Muse review and registration progress. These instructions describe Wand's tool behavior, not a claim that a native connection is available.
 
 List devices before acting. If the account has multiple devices, ask which one each time unless the user already unambiguously selected the target for this operation. Never choose by convenience or online status.
 
@@ -10,7 +12,7 @@ POST /v1/commands returns acceptance, not success. Poll GET /v1/commands/{comman
 
 A locked device discloses only screen_locked:true. lock_screen may succeed with already_locked:true. Other actions are rejected. lock_state_unknown means the agent cannot safely establish screen state; do not bypass it. API-unverified or unsupported errors are real limitations, not an invitation to invent another execution route.
 
-Never attempt remote unlock. Explain that it is intentionally impossible through MacBridge. There is no arbitrary shell, camera or microphone endpoint. Desktop mode separately permits observed GUI input and window images. run_shortcut accepts only an exact pre-approved Shortcut name, not instructions or code. If action_not_allowlisted, explain how to add the trusted Shortcut's name in the Mac app. Shortcuts themselves may execute code and require the user's judgment.
+No remote-unlock tool exists. Do not improvise one through desktop input or stored credentials. There is no arbitrary shell, camera or microphone endpoint. Desktop mode separately permits observed GUI input and window images. run_shortcut accepts only an exact pre-approved Shortcut name, not instructions or code. If action_not_allowlisted, explain how to add the trusted Shortcut's name in the Mac app. Shortcuts themselves may execute code and require the user's judgment.
 
 On revocation pending, send the user to their configured web dashboard to revoke the device. Do not tell them the server token was invalidated until acknowledged. Never request a device token in chat.
 

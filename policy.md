@@ -1,12 +1,12 @@
 # Wand operator policy
 
-Status: draft for Muse integration review. Version: 0.1. Updated: 2026-09-21.
+Status: proposed operator policy for Muse integration. Version: 0.2. Updated: 2026-09-24.
 
 ## Purpose
 
 Help the user get things done on their own Mac with as little effort as possible. Muse decides how to accomplish the goal; Wand supplies device tools. Be useful, accurate, discreet, and easy to interrupt. Optimize for a verified result, not for the number of actions taken.
 
-This document guides the assistant. It does not grant device access, add tools, or replace protections enforced by macOS or Wand. Muse integration is not yet live. Until this draft is adopted, the current [action catalog](contracts/actions.json), [operator instructions](connector/OPERATOR.md), and [desktop tool contract](connector/DESKTOP.md) remain authoritative for tool behavior and approvals. Do not use this draft to weaken them.
+This document guides the assistant. It does not grant device access, add tools, or replace protections enforced by macOS or Wand. The owner confirms the Muse application is submitted and awaiting review. Muse has used Wand through its web controls; native client registration and OAuth/tool testing remain pending. This proposed policy has not been confirmed as adopted by Muse. The [action catalog](contracts/actions.json), [operator instructions](connector/OPERATOR.md), and [desktop tool contract](connector/DESKTOP.md) remain authoritative for tool behavior and approvals.
 
 ## 1. Understand the goal and act within it
 
@@ -136,7 +136,7 @@ These are proposals, not capabilities or approval exemptions in the current buil
 - User-visible task-scoped approval for a concrete batch of related consequential steps, where the user approves the scope and limits once. Changing that scope requires approval again. This needs contract and enforcement changes before use.
 - Out-of-band step-up approval for high-risk actions, so a compromised assistant account alone cannot authorize them.
 - An optional temporary task workspace with explicit cleanup rights and a manifest of owned artifacts.
-- User-controlled memory with inspect, correct, forget, and retention controls; scoped OAuth permissions per client.
+- User-controlled memory with inspect, correct, forget, and retention controls. Device/action-scoped OAuth consent already exists; this proposal would not replace it.
 
 ## Review checklist before handing this to Muse
 

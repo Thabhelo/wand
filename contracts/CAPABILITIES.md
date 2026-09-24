@@ -73,14 +73,20 @@ The executable command catalog remains closed. Response clients tolerate additiv
 fields, while adding a device-advertised action requires deploying the relay's
 validation schema first. An advertisement can never authorize arbitrary execution.
 
-## Rollout
+## Current availability
 
-Build 32 does not advertise capabilities. The updated dashboard fails closed for
-unknown actions, except read-only status discovery and the desktop Stop safety
-control. Deploy it with the next signed, notarized Mac release; deploying it first
-would disable controls for current beta users. The compatible relay may deploy
-first. The low-level command API retains legacy behavior and always validates and
-checks commands on the Mac; capability planning does not replace enforcement.
+Capability reporting is deployed in the relay, dashboard and signed, notarized
+Mac release; see [current status](../docs/BUILD_STATUS.md). It advertises the catalog actions and
+the `audio_output_state`, `playback_state`, `app_inventory`, `desktop_images` and
+`system_status` features. Read the document for the selected device; a released
+feature can still be unavailable because of permissions, consent or device state.
 
-Native Muse registration and OAuth testing remain separate. Keep Raw API + OpenAPI;
-an MCP adapter can later reuse this document and the same authorization path.
+Build 32 and other agents without a report return unknown support. The dashboard
+fails closed for unknown actions, except basic status discovery and the desktop
+Stop safety control. Offer the current update rather than guessing. The low-level
+command API retains legacy behavior and validates commands on the Mac; capability
+planning does not replace enforcement.
+
+Raw API + OpenAPI is the connector interface. Native registration and review
+progress are tracked in [current status](../docs/BUILD_STATUS.md); an MCP adapter
+is optional future work over the same authorization path.

@@ -1,19 +1,17 @@
-# Firebase and Muse connection — 2026-09-20
+# Account sign-in and assistant authorization
 
-Wand uses Firebase Google sign-in for its account dashboard and Cloudflare D1 for its device registry. No Firestore database or Auth0 tenant is needed. `getwand.app` sends account setup to `app.getwand.app`; the native app opens the same setup page, so there is one account identity rather than a second native login.
+Wand uses **Firebase Google sign-in** for account identity and Cloudflare D1 for the device registry. Production does not use Auth0 or Firestore. `getwand.app` and the Mac app both send account setup to `app.getwand.app`; the Mac stores device credentials in Keychain and needs neither a Firebase SDK nor Google tokens.
 
-The assistant connection is separate OAuth consent: sign in, choose Macs, choose actions, Allow Muse. Users can disconnect Muse without disconnecting the Mac from Wand. High-risk conversation confirmations are a UX policy, not a security boundary. Out-of-band approval is still a future feature.
+## Assistant connection
 
-Implemented and tested: token signature/issuer/audience/timestamp checks, closed Google/Facebook-provider allowlist, exact client callback validation, PKCE S256, single-use consent, cross-account rejection, action/device restrictions, no assistant administration rights, narrowed token scope, immediate D1 revocation, account-deletion cascade, scoped command-result polling.
+Wand OAuth is separate from Google sign-in: the owner signs in, selects Macs and actions, and approves the assistant. Disconnecting an assistant does not disconnect the Mac from the owner's dashboard. Tokens are restricted to the approved devices/actions, and revocation is checked in D1. High-risk conversation confirmations are a UX rule; independent step-up approval is future work.
 
-Operational dependency: Meta/Muse's genuine connector registration and verified callback URL are not available in this workspace. Do not set an invented callback or claim an approved Muse listing. Only explicitly provisioned clients listed in MUSE_CLIENT_IDS can reach consent.
+The implemented flow validates tokens, issuer/audience/time, exact registered callback URLs, PKCE S256, single-use consent and account ownership. Assistant tokens cannot administer accounts or pairing. Only explicitly provisioned clients in `MUSE_CLIENT_IDS` can reach Muse consent; the committed production configuration leaves that list empty pending verified Meta registration details.
 
-The live native app does not need a Firebase SDK or Google tokens in Keychain. Its device-pairing protocol is unchanged. Native actions that remain blocked by OS verification are not made functional by this authentication change.
+The owner reported submitting the [Muse connector application](https://muse.ai/platform) on September 24, 2026. Review is pending. Muse has used Wand through its web controls; official native OAuth/tool integration must still be registered and tested. See [current status](BUILD_STATUS.md).
 
-Facebook sign-in and explicit account linking are enabled. Firebase provider configuration for Meta app 1402697268050010 was verified on 2026-09-20 and the live button is visible. Facebook account linking and a fresh Facebook sign-in were verified in production on 2026-09-20 after enabling the email permission in Meta. The existing Google-linked account remained the same account. Public availability is still gated by Meta business verification; the Publish button is disabled. Facebook email verification is not used as proof of device ownership: the Firebase UID remains the sole account key.
+## Facebook
 
-Official platform discovery: https://muse.ai/platform — Submit a connector opens a sign-in-gated form. The public page confirms functional, security and legal review before directory listing; no OAuth callback address is published there.
+Facebook provider support and explicit account linking remain implemented, but `FACEBOOK_ENABLED=false` keeps it out of the public flow. Google is the public sign-in path. Earlier Facebook testing and its separate business-verification work do not establish a public Facebook launch or Muse approval.
 
-Meta publication check (2026-09-20): created the Wand App business portfolio (27578447625164268). Meta reports it eligible for verification, but requires legal business type, business/contact details and possibly supporting documents. The owner must supply these facts; no verification submission or public publication has been completed. The previously exposed Meta app secret still needs rotation and replacement in Firebase; successful sign-in does not establish that rotation occurred.
-
-Release focus update: FACEBOOK_ENABLED=false deployed on 2026-09-20. Google is the public sign-in path; the existing Facebook provider/account links are retained. Meta Business verification is deferred. The actual Muse platform accepts a company or individual developer and its connector draft has reached Review, but no connector was submitted or approved.
+Before re-enabling Facebook, verify its current provider/publishing state and credential rotation: an app secret was exposed during setup, and the historical setup record did not establish that it was rotated. Never copy secrets into documentation or source. Firebase UID, not a matching email address, identifies the owner of paired devices.

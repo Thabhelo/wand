@@ -2,17 +2,17 @@
 
 GitHub can sign and notarize a downloadable Wand artifact, or also publish it to **getwand.app**, using Thabhelo’s Apple Developer account. This workflow does not submit to the Mac App Store. Pushing to `main` alone does not publish an app.
 
-## 1. Choose the signing team
+Apple signing and notarization are configured and were used for [build 34](RELEASE_0_13_1.md). For a routine release, go to [step 5](#5-run-checks-prepare-an-artifact-or-publish). Steps 1–4 are for checking or replacing credentials; they do not need repeating for every build.
 
-After Apple activates the membership:
+## 1. Keep the signing team
 
-1. Find the **Team ID** in [Apple Developer → Membership details](https://developer.apple.com/account).
+1. Use Wand's current owner team, `58XWD3LBSS` (Thabhelo Duve). Confirm it in [Apple Developer → Membership details](https://developer.apple.com/account) when replacing credentials.
 2. Open [Wand’s Actions variables](https://github.com/Thabhelo/wand/settings/variables/actions).
 3. Add `WAND_SIGNING_TEAM_ID` with that exact 10-character Team ID. This is a public identifier, not a secret.
 
-The workflow accepts only a Developer ID Application certificate from this team. If the variable is absent or empty, it keeps build 32’s existing team, `AX35NK3J3A`; it never chooses another available identity automatically.
+The workflow accepts only a Developer ID Application certificate from the configured team. Keep `WAND_SIGNING_TEAM_ID=58XWD3LBSS` set. The script still falls back to the legacy build 32 team, `AX35NK3J3A`, if the variable is absent or empty; that is compatibility behavior, not the current release identity.
 
-**Moving from Ebuka’s team to Thabhelo’s is a signing-identity change.** Existing installations may need a one-time Keychain or macOS permission approval. Test that update before publishing. Keep the bundle identifier and the new team stable for later releases; do not reset everyone’s permissions or promise that macOS will never ask again.
+Build 33 moved from Ebuka's team to Thabhelo's. Builds 33 and 34 share the owner identity. Keep the bundle identifier `local.macbridge.agent` and that team stable; users updating from older identities may need to approve access again. See the [permission lifecycle](PERMISSION_LIFECYCLE.md). Ebuka's credentials are not required for current releases.
 
 ## 2. Export the signing certificate
 
@@ -20,7 +20,7 @@ The workflow accepts only a Developer ID Application certificate from this team.
 2. On the Mac holding its private key, open **Keychain Access → My Certificates**. Expand the certificate and confirm its private key is present.
 3. Export the certificate **with its private key** as `Wand-signing.p12`. Set an export password.
 
-If deliberately continuing with Ebuka’s identity, he supplies the build 32 team’s certificate instead. Do not mix one team’s certificate with another team’s configured ID or notarization credentials.
+Do not mix one team's certificate with another team's configured ID or notarization credentials.
 
 ## 3. Create a notarization key
 

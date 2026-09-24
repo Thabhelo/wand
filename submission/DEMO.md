@@ -1,6 +1,6 @@
 # Wand review demo outline
 
-Updated September 24, 2026. **This is an outline, not a recording or a completed native Muse demo.**
+Updated September 24, 2026. The Muse application is submitted and awaiting review, per the owner. **This is a recording outline, not a completed native Muse demo.** Web-to-Mac use has been tested; native registration and OAuth/tool-image testing remain pending.
 
 ## Record the working web-to-Mac flow
 

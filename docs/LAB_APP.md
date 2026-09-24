@@ -1,58 +1,27 @@
-# MacBridge Lab — local test build
+# MacBridge Lab — local diagnostic app
 
-This is a Phase 1 diagnostic/simulation app, not the remote-control MVP. Live actions are disabled in code. There is no relay connection, pairing HTTP flow, local HTTP server, or real OS action executor in this build.
+MacBridge Lab is a separate developer utility, not the shipped Wand app or the hosted reviewer simulator. Its [source](../agent/Sources/MacBridgeLab/main.swift) has no relay connection, pairing flow, local HTTP server or OS action executor. For the current signed Wand release and physical-action evidence, see [build 34](RELEASE_0_13_1.md) and [desktop acceptance](DESKTOP_ACCEPTANCE.md).
 
-## Open
+## What it checks
 
-Source-tree build output: `dist/MacBridge Lab.app`. Use the verified temporary copy below: Finder/iCloud added disallowed signing metadata to the copy under Documents after packaging.
+- Read-only GUI-session, OS, legacy CGSession-path and Accessibility diagnostics. Session presence is not proof of an unlocked screen; the lab does not request Accessibility or Automation permission.
+- Optional recording of workspace sleep, wake and user-switch notifications. Recording starts off, retains at most 500 local entries and does not cause those transitions.
+- Command-schema, deadline, deduplication, simulated lock-state and simulated revocation checks. The unlocked execution path returns `live_actions_disabled`; simulation success never establishes a real OS action.
+- A separate byte-exact Shortcut allowlist. Adding an entry never runs the Shortcut.
+- An explicit Keychain round-trip check that creates, reads and deletes a random test item under `local.macbridge.lab.storage-test`. This check writes to Keychain; it is not part of the read-only diagnostics. Its result reports whether cleanup completed and never prints the token.
+- Local report export containing diagnostics and lifecycle events, excluding command parameters, app names, URLs and tokens.
 
-For the Standard test account, a copy is staged at:
+The packaged bundle uses `local.macbridge.lab` preferences. Simulation logs and deduplication data are stored with owner-only permissions under `~/Library/Application Support/MacBridgeLab/`. Logs can include full simulated command parameters. A simulated revocation acknowledgment clears only the lab warning; the lab cannot revoke a production device.
 
-`/private/tmp/macbridge-test-session-20260920/MacBridge Lab.app`
+## Build locally
 
-Use Finder → Go → Go to Folder to open the directory. The temporary copy may disappear after system cleanup; recreate it from the build output when needed. No Codex chat history, auth files, API keys or production device tokens are copied into this folder.
-
-No account switch is needed to inspect the app or run simulations. Do not run real sleep/wake tests while work in the main session could be interrupted.
-
-## Available checks
-
-- Read-only GUI-session availability, OS version, legacy CGSession-path presence, and Accessibility status. The app does not request Accessibility or Automation permissions. Active session is never treated as proof of an unlocked screen.
-- Session-event recording: captures NSWorkspace sleep, wake and user-switch event labels plus timestamps/generation numbers. It does not cause those transitions. Events are local, bounded to 500 entries, and recording is off on launch.
-- Command simulation: canonical schema validation, deadline checks, durable dedup reservation, a simulated lock gate, full-parameter local log, and pending-revocation blocking. All output is explicitly marked simulation. The app cannot execute actual Mac actions.
-- Shortcut allowlist editor: byte-exact names, no whitespace/case/Unicode normalization. This test app's list is separate from any future production list.
-- User-initiated Keychain check: generates a random test item, writes and reads it using Generic Password Keychain services, then deletes it and verifies deletion. No token enters a file, log, process argument or URL. The check has not yet been run through the GUI.
-- Safe report export: OS/session diagnostics and lifecycle events only. Excludes command parameters, running-app lists, URLs and tokens.
-
-Preferences live under `local.macbridge.lab`. Simulation logs and dedup data live under the current user's `~/Library/Application Support/MacBridgeLab/` with owner-only file/directory permissions. No device pairing exists, so the simulated server acknowledgment clears only the test warning and never claims real server-side revocation.
-
-## Suggested initial walkthrough
-
-1. Refresh read-only checks; lock detection must remain unverified and live actions disabled.
-2. Leave "Simulate a locked Mac" on. Run get_state with `{}`; expect only screen_locked=true. Run lock_screen with `{}`; expect already_locked=true. No actual lock occurs.
-3. Simulate offline revoke; command controls must disable and remain disabled after restarting the app. Simulate server acknowledgment to clear only the simulated pending state.
-4. Add `MacBridge Test Notification` to the allowlist. Turn simulated locked state off and select run_shortcut. An unknown name must return action_not_allowlisted. The known name must return live_actions_disabled, never pretend it ran.
-5. Test Keychain storage when ready; the pass message must confirm cleanup.
-6. In the dedicated test session, record lifecycle changes during a deliberately scheduled user-switch/sleep/wake run. That real-device run is still pending.
-
-## Build and packaging
+From the repository root, choose a task-owned output directory:
 
 ```sh
-swift test --package-path agent --scratch-path /private/tmp/macbridge-xcode-build --cache-path /private/tmp/macbridge-xcode-cache --config-path /private/tmp/macbridge-swift-config --security-path /private/tmp/macbridge-swift-security
-python3 scripts/package_lab.py --binary /private/tmp/macbridge-xcode-build/debug/MacBridgeLab --output '/private/tmp/macbridge-test-session-20260920/MacBridge Lab.app'
+swift build --package-path agent --product MacBridgeLab --scratch-path /private/tmp/wand-lab-build
+python3 scripts/package_lab.py --binary /private/tmp/wand-lab-build/debug/MacBridgeLab --output '/private/tmp/wand-lab-build/MacBridge Lab.app'
 ```
 
-The default package is ad-hoc signed for local development and is **not notarized**. Distribution requires an appropriate Developer ID identity and an existing Keychain notary profile:
+[The packaging script](../scripts/package_lab.py) defaults to an ad-hoc local signature. This lab artifact is not the notarized public Wand installer. Its optional Developer ID/notary-profile arguments are separate from the production [release workflow](../.github/workflows/mac-release.yml).
 
-```sh
-python3 scripts/package_lab.py --binary /path/to/release/MacBridgeLab --identity 'Developer ID Application: YOUR IDENTITY' --dmg --notary-profile YOUR_KEYCHAIN_PROFILE
-```
-
-Those distribution steps have not been run. Never pass Apple passwords in command arguments or disable Gatekeeper to install this build.
-
-## Verification and limits
-
-Four native XCTest cases pass: session-generation invalidation, exact allowlist matching including Unicode edge cases, token generation, and fail-closed/data-minimized diagnostics. The bundle Info.plist and the temporary copy’s ad-hoc signature verify. Packaging removes only FinderInfo and ResourceFork metadata from its own generated bundle before signing; it does not strip quarantine or weaken Gatekeeper. UI visual verification and the Keychain GUI round trip are pending: the computer-use service crashed when trying to select this custom app. The inspected crash report names SkyComputerUseService (SIGTRAP), not MacBridgeLab; a separate process check confirms MacBridgeLab is running, but the rendered interface remains unverified.
-
-API investigation still blocks real lock-state enforcement, modern locking, pinned-tab preservation and DND. Installed scripting dictionaries expose no pinned property. Apple's CGSession header exposes session identity/console/login fields, not a documented locked-state property. Do not infer support from session presence or trigger private APIs/keystrokes as a silent fallback.
-
-Sources consulted: [Apple session dictionary API](https://developer.apple.com/documentation/coregraphics/cgsessioncopycurrentdictionary()), [Apple user-session notification](https://developer.apple.com/documentation/appkit/nsworkspace/sessiondidresignactivenotification), [Keychain accessibility](https://developer.apple.com/documentation/security/restricting-keychain-item-accessibility), [Chromium AppleScript support](https://www.chromium.org/developers/design-documents/applescript/). Local SDK headers and installed app dictionaries were also inspected.
+No current lab GUI acceptance run is claimed. Use source tests for protocol checks and the production app for real action acceptance. Remove only task-created build artifacts and test data when finished; preserve production credentials, permissions and logs.

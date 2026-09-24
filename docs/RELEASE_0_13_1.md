@@ -23,6 +23,8 @@ After confirmed exit and relaunch, Wand reconnected without Keychain or privacy 
 
 Earlier build 34 candidate tests verified real relay lock/repeated-lock and local Safari pinned-tab cleanup. A physical sleep test verified about 43 seconds asleep followed by reconnect. The owner confirmed waking the Mac manually, consistent with the keyboard/UserActivity event in the power logs. Sleep and reconnect passed; the manual wake ended the test before the longer offline interval could be measured.
 
-## Remaining coverage
+## Review and remaining coverage
+
+The owner confirmed that the Muse review submission was submitted on September 24, 2026. Submission does not establish review approval or native Muse client registration. Muse web-to-Mac use has been tested; the registered native integration remains pending.
 
 Fresh-user or second-Mac installation, a full Mac reboot, and the live 75-second missed-heartbeat/offline interval remain unverified for this release. Native Muse client registration and OAuth/tool-image compatibility remain pending. Existing web-control tests do not establish native Muse integration.

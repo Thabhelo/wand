@@ -1,64 +1,52 @@
 # Wand
 
-**We gave Muse more powers.** Wand connects a Mac to an assistant through an outbound device connection, a cloud relay, and a web dashboard. No separate iPhone app is required.
-
-## Project layout
-
-- `agent/`: Swift menu-bar app, native actions, Keychain storage, and local API.
-- `cloud/`: production Cloudflare relay, D1 registry, Durable Object WebSockets, migrations, and tests.
-- `web/`: canonical account and device dashboard.
-- `site/`: public website and dashboard hosting. Dashboard assets sync from `web/` before deployment.
-- `contracts/`: shared action catalog, schemas, and transport rules.
-- `connector/`: OpenAPI, action manifest, and operator instructions.
-- [`policy.md`](policy.md): draft Muse operating policy covering tool choice, approvals, memory, verification, and cleanup.
-- `relay/` and `harness/`: Python reference relay and isolated device simulator.
-- `submission/`: security, legal, and reviewer-package drafts.
+**We gave Muse more powers.** Wand lets an assistant control a Mac through a menu-bar app, an outbound device connection, a cloud relay and a web dashboard. No separate iPhone app is required.
 
 ## Current status
 
-The website, dashboard, and Cloudflare relay are deployed at [getwand.app](https://getwand.app), [app.getwand.app](https://app.getwand.app), and [api.getwand.app](https://api.getwand.app). The Mac app is a local, ad-hoc signed development build.
+**Public beta: Wand 0.13.1, build 34**, signed with the owner's Developer ID and notarized by Apple. [Download Wand](https://getwand.app/download/) for Apple silicon and macOS 26+. The [website](https://getwand.app), [dashboard](https://app.getwand.app) and [relay](https://api.getwand.app/healthz) are live. Google sign-in, pairing and remote web controls work.
 
-Firebase Google sign-in is live and verified. Assistant access uses separate device/action consent through Wand OAuth. Muse registration, complete physical-device acceptance tests, remaining macOS actions, and Apple signing/notarization are unfinished. Simulated results do not demonstrate real device control. See [launch status](deploy/WAND_LAUNCH.md) and [cloud setup](cloud/README.md).
+The owner submitted the Muse connector application on **September 24, 2026**; it is awaiting review. Muse has used Wand through the web controls. Official native connection registration and end-to-end testing remain separate work.
 
-## Develop the cloud relay and website
+[Current status and remaining checks](docs/BUILD_STATUS.md) is the single release-status source. See [build 34 evidence](docs/RELEASE_0_13_1.md) for the exact artifact and [desktop acceptance](docs/DESKTOP_ACCEPTANCE.md) for tested actions and limits. Older build notes are retained in Git history, not as active checklists.
 
-Use Node.js 22 or 24 LTS. In `cloud/`, run `npm ci`, then `npm test` or `npm run dev`. In `site/`, run `npm ci`, then `npm run check` or `npm run dev`. Configure your own Cloudflare bindings and hosted-auth settings before deploying; never commit credentials.
+## Project layout
 
-Dashboard checks run from the repository root:
+- `agent/`: Swift menu-bar app, native actions, Keychain storage and loopback API.
+- `cloud/`: production Cloudflare Workers relay, D1 registry and Durable Object WebSockets.
+- `web/`: canonical account/device dashboard. `site/` hosts it and the public website; deployment syncs dashboard assets from `web/`.
+- `contracts/`: shared action catalog, schemas and transport rules.
+- `connector/`: OpenAPI, action manifest and operator instructions. [policy.md](policy.md) guides assistant operation.
+- `submission/`: review materials, security model and reviewer access.
+- `relay/` and `harness/`: Python reference implementation and isolated simulator, not the production backend.
+
+## Develop
+
+Use Node.js 22 or 24 LTS. From the repository root:
 
 ```sh
+npm ci --prefix cloud
+npm test --prefix cloud
+npm ci --prefix site
+npm run check --prefix site
 node tests/onboarding.mjs
 ```
 
-## Build the Mac app
+Run `npm run dev` in `cloud/` or `site/` for local development. See [cloud setup](cloud/README.md) and [website setup](site/README.md); use your own provider bindings and keep secrets out of Git.
 
-Requires macOS and Xcode:
+For the Mac app, use macOS 26+ and Xcode:
 
 ```sh
 swift build --package-path agent
 swift test --package-path agent
-python3 scripts/package_agent.py --binary agent/.build/debug/MacBridge --relay-origin https://api.getwand.app --dashboard-origin https://app.getwand.app
 ```
 
-The packaged app is `dist/Wand.app`. Packaging defaults to an ad-hoc signature for local testing. Developer ID signing and notarization require your own Apple credentials; see the packaging script options. Device and local API tokens stay in Keychain.
+Local packaging defaults to an ad-hoc development signature. Public builds use the configured [automated signing and notarization workflow](docs/AUTOMATED_RELEASES.md). Keep the bundle identifier, signing team and installation path stable across updates; see [permission guidance](docs/PERMISSION_LIFECYCLE.md).
 
-## Run the isolated reviewer sandbox
+## Review and security
 
-```sh
-python3.12 -m venv .venv
-.venv/bin/pip install -r requirements-dev.txt
-.venv/bin/python -m harness.sandbox
-```
+The hosted [review sandbox](https://app.getwand.app/review/) uses real authentication and relay transport with a clearly labeled simulated Mac. See [reviewer instructions](submission/REVIEWER-ACCESS.md). Simulation does not prove physical-device behavior.
 
-Open http://127.0.0.1:8787/sandbox. This runs the reference relay with a synthetic device and never controls your Mac. Restart after simulated locking or revocation to create a fresh device. Production does not accept the sandbox identity.
+Actions use a closed catalog, validated parameters, expiry and revocation. Desktop control can read app contents, capture app-window images and send input after local consent and macOS permissions. It is broader than the minimized status endpoint; it can operate a terminal, so it must not be described as unable to run code. No dedicated arbitrary-shell or remote-unlock endpoint exists. The relay can read payloads in this version. Read the [security model](submission/SECURITY.md).
 
-```sh
-.venv/bin/python -m unittest discover -s tests -v
-PYTHONPATH=. .venv/bin/python scripts/build_connector.py
-```
-
-## Security
-
-No remote unlock, arbitrary shell endpoint, screenshots, or synthetic typing. Actions use a closed catalog, validated parameters, token revocation, and command expiry. The relay sees command contents in this version. Read the [security model](submission/SECURITY.md) for boundaries and residual risks.
-
-Source, tests, assets, and deployment definitions belong in Git. Local secrets, dependencies, databases, and generated app installers do not.
+Keep source, tests, assets, deployment definitions and the published installer/checksum in Git. Keep local credentials, dependencies, databases and disposable build output out.

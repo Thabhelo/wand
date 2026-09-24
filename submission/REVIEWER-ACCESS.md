@@ -1,6 +1,6 @@
 # Review Wand
 
-Updated September 24, 2026. Public Mac release: **0.13.1, build 34**.
+Updated September 24, 2026. Public Mac release: **0.13.1, build 34**, signed and notarized. The owner confirms the Muse connector application has been submitted and is awaiting review.
 
 ## Browser sandbox
 
@@ -43,4 +43,4 @@ Support-form delivery to the operator's inbox was independently confirmed on Sep
 
 ## Muse connection
 
-The API and OAuth service are deployed. Meta's client and exact callback are not registered. Please provide verified callback/client requirements and the supported tool/image interface so Wand can provision the client and complete native Muse authorization and command-result testing. The owner confirms Muse has already controlled the Mac through Wand's web interface and supplied test feedback. That evidence does not establish native OAuth/direct-tool compatibility.
+The submitted application uses Raw API + OpenAPI. The API and OAuth service are deployed; Meta's client and exact callback are not registered. The next integration step is receiving verified callback/client requirements and the supported tool/image interface, then provisioning the client and testing native Muse authorization and command results. The owner confirms Muse has already controlled the Mac through Wand's web interface and supplied test feedback. That evidence does not establish native OAuth/direct-tool compatibility.
