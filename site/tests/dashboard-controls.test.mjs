@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {JSDOM} from 'jsdom';
 const read=f=>fs.readFileSync(new URL('../../web/'+f,import.meta.url),'utf8');
-async function setup(saved){
+async function setup(saved,override={}){
  const dom=new JSDOM(read('index.html'),{url:'https://app.getwand.app',runScripts:'outside-only'}),w=dom.window,commands=[];
  if(saved)w.sessionStorage.setItem('wand-history-tester',saved);
  w.wandAuth={create:async()=>({isAuthenticated:async()=>true,getUser:async()=>({uid:'tester',email:'beta-tester@example.com'}),getTokenSilently:async()=>'fake',logout:async()=>{}})};
  const state={screen_locked:false,frontmost_app:'TextEdit',running_apps:[],now_playing:{title:'Track',artist:'Artist',source_app:'Music'},battery:{percent:16,charging:false},audio:{volume:60,muted:true}};
+ Object.assign(state,override);if(override.audio===undefined&&Object.hasOwn(override,'audio'))delete state.audio;
  w.fetch=async(url,options={})=>{let data;if(url==='/config')data={firebase:{apiKey:'fake',projectId:'fake'}};else if(url==='/v1/devices')data=[{device_id:'mac',name:'Test Mac',online:true}];else if(url==='/v1/connections')data=[];else if(url==='/v1/commands'){commands.push(JSON.parse(options.body));data={command_id:String(commands.length-1)}}else if(url.startsWith('/v1/commands/')){const c=commands[Number(url.split('/').pop())];data={status:'succeeded',result:c.action==='get_state'?state:c.action==='list_apps'?{apps:[],next_offset:null}:{}}}return {ok:true,json:async()=>data}};
  for(const f of ['control-feedback.js','app-picker.js','dashboard.js'])w.eval(read(f));
  await new Promise(r=>setTimeout(r,350));return {dom,w,commands};
@@ -36,5 +37,21 @@ test('support opens the help page instead of an email composer',async()=>{
   const link=w.document.querySelector('footer a[href="https://getwand.app/support"]');
   assert.equal(link.getAttribute('href'),'https://getwand.app/support');
   assert.ok(!link.href.includes('beta-tester@example.com'));
+ }finally{dom.window.close()}
+});
+
+test('older agents and failed audio reads get different guidance without an unavailable update',async()=>{
+ for(const [audio,expected] of [[undefined,'This version of Wand doesn’t report volume yet.'],[null,'Couldn’t read your Mac’s volume.']]){
+  const {dom,w}=await setup(null,{audio,now_playing:null,running_apps:[]});try{
+   assert.equal(w.document.querySelector('#mute-state').textContent,expected);
+   assert.equal(w.document.querySelector('#volume').disabled,true);
+   assert.equal(w.document.querySelector('#now-playing').textContent,'Open Music or Spotify on your Mac.');
+  }finally{dom.window.close()}
+ }
+});
+test('missing track data does not claim a running player is closed or paused',async()=>{
+ const {dom,w}=await setup(null,{now_playing:null,running_apps:['Spotify']});try{
+  assert.equal(w.document.querySelector('#now-playing').textContent,'No track information available.');
+  assert.doesNotMatch(w.document.querySelector('#state-result').textContent,/Nothing playing/);
  }finally{dom.window.close()}
 });
