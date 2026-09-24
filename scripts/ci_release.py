@@ -1,6 +1,7 @@
 """Release orchestration. Secrets only enter through CI environment, never repository files."""
 import base64
 import hashlib
+from html.parser import HTMLParser
 import json
 import os
 from pathlib import Path
@@ -119,11 +120,25 @@ def verify():
     def get(path):
         req = urllib.request.Request('https://getwand.app/'+path, headers={'User-Agent':'Wand-release-verifier'})
         with urllib.request.urlopen(req, timeout=60) as response: return response.read()
-    if f'Build {build}' not in get('download').decode(): raise SystemExit('Download page verification failed')
+    page = get('download').decode()
+    links = DownloadLinks()
+    links.feed(page)
+    if not re.search(r'\bBuild\s+'+str(build)+r'\b', page) or f'/releases/{name}.dmg' not in links.hrefs:
+        raise SystemExit('Download page does not show and link to the expected release.')
     expected = (ROOT/'dist/release'/f'{name}.sha256').read_text().split()[0]
     if hashlib.sha256(get('releases/'+name+'.dmg')).hexdigest() != expected:
         raise SystemExit('Public artifact checksum mismatch')
     print('Published download verified.')
+
+class DownloadLinks(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.hrefs = set()
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'a':
+            href = dict(attrs).get('href')
+            if href: self.hrefs.add(href)
 
 if __name__ == '__main__':
     {'validate':validate, 'package':package, 'publish':publish, 'verify':verify}[sys.argv[1]]()

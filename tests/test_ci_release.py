@@ -1,7 +1,10 @@
 import importlib.util
+import hashlib
+import io
 import os
 import re
 from pathlib import Path
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -54,5 +57,38 @@ class SigningIdentity(unittest.TestCase):
                     self.identity('AB12CD34EF') + self.identity('AB12CD34EF', fingerprint='B'*40)):
             with self.subTest(identities=ids):
                 with self.assertRaises(SystemExit): m.signing_identity(ids, 'AB12CD34EF')
+
+class PublishedRelease(unittest.TestCase):
+    name = 'Wand-0.13.0-build33'
+    artifact = b'notarized release fixture'
+
+    def verify(self, page, artifact=None):
+        with tempfile.TemporaryDirectory(prefix='wand-release-verifier-') as folder:
+            root = Path(folder)
+            release = root/'dist/release'
+            release.mkdir(parents=True)
+            (release/(self.name+'.sha256')).write_text(hashlib.sha256(self.artifact).hexdigest()+'  '+self.name+'.dmg\n')
+            def response(request, timeout):
+                if request.full_url == 'https://getwand.app/download': return io.BytesIO(page.encode())
+                self.assertEqual(request.full_url, 'https://getwand.app/releases/'+self.name+'.dmg')
+                return io.BytesIO(self.artifact if artifact is None else artifact)
+            with patch.object(m, 'ROOT', root), patch.dict(os.environ, RELEASE_VERSION='0.13.0', RELEASE_BUILD='33'), patch.object(m.urllib.request, 'urlopen', side_effect=response), patch('builtins.print'):
+                m.verify()
+
+    def test_accepts_expected_build_link_and_matching_artifact(self):
+        self.verify(f'<p>Build 33</p><a class="download" href=\'/releases/{self.name}.dmg\'>Download</a>')
+
+    def test_rejects_build_number_prefix_match(self):
+        with self.assertRaisesRegex(SystemExit, 'expected release'):
+            self.verify(f'<p>Build 330</p><a href="/releases/{self.name}.dmg">Download</a>')
+
+    def test_rejects_stale_or_missing_download_link(self):
+        for link in ('', '<a href="/releases/Wand-0.12.0-build32.dmg">Download</a>', f'<div data-href="/releases/{self.name}.dmg">Download</div>'):
+            with self.subTest(link=link), self.assertRaisesRegex(SystemExit, 'expected release'):
+                self.verify('<p>Build 33</p>'+link)
+
+    def test_rejects_wrong_artifact_even_when_page_matches(self):
+        with self.assertRaisesRegex(SystemExit, 'checksum mismatch'):
+            self.verify(f'<p>Build 33</p><a href="/releases/{self.name}.dmg">Download</a>', artifact=b'wrong build')
 
 if __name__=='__main__': unittest.main()
