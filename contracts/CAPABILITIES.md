@@ -1,69 +1,86 @@
 # Per-device capabilities
 
-`GET /v1/devices/{device_id}/capabilities` is available to signed-in owners.
-Native connectors use the same path beneath `https://api.getwand.app/connector`
-with a Wand OAuth token. Only owned devices within the connector's consent are
-visible; other device IDs return 404. The read endpoint is limited to 120 requests
-per minute per user and never sends a command or requests a Mac permission.
+Owners call `GET /v1/devices/{device_id}/capabilities`. OAuth connectors use the
+same path under `https://api.getwand.app/connector`. Other users' devices and
+Macs outside the caller's consent return 404. Limit: 120 reads/minute/user.
 
-## Interpret the report
+## Interpret the document
 
-- `source`: `device` for an authenticated agent report; `unknown` for older agents.
-- `agent_version`, `agent_build`: identity reported by the agent, or null. Never
-  infer features from these values: older builds sent a hard-coded version.
-- `actions`: every catalog action with `support` (`supported`, `unsupported`, or
-  `unknown`) and `authorized` for the current caller's OAuth scopes. Owner
-  sessions are authorized, but local permissions and command safeguards still apply.
-- `features`: support for `audio_output_state`, `playback_state`, `app_inventory`,
-  `desktop_images`, and `system_status`. A supported reader can still return null
-  when no reading is available. These are not new commands.
-- `permissions`: `desktop_control`, `accessibility`, and `screen_recording` are
-  `granted`, `denied`, or `unknown`. They are last-reported observations, never
-  authorization to execute. No permission check opens a system dialog.
-- `reported_at`: relay receipt time, not the agent's clock.
-- `stale`: true when offline, unreported, or older than 75 seconds. Stale
-  permission values are returned as unknown. Cached implementation metadata is
-  retained but must not be presented as proof the Mac can act now.
+- `contract_version: 1`: bump only for breaking changes. Ignore unknown fields,
+  action names and features. Additions do not require a version bump.
+- `revision`: device-report revision. Changes when report contents change, not
+  on an identical heartbeat. It is not an authorization or freshness token.
+- `agent_version`, `agent_build`, `os_version`: agent-reported metadata, or null.
+  Never infer support from a version or signature. Signing is not attested here.
+- `actions`: the existing catalog names, each with `support`, `authorized`,
+  `availability`, `reason`, and `required_permissions`. No second action vocabulary.
+- `features`: implementation support for individual result features. The additive
+  `feature_status` map supplies their authorization and availability separately.
+- `permissions`: last observed desktop consent, Accessibility and Screen Recording.
+- `source`, `reported_at`, `stale`: where the report came from, relay receipt time,
+  and whether it can describe the current connection. Offline or reports older
+  than 75 seconds are stale; their permissions are returned as unknown.
 
-Check this endpoint before offering actions. Do not offer explicitly unsupported
-or unauthorized actions. For unknown support, explain that it is unverified;
-never describe it as guaranteed. A read-only status check can establish the
-presence of individual result fields, but must not be used to infer unrelated
-features. Poll command status: only `succeeded` confirms completion.
+`support` is `supported`, `unsupported`, or `unknown`. `authorized` describes only
+this caller's OAuth scope; it does not grant local access. `availability` is
+`available`, `blocked`, or `unknown`. Available means no reported precondition
+blocks the action; it does not promise successful execution. Apps, target-specific
+Automation permission, Shortcut allowlists and the current OS state are still
+checked when executing. Confirmations remain an operator UX rule.
 
-Support does not mean readiness: lock state, macOS permissions, installed apps,
-Shortcut allowlists, and transient failures are checked by the agent at execution.
-Shortcut names and app inventories are not included in capability metadata.
-Images require both desktop consent and Screen Recording; desktop navigation
-also needs Accessibility. Automation permissions are target-specific and are
-not covered by this report. Supported actions may still need explicit user
-confirmation under the operator policy.
+For example, locally disabled desktop access stays `support: supported`, with
+`availability: blocked` and `reason: disabled_by_user`. Missing Screen Recording
+blocks `desktop_images`, not text-only observation. Lock requires Accessibility
+when unlocked; already-locked `lock_screen` remains idempotent. A locked Mac's
+status reports only that it is locked; richer status features are unavailable.
 
-## Transport and compatibility
+## Reasons
 
-A new agent includes optional `capabilities` in authenticated `hello` and each
-25-second heartbeat. The closed JSON Schema is `CapabilityReport` in
-`v1.schema.json`, generated by `scripts/build_contracts.py`. An advertisement
-lists all implemented actions and features; omissions mean unsupported. Unknown
-fields or action names are rejected. Future protocol versions must extend the
-contract before deployment.
+| Reason | What the caller should do |
+| --- | --- |
+| `unsupported_build` | Explain that this build does not implement it. Offer an update only if one is available. |
+| `not_authorized` | Ask the user to approve this action in the connector connection. |
+| `disabled_by_user` | Explain how to enable desktop control in Wand. |
+| `permission_denied` | Use `required_permissions` and `permissions` to identify the missing macOS permission. |
+| `permission_unknown` | Explain that Wand cannot confirm permission yet. |
+| `capability_unreported` | Say support is unknown; do not guess from build metadata. |
+| `stale_report` | Re-fetch after reconnection or a fresh report. |
+| `device_offline` | Report last-seen time from the device list; never queue work. |
+| `device_locked` | Ask the user to unlock locally if they want to continue. |
+| `session_unavailable` | Ask the user to return to their active Mac session. |
 
-New connections replace the previous report, including clearing it when an old
-agent reconnects. Generation fencing prevents an older socket from updating it.
-Reports persist in the device's existing Durable Object and are purged with the
-device on account deletion. They contain no tokens, user content, app lists, or
-Shortcut names. While locked, the agent reports permission values as unknown.
-The report cannot grant a permission or widen OAuth scopes.
+A null reason accompanies `available`. Runtime failures are command results, not
+invented capability changes. Only a command result of `succeeded` confirms success.
 
-The relay rejects an explicitly unsupported action with 409 `action_unsupported`
-when its report is fresh. Legacy or stale reports do not block existing actions:
-the command validator and Mac execution checks remain authoritative.
+## Updates and caching
 
-## Release status
+The agent sends a complete report in `hello` and at most 25 seconds apart in
+heartbeats. A non-prompting, two-second local check pushes a changed report early
+on the existing socket. This covers local consent, permission and session changes.
+The relay replaces its stored report immediately and increments its revision.
+Unchanged reports refresh freshness without changing revision. Old socket
+generations cannot overwrite a new connection's report. A legacy reconnect clears
+old capability claims. Device/account deletion purges the report.
 
-Relay and dashboard support can deploy independently. Build 32 does not advertise
-capabilities and correctly returns unknown. The new Mac reporting code requires
-the next signed, notarized release. No native Muse connection is claimed: its
-client registration and end-to-end OAuth test are still pending. The application
-remains Raw API + OpenAPI and is not submitted. MCP is an optional future adapter
-using the same authorization and command path, not a replacement backend.
+HTTP responses are `Cache-Control: no-store`: consumers re-fetch before planning
+or acting. There is no downstream SSE/subscription API. Device-to-relay push
+invalidates the relay's snapshot; it does not magically invalidate third-party
+client caches. Dashboard refresh and pre-action fetches read that same document.
+Do not cache solely by revision: offline state and OAuth consent can change without
+changing a device report. No additional cron job, paid service or database is used.
+
+The executable command catalog remains closed. Response clients tolerate additive
+fields, while adding a device-advertised action requires deploying the relay's
+validation schema first. An advertisement can never authorize arbitrary execution.
+
+## Rollout
+
+Build 32 does not advertise capabilities. The updated dashboard fails closed for
+unknown actions, except read-only status discovery and the desktop Stop safety
+control. Deploy it with the next signed, notarized Mac release; deploying it first
+would disable controls for current beta users. The compatible relay may deploy
+first. The low-level command API retains legacy behavior and always validates and
+checks commands on the Mac; capability planning does not replace enforcement.
+
+Native Muse registration and OAuth testing remain separate. Keep Raw API + OpenAPI;
+an MCP adapter can later reuse this document and the same authorization path.

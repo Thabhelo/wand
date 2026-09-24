@@ -2,16 +2,17 @@ const $=id=>document.getElementById(id);
 let auth, device, deviceToken, ws, heartbeat, locked=false;
 const show=value=>{$('output').textContent=typeof value==='string'?value:JSON.stringify(value,null,2)};
 async function api(path,method='GET',data,bearer){const r=await fetch(path,{method,headers:{'Content-Type':'application/json',...(bearer===null?{}:{Authorization:'Bearer '+(bearer||await auth.getTokenSilently())})},body:data?JSON.stringify(data):undefined});const v=await r.json();if(!r.ok)throw Error(JSON.stringify(v));return v}
+function capabilities(){return {schema_version:1,agent_version:'review-simulator-1',agent_build:null,os_version:'synthetic',screen_state:locked?'locked':'unlocked',actions:['get_state','lock_screen','mute','run_shortcut'],features:[],permissions:{desktop_control:'denied',accessibility:'granted',screen_recording:'denied'}}}
 function send(type,fields={}){ws.send(JSON.stringify({v:1,type,id:crypto.randomUUID(),ts:new Date().toISOString(),...fields}))}
 function disconnect(){clearInterval(heartbeat);if(ws)ws.close(1000,'reviewer_offline');$('status').textContent='Test Mac offline';}
 function connect(){return new Promise((resolve,reject)=>{
  ws=new WebSocket('wss://app.getwand.app/review-device?device_id='+device.device_id);
  const timer=setTimeout(()=>{ws.close();reject(Error('Connection timed out. Try reconnecting.'))},10000);
- ws.onopen=()=>send('hello',{device_token:deviceToken,agent_version:'review-simulator-1',device_name:'Simulated review Mac',macos_version:'synthetic'});
+ ws.onopen=()=>send('hello',{device_token:deviceToken,agent_version:'review-simulator-1',device_name:'Simulated review Mac',macos_version:'synthetic',capabilities:capabilities()});
  ws.onerror=()=>{clearTimeout(timer);reject(Error('Device socket failed'))};
  ws.onclose=()=>{clearTimeout(timer);clearInterval(heartbeat);$('status').textContent='Test Mac offline';};
  ws.onmessage=event=>{const m=JSON.parse(event.data);
-  if(m.type==='ready'){clearTimeout(timer);$('status').textContent='Simulated Mac online';heartbeat=setInterval(()=>send('heartbeat'),25000);resolve();return}
+  if(m.type==='ready'){clearTimeout(timer);$('status').textContent='Simulated Mac online';heartbeat=setInterval(()=>send('heartbeat',{capabilities:capabilities()}),25000);resolve();return}
   if(m.type==='revoke'){deviceToken=null;disconnect();$('status').textContent='Test Mac revoked';return}
   if(m.type!=='command')return;
   send('delivered',{command_id:m.command_id});let data={},error;
@@ -22,6 +23,7 @@ function connect(){return new Promise((resolve,reject)=>{
   else if(m.action==='run_shortcut'&&m.params.name!=='Review Demo')error='action_not_allowlisted';
   else if(!['mute','run_shortcut'].includes(m.action))error='action_not_supported';
   send('result',{command_id:m.command_id,ok:!error,...(error?{error_code:error}:{data})});
+  send('heartbeat',{capabilities:capabilities()});
  };
 })}
 function handler(id,fn){$(id).onclick=async()=>{$(id).disabled=true;try{await fn()}catch(e){show(e.message)}finally{$(id).disabled=false}}}

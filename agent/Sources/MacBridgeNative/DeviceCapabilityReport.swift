@@ -9,12 +9,15 @@ import MacBridgeCore
     public static let features = ["audio_output_state", "playback_state", "app_inventory", "desktop_images", "system_status"]
     public static var version: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development" }
     public static func read(desktopEnabled: Bool) -> JSON {
-        let unlocked = LockStateReader.read() == .unlocked
+        let screen = LockStateReader.read()
+        let unlocked = screen == .unlocked
         func permission(_ granted: @autoclosure () -> Bool) -> JSON {
             unlocked ? .string(granted() ? "granted" : "denied") : .string("unknown")
         }
         return .object([
-            "schema_version": .number(1), "agent_version": .string(version),
+            "schema_version": .number(1),
+            "os_version": .string(ProcessInfo.processInfo.operatingSystemVersionString),
+            "screen_state": .string(screen.rawValue), "agent_version": .string(version),
             "agent_build": (Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String).map(JSON.string) ?? .null,
             "actions": .array(actions.map(JSON.string)), "features": .array(features.map(JSON.string)),
             "permissions": .object([

@@ -238,7 +238,21 @@ import MacBridgeNative
             if generation == captured && !online { ws.cancel(with: .goingAway, reason: nil) }
         }
         let heartbeat = Task {
-            do { while !Task.isCancelled { try await Task.sleep(for: .seconds(25)); try await send(envelope("heartbeat", ["capabilities": DeviceCapabilityReport.read(desktopEnabled: executor.desktop.desktopWide)])) } }
+            var previous = DeviceCapabilityReport.read(desktopEnabled: executor.desktop.desktopWide)
+            var sentAt = ContinuousClock.now
+            do {
+                while !Task.isCancelled {
+                    try await Task.sleep(for: .seconds(2))
+                    guard generation == captured, !Task.isCancelled else { return }
+                    let report = DeviceCapabilityReport.read(desktopEnabled: executor.desktop.desktopWide)
+                    // Push changed permissions promptly; unchanged reports need only a heartbeat.
+                    if report != previous || sentAt.duration(to: .now) >= .seconds(24) {
+                        try await send(envelope("heartbeat", ["capabilities": report]))
+                        previous = report
+                        sentAt = .now
+                    }
+                }
+            }
             catch { ws.cancel(with: .goingAway, reason: nil) }
         }
         defer { readinessTimeout.cancel(); heartbeat.cancel(); ws.cancel(with: .goingAway, reason: nil); if generation == captured { socket = nil; online = false } }

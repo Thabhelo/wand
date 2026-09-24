@@ -89,8 +89,15 @@ cap_actions={'type':'array','items':enum(*(a['name'] for a in catalog)),'uniqueI
 cap_features={'type':'array','items':enum('audio_output_state','playback_state','app_inventory','desktop_images','system_status'),'uniqueItems':True,'maxItems':5}
 D['CapabilityPermissions']=obj({key:enum('granted','denied','unknown') for key in ('desktop_control','accessibility','screen_recording')})
 D['CapabilityReport']=obj({'schema_version':{'const':1},'agent_version':string(40),'agent_build':nullable(string(40)),'actions':cap_actions,'features':cap_features,'permissions':ref('CapabilityPermissions')})
-D['ActionCapability']=obj({'name':enum(*(a['name'] for a in catalog)),'support':enum('supported','unsupported','unknown'),'authorized':BOOL})
-D['DeviceCapabilities']=obj({'device_id':UUID,'online':BOOL,'source':enum('device','unknown'),'reported_at':nullable(TIME),'stale':BOOL,'agent_version':nullable(string(40)),'agent_build':nullable(string(40)),'actions':{'type':'array','items':ref('ActionCapability')},'features':obj({key:enum('supported','unsupported','unknown') for key in ('audio_output_state','playback_state','app_inventory','desktop_images','system_status')}),'permissions':ref('CapabilityPermissions')})
+# Optional metadata preserves compatibility with previously reporting agents.
+D['CapabilityReport']['properties'].update({'os_version':string(80),'screen_state':enum('unlocked','locked','inactive','unknown')})
+D['CapabilityState']=obj({'support':enum('supported','unsupported','unknown'),'authorized':BOOL,'availability':enum('available','blocked','unknown'),'reason':nullable(enum('unsupported_build','not_authorized','device_offline','capability_unreported','stale_report','device_locked','session_unavailable','disabled_by_user','permission_denied','permission_unknown')),'required_permissions':{'type':'array','items':enum('desktop_control','accessibility','screen_recording'),'uniqueItems':True}})
+D['ActionCapability']=obj({'name':string(80),**D['CapabilityState']['properties']})
+D['DeviceCapabilities']=obj({'contract_version':{'const':1},'revision':{'type':'integer','minimum':0},'device_id':UUID,'online':BOOL,'source':enum('device','unknown'),'reported_at':nullable(TIME),'stale':BOOL,'agent_version':nullable(string(40)),'agent_build':nullable(string(40)),'os_version':nullable(string(80)),'actions':{'type':'array','items':ref('ActionCapability')},'features':obj({key:enum('supported','unsupported','unknown') for key in ('audio_output_state','playback_state','app_inventory','desktop_images','system_status')}),'feature_status':{'type':'object','additionalProperties':ref('CapabilityState')},'permissions':ref('CapabilityPermissions')})
+# Response consumers tolerate additive fields/capabilities; executable commands remain closed.
+for name in ('CapabilityState','ActionCapability','DeviceCapabilities','CapabilityPermissions'):
+    D[name]['additionalProperties']=True
+D['DeviceCapabilities']['properties']['features']['additionalProperties']=enum('supported','unsupported','unknown')
 D['Hello']=env('hello',{'device_token':TOKEN,'agent_version':string(40),'device_name':string(),'macos_version':string(40)})
 D['PairingCancelRequest']=obj()
 D['PairingCancelResponse']=obj({'status':{'const':'cancelled'}})

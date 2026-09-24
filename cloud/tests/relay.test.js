@@ -90,3 +90,14 @@ it('refreshes permission reports on heartbeat and hides stale permissions offlin
 it('rejects unrecognized actions in a capability advertisement',async()=>{
  const {validate}=await import('../src/common.js');expect(()=>validate('DeviceMessage',envelope('hello',{device_token:token(),agent_version:'test',device_name:'Mac',macos_version:'26',capabilities:{...capabilityReport,actions:['shell']}}))).toThrow();
 });
+
+it('pushes capability changes, keeps unchanged revisions stable and never caches private reports',async()=>{
+ const p=await pair(),{ws}=await connect(p,capabilityReport),path='/v1/devices/'+p.device_id+'/capabilities';
+ let response=await request(path);expect(response.headers.get('Cache-Control')).toContain('no-store');
+ const before=await response.json();
+ ws.send(JSON.stringify(envelope('heartbeat',{capabilities:{...capabilityReport,actions:[...capabilityReport.actions].reverse()}})));
+ await new Promise(r=>setTimeout(r,25));expect((await(await request(path)).json()).revision).toBe(before.revision);
+ ws.send(JSON.stringify(envelope('heartbeat',{capabilities:{...capabilityReport,permissions:{...capabilityReport.permissions,desktop_control:'granted'}}})));
+ let after;for(let i=0;i<30;i++){after=await(await request(path)).json();if(after.revision>before.revision)break;await new Promise(r=>setTimeout(r,10))}
+ expect(after.revision).toBe(before.revision+1);expect(after.permissions.desktop_control).toBe('granted');ws.close();
+});

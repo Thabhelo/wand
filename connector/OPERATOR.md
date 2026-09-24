@@ -22,10 +22,16 @@ Use `list_apps` on the selected unlocked Mac to discover apps before asking the 
 
 ## Check each device's capabilities
 
-Before offering tools, GET `/v1/devices/{device_id}/capabilities`. Respect explicit
-unsupported actions and `authorized: false`. Unknown support means unverified,
-not supported or unavailable; do not infer it from a version string. Stale
-reports do not establish readiness. Build support, current Mac permissions, and
-OAuth consent are separate. Never use a capability report to bypass any of them.
-All command execution checks and confirmation rules still apply. See
-`contracts/CAPABILITIES.md` for the report and legacy-agent behavior.
+Before planning and before dispatch, GET `/v1/devices/{device_id}/capabilities`.
+Require `support: supported`, `authorized: true`, fresh data and
+`availability: available`. For anything unknown, explain that support is unverified;
+only basic `get_state` discovery and `desktop_stop` remain safe fallbacks. Do not
+infer support from a build number or signing. Follow the enumerated `reason` to
+explain the actual next step. Check `feature_status.desktop_images` before requesting
+an image. Available is not a success promise: execution still checks local consent,
+OS state, target apps and Shortcut allowlists. Only `succeeded` confirms completion.
+
+Responses are no-store. The Mac pushes changes to the relay; this does not provide
+a subscription to the connector. Re-fetch instead of keeping a capability cache.
+Ignore additive fields under `contract_version: 1`; reject unknown contract versions
+for planning. The revision identifies report changes, not authorization changes.

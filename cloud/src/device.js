@@ -1,4 +1,4 @@
-import {deviceCapabilities} from './capabilities.js';
+import {deviceCapabilities,serializeReport} from './capabilities.js';
 import {protectedApp} from './app-policy.js';
 import {DurableObject} from 'cloudflare:workers';
 import {Failure,envelope,failure,hash,id,json,stamp,validate} from './common.js';
@@ -10,8 +10,8 @@ export class Device extends DurableObject{
  peers(){return this.ctx.getWebSockets().filter(ws=>{const a=ws.deserializeAttachment();return a?.authenticated&&a.generation===this.get('generation')&&ws.readyState===1})}
  isOnline(){return this.get('revoked')!=='1'&&Date.now()-Number(this.get('heartbeat')||0)<=75000&&this.peers().length===1}
  presence(){return {online:this.isOnline(),last_seen:this.get('last_seen')||null}}
- capabilities(allowedActions=null){return deviceCapabilities(this.did(),this.isOnline(),JSON.parse(this.get('capabilities')||'null'),this.get('capabilities_at')||null,allowedActions)}
- saveCapabilities(report){this.put('capabilities',JSON.stringify(report||null));this.put('capabilities_at',report?stamp():'')}
+ capabilities(allowedActions=null){return deviceCapabilities(this.did(),this.isOnline(),JSON.parse(this.get('capabilities')||'null'),this.get('capabilities_at')||null,allowedActions,Number(this.get('capabilities_revision')||0))}
+ saveCapabilities(report){const value=serializeReport(report);if(value!==this.get('capabilities'))this.put('capabilities_revision',Number(this.get('capabilities_revision')||0)+1);this.put('capabilities',value);this.put('capabilities_at',report?stamp():'')}
  async schedule(){const deadlines=[];for(const ws of this.ctx.getWebSockets().filter(ws=>ws.readyState===1)){const a=ws.deserializeAttachment();if(!a?.authenticated)deadlines.push((a?.connected||Date.now())+5000)}if(this.peers().length)deadlines.push(Number(this.get('heartbeat'))+75001);for(const c of this.sql.exec("SELECT created FROM commands WHERE status IN ('dispatched','delivered')"))deadlines.push(c.created+15001);const earliest=this.sql.exec('SELECT MIN(created) AS t FROM audit').one().t;if(earliest)deadlines.push(earliest+90*86400000);if(deadlines.length){const desired=Math.max(Date.now()+1,Math.min(...deadlines));await this.ctx.storage.setAlarm(desired)}else await this.ctx.storage.deleteAlarm()}
  async fetch(request){const did=request.headers.get('X-Wand-Device-ID');if(this.did()&&this.did()!==did)return json({error:{code:'device_not_found',message:'Device not found'}},404);this.put('device_id',did);const pair=new WebSocketPair();this.ctx.acceptWebSocket(pair[1]);pair[1].serializeAttachment({authenticated:false,connected:Date.now()});await this.schedule();return new Response(null,{status:101,webSocket:pair[0]})}
  audit(c,outcome){this.sql.exec('INSERT INTO audit VALUES(?,?,?,?,?,?,?,?,?,?)',id(),c.id,c.user_id,this.did(),c.action,'{"redacted":true}',outcome,c.ip,c.client_id,Date.now())}

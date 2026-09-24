@@ -358,7 +358,7 @@
       "get": {
         "operationId": "getDeviceCapabilities",
         "summary": "Check this Mac’s implemented actions, features and current permission report",
-        "description": "Check before offering actions. Unknown means this agent does not report capabilities; never infer support from its version. Supported does not mean authorized or ready. Permission reports become unknown when stale; execution always rechecks. Metadata does not grant access.",
+        "description": "Check before offering actions. Unknown means this agent does not report capabilities; never infer support from its version. Supported does not mean authorized or ready. Permission reports become unknown when stale; execution always rechecks. Check availability and reason separately from support and authorized. Unknown is not permission to act. Responses are no-store; re-fetch before planning. contract_version changes only for breaking changes; ignore additive fields. Metadata does not grant access.",
         "security": [
           {
             "userOAuth": []
@@ -4836,6 +4836,13 @@
       "DeviceCapabilities": {
         "type": "object",
         "properties": {
+          "contract_version": {
+            "const": 1
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
           "device_id": {
             "type": "string",
             "format": "uuid"
@@ -4881,6 +4888,18 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "os_version": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
               },
               {
                 "type": "null"
@@ -4939,13 +4958,27 @@
               "desktop_images",
               "system_status"
             ],
-            "additionalProperties": false
+            "additionalProperties": {
+              "enum": [
+                "supported",
+                "unsupported",
+                "unknown"
+              ]
+            }
+          },
+          "feature_status": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CapabilityState"
+            }
           },
           "permissions": {
             "$ref": "#/components/schemas/CapabilityPermissions"
           }
         },
         "required": [
+          "contract_version",
+          "revision",
           "device_id",
           "online",
           "source",
@@ -4953,11 +4986,13 @@
           "stale",
           "agent_version",
           "agent_build",
+          "os_version",
           "actions",
           "features",
+          "feature_status",
           "permissions"
         ],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "CapabilityPermissions": {
         "type": "object",
@@ -4989,33 +5024,15 @@
           "accessibility",
           "screen_recording"
         ],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "ActionCapability": {
         "type": "object",
         "properties": {
           "name": {
-            "enum": [
-              "lock_screen",
-              "sleep_mac",
-              "media_play_pause",
-              "media_next",
-              "media_previous",
-              "set_volume",
-              "mute",
-              "unmute",
-              "close_browser_tabs",
-              "quit_app",
-              "open_app",
-              "open_url",
-              "run_shortcut",
-              "toggle_do_not_disturb",
-              "list_apps",
-              "get_state",
-              "desktop_observe",
-              "desktop_act",
-              "desktop_stop"
-            ]
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
           },
           "support": {
             "enum": [
@@ -5026,14 +5043,56 @@
           },
           "authorized": {
             "type": "boolean"
+          },
+          "availability": {
+            "enum": [
+              "available",
+              "blocked",
+              "unknown"
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "unsupported_build",
+                  "not_authorized",
+                  "device_offline",
+                  "capability_unreported",
+                  "stale_report",
+                  "device_locked",
+                  "session_unavailable",
+                  "disabled_by_user",
+                  "permission_denied",
+                  "permission_unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "required_permissions": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "desktop_control",
+                "accessibility",
+                "screen_recording"
+              ]
+            },
+            "uniqueItems": true
           }
         },
         "required": [
           "name",
           "support",
-          "authorized"
+          "authorized",
+          "availability",
+          "reason",
+          "required_permissions"
         ],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "CapabilityReport": {
         "type": "object",
@@ -5102,6 +5161,19 @@
           },
           "permissions": {
             "$ref": "#/components/schemas/CapabilityPermissions"
+          },
+          "os_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "screen_state": {
+            "enum": [
+              "unlocked",
+              "locked",
+              "inactive",
+              "unknown"
+            ]
           }
         },
         "required": [
@@ -5113,6 +5185,68 @@
           "permissions"
         ],
         "additionalProperties": false
+      },
+      "CapabilityState": {
+        "type": "object",
+        "properties": {
+          "support": {
+            "enum": [
+              "supported",
+              "unsupported",
+              "unknown"
+            ]
+          },
+          "authorized": {
+            "type": "boolean"
+          },
+          "availability": {
+            "enum": [
+              "available",
+              "blocked",
+              "unknown"
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "unsupported_build",
+                  "not_authorized",
+                  "device_offline",
+                  "capability_unreported",
+                  "stale_report",
+                  "device_locked",
+                  "session_unavailable",
+                  "disabled_by_user",
+                  "permission_denied",
+                  "permission_unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "required_permissions": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "desktop_control",
+                "accessibility",
+                "screen_recording"
+              ]
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "support",
+          "authorized",
+          "availability",
+          "reason",
+          "required_permissions"
+        ],
+        "additionalProperties": true
       }
     },
     "securitySchemes": {
