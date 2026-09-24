@@ -21,7 +21,7 @@ The first Safari and TextEdit image requests succeeded without manual window rai
 
 After confirmed exit and relaunch, Wand reconnected without Keychain or privacy prompts. Its first Safari image after restart returned Example Domain and a complete 640 × 357 image. Disposable TextEdit fixtures were removed and file absence verified. [Desktop acceptance](DESKTOP_ACCEPTANCE.md#september-24-build-34-release-results) records command identifiers and distinguishes final-artifact results from earlier candidate tests.
 
-Earlier build 34 candidate tests verified real relay lock/repeated-lock and local Safari pinned-tab cleanup. A physical sleep test verified about 43 seconds asleep followed by reconnect; power logs recorded a keyboard/UserActivity wake. A 90-second pause in test UI interaction did not produce 90 seconds asleep.
+Earlier build 34 candidate tests verified real relay lock/repeated-lock and local Safari pinned-tab cleanup. A physical sleep test verified about 43 seconds asleep followed by reconnect. The owner confirmed waking the Mac manually, consistent with the keyboard/UserActivity event in the power logs. Sleep and reconnect passed; the manual wake ended the test before the longer offline interval could be measured.
 
 ## Remaining coverage
 

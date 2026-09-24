@@ -51,7 +51,7 @@ Client admission is manual; there is no public dynamic registration. We request 
 
 ## Limits disclosed for review
 
-Fresh-user or second-Mac installation and a full Mac reboot have not been revalidated for the owner signing identity. A second sleep test verified about 43 seconds of actual sleep followed by an online, unlocked Mac in the dashboard. The machine woke before the 75-second missed-heartbeat interval, so live offline-state and recovery behavior at that threshold remain unverified. See [desktop acceptance](../docs/DESKTOP_ACCEPTANCE.md#september-24-build-34-release-results) for the bounded results. Capability discovery is required before dispatch; signing and notarization do not establish action availability.
+Fresh-user or second-Mac installation and a full Mac reboot have not been revalidated for the owner signing identity. A second sleep test verified about 43 seconds of actual sleep followed by an online, unlocked Mac in the dashboard. The owner confirmed waking the Mac manually before the 75-second missed-heartbeat interval, so live offline-state and recovery behavior at that threshold remain unverified; this was not an unintended wake. See [desktop acceptance](../docs/DESKTOP_ACCEPTANCE.md#september-24-build-34-release-results) for the bounded results. Capability discovery is required before dispatch; signing and notarization do not establish action availability.
 
 Native Muse OAuth authorization and direct tool-result/image compatibility await verified registration details. No recorded native-connector demo is available, and the marketing animation is not execution evidence. [DEMO.md](DEMO.md) describes a short recording of the existing web-to-Mac flow; recording that outline does not establish native Muse integration.
 
