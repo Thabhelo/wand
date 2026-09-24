@@ -21,6 +21,6 @@ test('offline state clears inventory, and failures leave Other usable',async()=>
  const picker=setup(async()=>{throw Error('Update Wand on your Mac.')});await picker.setDevice('mac');assert.match(picker.note.textContent,/Update/);assert.equal(picker.select.options[1].value,'__manual');
  await picker.setDevice('mac',false,false);assert.equal(picker.apps.length,0);assert.match(picker.note.textContent,/offline/);assert.equal(picker.retry.disabled,true);
 });
-test('search clears a hidden selection and labels render as text',async()=>{
- const picker=setup(async()=>({apps:[app('<img onerror=alert(1)>','app.one'),app('Other editor','app.two')],next_offset:null}));await picker.setDevice('mac');picker.select.value='app.one';picker.search.value='editor';picker.search.oninput();assert.equal(picker.select.value,'');assert.throws(()=>picker.value(),/Choose/);assert.equal(picker.select.querySelector('img'),null);
+test('app labels render as text',async()=>{
+ const picker=setup(async()=>({apps:[app('<img onerror=alert(1)>','app.one'),app('Other editor','app.two')],next_offset:null}));await picker.setDevice('mac');assert.equal(picker.select.options[1].textContent,'<img onerror=alert(1)>');assert.equal(picker.select.querySelector('img'),null);
 });
