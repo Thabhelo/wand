@@ -6,7 +6,8 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "check": "node --test tests/*.test.mjs",
-    "prepare:assets": "node scripts/sync-dashboard.mjs",
+    "build:blog": "node scripts/build-blog.mjs",
+    "prepare:assets": "node scripts/sync-dashboard.mjs && npm run build:blog",
     "predev": "npm run prepare:assets",
     "predeploy": "npm run prepare:assets"
   },

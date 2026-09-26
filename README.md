@@ -16,7 +16,7 @@ The relay's background checks skip completed command history to reduce database 
 
 - `agent/`: Swift menu-bar app, native actions, Keychain storage and loopback API.
 - `cloud/`: production Cloudflare Workers relay, D1 registry and Durable Object WebSockets.
-- `web/`: canonical account/device dashboard. `site/` hosts it and the public website; deployment syncs dashboard assets from `web/`.
+- `web/`: canonical account/device dashboard. `site/` hosts it, the public website and the [Wand blog](https://getwand.app/blog/); deployment syncs dashboard assets from `web/` and builds posts from `site/content/blog/`.
 - `contracts/`: shared action catalog, schemas and transport rules.
 - `connector/`: OpenAPI, action manifest and operator instructions. [policy.md](policy.md) guides assistant operation.
 - `submission/`: review materials, security model and reviewer access.

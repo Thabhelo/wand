@@ -1,0 +1,97 @@
+<p>An AI can book a meeting in a browser and still be unable to mute the laptop sitting in your bedroom.</p>
+
+<p>That gap is why I built Wand. The assistant already knows what you want. The missing part is a connection to the computer you actually use: its apps, its windows, its sound, its local state.</p>
+
+<p>Consider a request like: “Open TextEdit on my Mac, write a note for tomorrow, and check that the text is there.” Opening the app is one action. Finding the document, entering text and checking the result require a loop. Wand gives an assistant the tools for both.</p>
+
+<p>One distinction matters before we get into the architecture. Muse has used Wand through its web controls, and that path has been tested. As of September 25, 2026, our application for an official native Muse connector is under review. The API and OAuth layer are built; native client registration and an end-to-end native connection test are still ahead.</p>
+
+<h2 id="the-mac-calls-out">The Mac calls out</h2>
+
+<p>Wand has three main pieces: a Swift menu-bar app, a web dashboard and a Cloudflare relay. Firebase handles Google sign-in. D1 holds account-to-device relationships and consent records. Each connected Mac has its own SQLite-backed Durable Object, which manages its WebSocket, command history and online status.</p>
+
+<p>The Mac opens an outbound TLS WebSocket to the relay. When an authorized caller requests an action, the relay sends it down that existing connection. There is no port forwarding, public Mac address or requirement for the phone and Mac to share Wi-Fi.</p>
+
+<div data-architecture-diagram></div>
+
+<p>This gives each device one place to coordinate its connection and commands. The assistant owns planning; Wand has no second LLM interpreting the request. Its job is to validate and execute a concrete action, then report what happened. The <a href="https://getwand.app/developers">developer guide</a> describes the public API.</p>
+
+<h2 id="pairing-with-two-authorities">Pairing needs two kinds of proof</h2>
+
+<p>Knowing a device ID should never be enough to control that device.</p>
+
+<p>The Mac first requests a short-lived enrollment code and a bootstrap credential. It also generates a random device secret locally. The setup page carries the code into the browser, where the owner signs in and approves the Mac. Manual code entry is only a fallback.</p>
+
+<p>The browser proves who owns the account. The bootstrap credential proves which installation started enrollment. The Mac can redeem its enrollment only after the authenticated owner has claimed it. Codes expire after ten minutes; redeem polling has jitter and stops at expiry.</p>
+
+<p>The device secret lives in Keychain. The relay stores its SHA-256 hash. Google sign-in credentials do not become the Mac's connection credentials.</p>
+
+<p>An assistant connection has a separate OAuth grant, with PKCE and consent for specific devices and actions. Signing into Wand does not silently authorize every assistant to control every Mac.</p>
+
+<h2 id="accepted-is-not-done">Accepted is not done</h2>
+
+<p>A successful HTTP request is not evidence that a Mac did anything. Wand returns <code>202</code> when it dispatches a command, together with a command ID. The caller then checks its status:</p>
+
+<pre><code>dispatched → delivered → succeeded
+                       ↘ failed</code></pre>
+
+<p>The Mac validates the action and parameters against the shared contract, checks the deadline and reserves the command ID in a local duplicate ledger before execution. That ledger is bounded by ten minutes or 10,000 entries. It prevents recent duplicate execution; it is not a claim of exactly-once delivery across every possible failure.</p>
+
+<p>The relay times commands out after 15 seconds. The agent checks expiry too, allowing a small clock-skew margin. If the Mac is offline, dispatch fails immediately. Nothing waits in a hidden queue to surprise the owner later.</p>
+
+<p>A reconnect gets a new connection generation. Old sockets cannot complete commands belonging to the new one, and pending work is not replayed. A timeout still means the outcome may be uncertain: an action can happen before its confirmation reaches the relay. The caller must check before retrying consequential work.</p>
+
+<h2 id="ask-the-device-what-it-can-do">Ask the device what it can do</h2>
+
+<p>“This version supports screenshots” is not enough information. The owner may have disabled desktop control. macOS may have denied Screen Recording. The Mac may be locked.</p>
+
+<p>Wand exposes a <a href="/developers/#capabilities">per-device capability document</a> that separates three questions:</p>
+
+<ul>
+  <li>Does this build implement the action?</li>
+  <li>Has this caller been authorized to use it?</li>
+  <li>Is it available on the Mac right now?</li>
+</ul>
+
+<p>The agent reports changes over its existing socket. Reports also travel with heartbeats. The dashboard and connector read the same document, rather than maintaining competing lists of what should work. A missing or stale report means unknown, not permission to guess. Even an available action can encounter a runtime problem, so its final result still matters.</p>
+
+<h2 id="observe-act-check">Observe, act, check again</h2>
+
+<p>Desktop control is where stale information becomes dangerous. A click aimed at a button can land somewhere else if a window moves.</p>
+
+<p>Wand reads app elements through macOS Accessibility. With separate Screen Recording permission, it can also return an image of the selected app window. This is an observation, not a continuous screen stream.</p>
+
+<p>The observation gets an ID and a 30-second lifetime. An action must refer to that observation. Before acting, Wand checks the app, process, window and focus; coordinate clicks also check the captured window bounds and target. After an action, the observation is invalidated. The assistant needs a fresh look before its next step.</p>
+
+<p>For the TextEdit example, that means opening the app, observing the document, entering the note, then observing again to verify it. “I sent the keystrokes” and “the note is there” are different claims. The <a href="/developers/#desktop">desktop-control guide</a> makes that distinction concrete.</p>
+
+<h2 id="the-relay-is-a-trust-boundary">The relay is a trust boundary</h2>
+
+<p>Wand uses encrypted transport, but command payloads are not end-to-end encrypted. The relay sees them. A compromised relay is therefore a serious threat, even with local validation and consent checks.</p>
+
+<p>Desktop control is powerful. An assistant with access to Terminal can run code through its interface. An allowlisted Shortcut can run code too. Having no arbitrary-shell API does not make GUI access a sandbox.</p>
+
+<p>Owners approve desktop access locally and can stop it. Protected security surfaces have additional exclusions. Locked Macs expose only locked status, with repeated lock requests treated as successful. These controls reduce risk; they do not prove that every action reflects the owner's intent.</p>
+
+<p>Cloud audit records redact parameters. Full validated parameters stay in a bounded local log for investigation. End-to-end encryption and independent approval for consequential actions remain future work. Our <a href="/developers/#limits">developer guide</a> spell out those limits.</p>
+
+<h2 id="the-query-that-read-too-much">The query that read too much</h2>
+
+<p>One of the most useful lessons came from a Mac doing almost nothing.</p>
+
+<p>Heartbeat scheduling needed to find pending commands. Its query filtered by status, but without a suitable index it also scanned completed history. Keeping 90 days of history meant that a routine heartbeat became more expensive as the device accumulated commands.</p>
+
+<p>The fix was a partial index containing only unfinished work:</p>
+
+<pre><code>CREATE INDEX commands_pending ON commands(created)
+WHERE status IN ('dispatched', 'delivered');</code></pre>
+
+<p>In a regression fixture containing 5,000 completed commands and two pending commands, the scheduling query read <strong>2 rows instead of 5,002</strong>. That is a measurement of this query, not a 2,500-fold speedup of Wand. The first complete idle minute observed after deployment also showed a large read reduction, but it was not a full-day benchmark.</p>
+
+<p>We kept the history and timeout behavior. The lesson was to measure work that runs when nobody is pressing a button.</p>
+
+<h2 id="what-comes-next">What comes next</h2>
+
+<p>The hard part of giving an assistant access to a Mac is making every step accountable: the right device, current permission, a valid observation and an honest result.</p>
+
+<p>Wand is a public beta. The Mac app and web controls are available now; the official Muse connection is the next integration step. You can <a href="https://getwand.app/">try Wand</a> or <a href="/developers/">explore the API</a>.</p>

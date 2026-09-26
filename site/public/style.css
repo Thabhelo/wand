@@ -49,3 +49,6 @@
 /* A second message sits below the laptop, offset from the first. */
 .message-note-private{left:auto;right:0;bottom:-52px;transform:rotate(-4deg)}
 .message-note-private p{margin:0;line-height:1.4}
+
+/* Keep writing discoverable alongside the primary mobile action. */
+@media(max-width:650px){.home .glass-nav .nav-blog{display:inline}.home .glass-nav nav{gap:14px}}

@@ -1,13 +1,13 @@
 # Wand status
 
-Updated **September 24, 2026**. This is the current status page; dated acceptance records describe the exact build and path tested, not a rolling claim that every action was retested.
+Updated **September 25, 2026**. This is the current status page; dated acceptance records describe the exact build and path tested, not a rolling claim that every action was retested.
 
 ## Shipped
 
 | Component | Current state |
 | --- | --- |
 | Mac app | **0.13.1, build 34**, Apple-silicon/macOS 26+ public beta; owner Developer ID signing and Apple notarization verified. Direct download, not a Mac App Store listing. |
-| Website and dashboard | Live at [getwand.app](https://getwand.app) and [app.getwand.app](https://app.getwand.app). |
+| Website and dashboard | Live at [getwand.app](https://getwand.app) and [app.getwand.app](https://app.getwand.app), with the [Wand blog](https://getwand.app/blog/). |
 | Backend | Cloudflare Workers, D1 and per-device Durable Objects at `api.getwand.app`; Firebase Google sign-in. Python/FastAPI is the reference implementation only. |
 | Pairing | Connect in Wand → Google sign-in → approve the Mac. The setup link carries the code; manual code entry is a fallback. |
 | Actions | Status, audio/media, app discovery/open/close, URLs, allowlisted Shortcuts, lock, sleep, browser cleanup, Focus and permissioned desktop tools are implemented. Per-device capabilities determine current availability. |
@@ -17,6 +17,8 @@ Updated **September 24, 2026**. This is the current status page; dated acceptanc
 | Muse connection | Web-based Muse-to-Mac use has been tested. Raw API/OpenAPI and Wand OAuth exist; official native Muse client registration and connection testing remain pending. |
 
 ## Latest verified changes
+
+- September 25: published the first [architecture post](https://getwand.app/blog/your-ai-your-mac/) with an interactive command-flow diagram, RSS, canonical/sitemap entries and an X preview image. Desktop and 320/390 px layouts verified; **56 website tests** passed. Blog sources and publishing steps are in `site/README.md`. Native Muse status remains separate from tested web use.
 
 - Relay database fix `1546525`: heartbeat scheduling, timeouts and reconnect handling now skip completed command history through a partial index. All **55 cloud tests** passed. Deployment and a real Mac status command were verified; initial live idle reads dropped from 2,592–3,888/minute to 22/minute. No Mac update, new permissions or shorter audit retention is needed. [Implementation, migration tests and production evidence](../cloud/README.md#database-read-costs).
 - Native release source `0d7960f`, publication `59e4a6d`: [build 34 artifact and test evidence](RELEASE_0_13_1.md), including CI notarization, window capture, text input and restart persistence.
