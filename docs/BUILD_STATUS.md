@@ -8,8 +8,8 @@ Updated **October 5, 2026**. This is the current status page; dated acceptance r
 | --- | --- |
 | Mac app | **0.13.1, build 34**, Apple-silicon/macOS 26+ public beta; owner Developer ID signing and Apple notarization verified. Direct download, not a Mac App Store listing. |
 | Website and dashboard | Live at [getwand.app](https://getwand.app) and [app.getwand.app](https://app.getwand.app), with the [Wand blog](https://getwand.app/blog/). |
-| Backend | Cloudflare Workers, D1 and per-device Durable Objects at `api.getwand.app`; Firebase Google sign-in, plus a password sign-in limited to one designated reviewer account. Python/FastAPI is the reference implementation only. |
-| Pairing | Connect in Wand → Google sign-in → approve the Mac. The setup link carries the code; manual code entry is a fallback. |
+| Backend | Cloudflare Workers, D1 and per-device Durable Objects at `api.getwand.app`; Firebase sign-in with Google or with a confirmed email and password. Python/FastAPI is the reference implementation only. |
+| Pairing | Connect in Wand → sign in → approve the Mac. The setup link carries the code; manual code entry is a fallback. |
 | Actions | Status, audio/media, app discovery/open/close, URLs, allowlisted Shortcuts, lock, sleep, browser cleanup, Focus and permissioned desktop tools are implemented. Per-device capabilities determine current availability. |
 | Native permissions | Build 34 retained the owner's signing identity and reconnected after an app restart without new Keychain or privacy prompts in the recorded test. macOS owns permissions; this is not a promise that prompts can never recur. |
 | Release workflow | GitHub signing, notarization and publication succeeded for build 34 using the owner's team. Ebuka's credentials are no longer the current release dependency. |
@@ -18,7 +18,7 @@ Updated **October 5, 2026**. This is the current status page; dated acceptance r
 
 ## Latest verified changes
 
-- October 5: reviewer access and Muse client registration. Relay version `3de378b1-f8bc-440f-92d2-496ac5acea20`, website version `c6ccba75-75c4-4408-9927-632f30bde33d`. All **57 cloud tests** and **59 website tests** passed. A live production check with a simulated device passed reviewer sign-in, rejection of other password accounts, pairing, ownership isolation, consent, scope limits and revocation. The reviewer form in a real browser, a reviewer's own Mac and a native Muse connection were not tested. [What was set up, the evidence and the limits](FIREBASE_CONNECTIONS.md#reviewer-account-and-muse-client).
+- October 5: public email and password accounts, a Muse reviewer account and a registered Muse OAuth client. Relay version `3b25b41a-298b-45e5-84fb-05b7acaa8c68`, website version `e1325d55-03dc-4080-abea-34744571a03c`. All **58 cloud tests** and **65 website tests** passed. Live production checks with simulated devices passed sign-up, refusal of unconfirmed accounts at pairing and consent, acceptance after confirmation, isolation between accounts, consent, scope limits and revocation. Not tested: the forms in a real browser, a real confirmation or reset link, account linking, a reviewer's own Mac and a native Muse connection. [What was set up, the evidence and the limits](FIREBASE_CONNECTIONS.md#email-and-password-accounts).
 
 - September 25: published the first [architecture post](https://getwand.app/blog/your-ai-your-mac/) with an interactive command-flow diagram, RSS, canonical/sitemap entries and an X preview image. Desktop and 320/390 px layouts verified; **56 website tests** passed. Blog sources and publishing steps are in `site/README.md`. Native Muse status remains separate from tested web use.
 

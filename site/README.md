@@ -1,6 +1,6 @@
 # Wand website
 
-Cloudflare serves the public site at `getwand.app` and the account dashboard at `app.getwand.app`. `www.getwand.app` is also routed through this Worker. Google sign-in is configured through Firebase. Account API requests are proxied to the relay at `https://api.getwand.app`; the Mac connects to that relay directly over HTTPS and outbound WebSockets.
+Cloudflare serves the public site at `getwand.app` and the account dashboard at `app.getwand.app`. `www.getwand.app` is also routed through this Worker. Google and email/password sign-in are configured through Firebase. Account API requests are proxied to the relay at `https://api.getwand.app`; the Mac connects to that relay directly over HTTPS and outbound WebSockets.
 
 ## Develop and deploy
 
