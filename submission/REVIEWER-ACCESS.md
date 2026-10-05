@@ -1,6 +1,6 @@
 # Review Wand
 
-Updated September 24, 2026. Public Mac release: **0.13.1, build 34**, signed and notarized. The owner confirms the Muse connector application has been submitted and is awaiting review.
+Updated October 5, 2026. Public Mac release: **0.13.1, build 34**, signed and notarized. The owner confirms the Muse connector application has been submitted and is awaiting review.
 
 ## Browser sandbox
 
@@ -43,4 +43,6 @@ Support-form delivery to the operator's inbox was independently confirmed on Sep
 
 ## Muse connection
 
-The submitted application uses Raw API + OpenAPI. The API and OAuth service are deployed; Meta's client and exact callback are not registered. The next integration step is receiving verified callback/client requirements and the supported tool/image interface, then provisioning the client and testing native Muse authorization and command results. The owner confirms Muse has already controlled the Mac through Wand's web interface and supplied test feedback. That evidence does not establish native OAuth/direct-tool compatibility.
+The submitted application uses Raw API + OpenAPI. The API and OAuth service are deployed. Since October 5 a public PKCE client (`kqQLjzgKBLLzJ7Ff`, no secret, S256, no dynamic registration) is registered with the callback `https://agent.meta.ai/api/hatch/oauth/callback`. That callback comes from other connector authors' reports, not from Meta, so it still needs Meta's confirmation and a native authorization test.
+
+A dedicated reviewer account, `reviewer@getwand.app`, is supplied through the credentials form. To use it: install Wand from https://getwand.app/download/ on your own Apple-silicon Mac (macOS 26+), open Wand and choose **Connect**, then on the page that opens choose **Reviewer sign-in**, enter the reviewer email and password, and approve your Mac. Grant Accessibility and Screen Recording only if you want to test desktop actions. The account owns no devices and has no access to the developer's Mac. Disconnect your Mac from the dashboard when finished. The owner confirms Muse has already controlled the Mac through Wand's web interface and supplied test feedback. That evidence does not establish native OAuth/direct-tool compatibility.

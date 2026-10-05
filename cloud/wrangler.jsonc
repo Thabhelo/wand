@@ -56,7 +56,8 @@
     "FIREBASE_API_KEY": "AIzaSyCX5WZDFbL3Md2Rky39tbpspMiTg7XabxA",
     "FIREBASE_AUTH_DOMAIN": "wand-getwand.firebaseapp.com",
     "FIREBASE_APP_ID": "1:65004035287:web:6d1691580121e8301ce492",
-    "MUSE_CLIENT_IDS": "",
+    "MUSE_CLIENT_IDS": "kqQLjzgKBLLzJ7Ff",
+    "REVIEWER_UIDS": "iZVktXps6pWRjDd87ZGrmNe4wSz2",
     "FACEBOOK_ENABLED": "false"
   },
   "observability": {
