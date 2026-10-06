@@ -6,7 +6,7 @@
 
 **Public beta: Wand 0.13.1, build 34**, signed with the owner's Developer ID and notarized by Apple. [Download Wand](https://getwand.app/download/) for Apple silicon and macOS 26+. The [website](https://getwand.app), [dashboard](https://app.getwand.app) and [relay](https://api.getwand.app/healthz) are live. Google sign-in, pairing and remote web controls work.
 
-The owner submitted the Muse connector application on **September 24, 2026**; it is awaiting review. Muse has used Wand through the web controls. Official native connection registration and end-to-end testing remain separate work.
+The owner submitted the Muse connector application on **September 24, 2026**; it is awaiting review. Muse has used Wand through the web controls and, since October 5, through a native OAuth connection from the owner's Muse account. Meta's directory approval is separate.
 
 [Current status and remaining checks](docs/BUILD_STATUS.md) is the single release-status source. See [build 34 evidence](docs/RELEASE_0_13_1.md) for the exact artifact and [desktop acceptance](docs/DESKTOP_ACCEPTANCE.md) for tested actions and limits. Older build notes are retained in Git history, not as active checklists.
 

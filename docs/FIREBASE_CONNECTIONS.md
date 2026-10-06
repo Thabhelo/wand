@@ -8,7 +8,7 @@ Wand OAuth is separate from Google sign-in: the owner signs in, selects Macs and
 
 The implemented flow validates tokens, issuer/audience/time, exact registered callback URLs, PKCE S256, single-use consent and account ownership. Assistant tokens cannot administer accounts or pairing. Only explicitly provisioned clients in `MUSE_CLIENT_IDS` can reach Muse consent. Production lists one client, described below.
 
-The owner reported submitting the [Muse connector application](https://muse.ai/platform) on September 24, 2026. Review is pending. Muse has used Wand through its web controls; official native OAuth/tool integration must still be registered and tested. See [current status](BUILD_STATUS.md).
+The owner reported submitting the [Muse connector application](https://muse.ai/platform) on September 24, 2026. Review is pending. Muse first connected natively through Wand OAuth on October 5, 2026, [recorded below](#native-muse-connection-october-5). See [current status](BUILD_STATUS.md).
 
 ## Email and password accounts
 
@@ -31,13 +31,25 @@ Set up October 5, 2026 for Muse submission `457e4f44-e92b-456e-ac44-69ba01ea6c10
 
 **Reviewer account.** `reviewer@getwand.app` is an ordinary password account whose email is already confirmed. Its password was generated on the owner's Mac and lives in the owner's macOS Keychain (item `wand-muse-reviewer`) and in Meta's credentials form, nowhere in this repository. Mail to that address forwards to the owner through Cloudflare Email Routing; Cloudflare's log shows a Firebase reset email forwarded and delivered on October 5, though its arrival in the owner's inbox was not confirmed. The account owns no devices. A reviewer installs Wand and pairs their own Mac; nothing links the account to the owner's Mac.
 
-**Muse client.** `cloud/scripts/register-client.mjs` wrote one public client to production: ID `kqQLjzgKBLLzJ7Ff`, no client secret, PKCE S256 required, single callback `https://agent.meta.ai/api/hatch/oauth/callback`. Dynamic registration stays off. That callback is what Nansen's Muse guide and several public issue reports give for connectors a user adds to Muse. Meta's Connector Platform guidelines and credentials form state no callback, so its use for a reviewed platform connector is an informed assumption, not a Meta-confirmed fact. If Meta uses a different URL, authorization fails closed with `invalid_authorization_request`; register a new client with the right URL and replace the ID.
+**Muse client.** `cloud/scripts/register-client.mjs` wrote one public client to production: ID `kqQLjzgKBLLzJ7Ff`, no client secret, PKCE S256 required, single callback `https://agent.meta.ai/api/hatch/oauth/callback`. Dynamic registration stays off. The callback was taken from Nansen's Muse guide and several public issue reports, because Meta's Connector Platform guidelines and credentials form state none. Muse's own authorization requests on October 5 used exactly that URL, as recorded below. Meta has not documented it for reviewed platform connectors, so a different URL during Meta's review would fail closed with `invalid_authorization_request`; register a new client with that URL and add its ID.
 
 **Live check, October 5** (run while password sign-in was still limited to the reviewer; the OAuth code has not changed since). A script signed in as the reviewer through Firebase's API and drove production with a simulated device (a pairing record with no Mac behind it). Passed: reviewer token accepted; wrong password refused by Firebase; unverified and verified non-reviewer password accounts refused by the relay, including at pairing and consent; pairing claim, single-use code and redeem; the reviewer could not read, command or revoke a device they had not claimed; `/authorize` refused an unregistered client, three altered callbacks, plain and missing PKCE, an unknown scope, a wrong resource and missing state; no open registration endpoint; consent listed only requested scopes and refused a wider action or an unowned device; the code returned to the exact callback with state; a wrong verifier was refused; the token carried only the approved scope and device, was refused for an unapproved action and on dashboard endpoints; revocation refused the issued access token at once. All test devices, connections and the probe account were removed afterward.
 
 One observation: in one of two runs a refresh request made seconds after revocation still returned tokens, the KV delay described in [the relay notes](../cloud/README.md#two-separate-permissions). In the other run it was refused immediately. A token obtained that way cannot reach the connection: `tests/connections.test.js` revokes a connection while its grant still exists, refreshes successfully and confirms the new token is refused on every connector endpoint.
 
-Not tested: typing the reviewer credentials into the live form in a browser (covered by jsdom tests and the API path only), a reviewer pairing a physical Mac with this account, and any request from Muse itself. Wand requires `resource=https://api.getwand.app/connector` on `/authorize`; whether Muse sends it is unknown.
+Not tested: typing the reviewer credentials into the live form in a browser (covered by jsdom tests and the API path only) and a reviewer pairing a physical Mac with this account.
+
+## Native Muse connection, October 5
+
+Two kinds of evidence are recorded here and should not be confused.
+
+**Read from production records** (D1 and KV, October 5): after the simulated check above, Muse sent a real authorization request with client `kqQLjzgKBLLzJ7Ff`, redirect `https://agent.meta.ai/api/hatch/oauth/callback`, resource `https://api.getwand.app/connector` and all 19 `wand:` scopes. Connections were approved at 23:00 UTC with one action and at 23:48 UTC with all 19, both through that client. It remained the only registered client, and relay version `3b25b41a-298b-45e5-84fb-05b7acaa8c68` was serving. So Muse uses the registered callback and sends the `resource` value Wand requires.
+
+**Reported by the owner's testing session the same day, not re-run for this record:** through the native connection Muse passed device discovery, capabilities and status; volume changes and mute, restored afterward; opening, focusing and closing Calculator, including the already-open and already-closed results; opening a URL; viewing TextEdit screenshots, clicking at image coordinates, typing, pressing Return and scrolling; rejection of unsafe URLs, unallowlisted Shortcuts and invalid or reused desktop snapshots; and staying authorized past the 15-minute access-token lifetime without a second consent. The owner verified lock, sleep, playback, allowlisted Shortcuts, Focus and reconnect directly.
+
+Open from that session: Safari's native cleanup run was interrupted when Safari was closed, so it is inconclusive (earlier pinned-tab testing passed), and one transient authentication error recovered during polling without a known cause. Exact per-action evidence belongs in [DESKTOP_ACCEPTANCE.md](DESKTOP_ACCEPTANCE.md).
+
+This was the owner's own Muse account and Mac. It is not Meta's review, a reviewer's Mac or a fresh installation.
 
 ## Facebook
 

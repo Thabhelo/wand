@@ -1,6 +1,6 @@
 # Wand connector review package
 
-Updated September 24, 2026. Public Mac release: **Wand 0.13.1, build 34**, signed and notarized. **The Muse connector application has been submitted and is awaiting review**, as confirmed by the owner on this date. Native client registration and end-to-end Muse OAuth/tool testing remain pending; submission is not approval.
+Updated September 24, 2026. Public Mac release: **Wand 0.13.1, build 34**, signed and notarized. **The Muse connector application has been submitted and is awaiting review**, as confirmed by the owner on this date. A native Muse OAuth connection from the owner's account was made on October 5; submission is not approval.
 
 ## Product
 
@@ -36,7 +36,7 @@ The linked privacy policy and terms are the published legal documents. Their sou
 
 Production uses Firebase sign-in for owners (Google, or a confirmed email and password) and a separate Wand OAuth server for assistant clients. Authorization code, PKCE S256, state, the resource `https://api.getwand.app/connector`, and action scopes `wand:<action>` are required. Owners choose permitted Macs and actions. Connector tokens cannot administer the owner's account.
 
-Client admission is manual; there is no public dynamic registration. One public PKCE client (`kqQLjzgKBLLzJ7Ff`) is provisioned and admitted in `MUSE_CLIENT_IDS`, with the callback `https://agent.meta.ai/api/hatch/oauth/callback` that other connector authors report for Muse. We still request Meta's confirmation of the callback and client requirements, then a test of the actual authorization, command-result and image flow. The repository's manifest is an internal description, not a verified Meta import format.
+Client admission is manual; there is no public dynamic registration. One public PKCE client (`kqQLjzgKBLLzJ7Ff`) is provisioned and admitted in `MUSE_CLIENT_IDS`, with the callback `https://agent.meta.ai/api/hatch/oauth/callback`. Muse's own authorization requests on October 5 used that callback and the required resource. We still ask Meta to confirm the callback and client requirements for reviewed connectors. The repository's manifest is an internal description, not a verified Meta import format.
 
 ## Current evidence
 
@@ -45,7 +45,7 @@ Client admission is manual; there is no public dynamic registration. One public 
 - After confirmed process exit and relaunch, the unchanged installed build reconnected without another password prompt and returned the test document and text through a new relay observation and screenshot. This establishes Keychain, Accessibility and Screen Recording restart persistence on that installation after its signing-identity repairs. See [permission lifecycle evidence](../docs/PERMISSION_LIFECYCLE.md#september-24-owner-signing-build-33).
 - Build 33 Focus on/off passed independent Control Center verification. Build 34 candidate tests passed local Safari pinned-tab cleanup and real relay lock/repeated-lock with minimal locked state.
 - Final build 34 source `0d7960f` passed CI signing/notarization and exact-artifact signature, staple, Gatekeeper and checksum verification. The contained app was installed with the same designated requirement and reconnected without a permission prompt. Its first Safari and TextEdit image requests passed without manual window raising; two relay-entered lines were independently verified in TextEdit. The native volume display matched the reported volume without changing it. After confirmed exit/relaunch, it reconnected without Keychain or privacy prompts and its first Safari image passed. Disposable fixtures were removed and absence verified; [release evidence](../docs/RELEASE_0_13_1.md) identifies the exact artifact.
-- Muse has already used Wand through the web controls in prompt-based testing, as confirmed by the owner; its feedback drove dashboard fixes. This is distinct from registered native OAuth/direct-tool integration.
+- Muse has already used Wand through the web controls in prompt-based testing, as confirmed by the owner; its feedback drove dashboard fixes. Since October 5 it has also used the registered native OAuth connection; see [the record](../docs/FIREBASE_CONNECTIONS.md#native-muse-connection-october-5).
 - Public health, OpenAPI and OAuth discovery endpoints have been checked without login. Unauthenticated connector access returned 401; unknown OAuth clients returned 403. The September 23 run passed 42 Cloudflare runtime tests, including OAuth exchange, PKCE/replay checks, device/action restrictions and revocation. Its test clients were not Meta clients.
 - A separate September 24 automated verification run passed 173 tests and 58 shared contract fixtures. These results do not replace physical-device, reviewer-journey or native Muse acceptance.
 - The September 24 browser-sandbox run passed status, mute, unapproved-Shortcut rejection, approved Shortcut execution, offline rejection, reconnect, repeated lock, minimal locked state, rejection of mute while locked, and revocation. A discovered old-socket status race was corrected and deployed; status commands succeeded after reconnect and several minutes while the page remained online. All task-created review devices were revoked, with final revocation confirmed by the page and controls hidden. Simulated results do not establish physical Mac execution.
@@ -55,7 +55,7 @@ Client admission is manual; there is no public dynamic registration. One public 
 
 Fresh-user or second-Mac installation and a full Mac reboot have not been revalidated for the owner signing identity. A second sleep test verified about 43 seconds of actual sleep followed by an online, unlocked Mac in the dashboard. The owner confirmed waking the Mac manually before the 75-second missed-heartbeat interval, so live offline-state and recovery behavior at that threshold remain unverified; this was not an unintended wake. See [desktop acceptance](../docs/DESKTOP_ACCEPTANCE.md#september-24-build-34-release-results) for the bounded results. Capability discovery is required before dispatch; signing and notarization do not establish action availability.
 
-Native Muse OAuth authorization and direct tool-result/image compatibility await verified registration details. No recorded native-connector demo is available, and the marketing animation is not execution evidence. [DEMO.md](DEMO.md) describes a short recording of the existing web-to-Mac flow; recording that outline does not establish native Muse integration.
+Native Muse OAuth authorization has worked from the owner's Muse account since October 5, and the owner's session reports tool results and window images passing through it. No recorded native-connector demo is available, and the marketing animation is not execution evidence. [DEMO.md](DEMO.md) describes a short recording of the existing web-to-Mac flow; a recording of that outline is not evidence of the native connection.
 
 ## Submitted review scope
 

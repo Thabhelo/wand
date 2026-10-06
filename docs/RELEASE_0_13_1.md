@@ -27,4 +27,4 @@ Earlier build 34 candidate tests verified real relay lock/repeated-lock and loca
 
 The owner confirmed that the Muse review submission was submitted on September 24, 2026. Submission does not establish review approval or native Muse client registration. Muse web-to-Mac use has been tested; the registered native integration remains pending.
 
-Fresh-user or second-Mac installation, a full Mac reboot, and the live 75-second missed-heartbeat/offline interval remain unverified for this release. Native Muse client registration and OAuth/tool-image compatibility remain pending. Existing web-control tests do not establish native Muse integration.
+Fresh-user or second-Mac installation, a full Mac reboot, and the live 75-second missed-heartbeat/offline interval remain unverified for this release. Native Muse client registration and a first native connection followed on October 5, after this release; see [the record](FIREBASE_CONNECTIONS.md#native-muse-connection-october-5).

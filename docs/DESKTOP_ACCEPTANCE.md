@@ -1,6 +1,6 @@
 # Desktop acceptance — evidence through September 24, 2026
 
-These records distinguish production-relay tests, local native actions and compatibility experiments. Input delivery alone is not a passing result. The owner confirmed Muse review submission on September 24, 2026; review approval and registered native Muse integration remain pending. Muse web-to-Mac use has been tested.
+These records distinguish production-relay tests, local native actions and compatibility experiments. Input delivery alone is not a passing result. The owner confirmed Muse review submission on September 24, 2026; review approval remains pending. Muse web-to-Mac use has been tested, and a native Muse connection from the owner's account has worked since October 5 ([record](FIREBASE_CONNECTIONS.md#native-muse-connection-october-5)); its per-action evidence has not yet been added to this file.
 
 ## September 24: build 34 release results
 
