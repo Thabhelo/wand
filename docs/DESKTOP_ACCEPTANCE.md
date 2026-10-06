@@ -56,3 +56,7 @@ The [browser fixture](../tests/fixtures/desktop-browser.html) is served on local
 Lock, sleep, Safari/Chrome cleanup and Focus are implemented in [SystemActions.swift](../agent/Sources/MacBridgeNative/SystemActions.swift) and dispatched by [ActionExecutor.swift](../agent/Sources/MacBridgeNative/ActionExecutor.swift). [System-action tests](../agent/Tests/MacBridgeNativeTests/SystemActionTests.swift) cover confirmed lock results, pinned-tab classification and closure verification. The live evidence above distinguishes implemented behavior from verified paths: Chrome cleanup and Safari `keep_pinned: false` still lack equivalent physical acceptance. Focus currently matches the English Do Not Disturb description, so the recorded pass does not establish other locales.
 
 The [current release note](RELEASE_0_13_1.md) identifies the signed artifact and release checks. [Permission lifecycle](PERMISSION_LIFECYCLE.md) records the signing-identity migration and repaired per-app permissions. Automated checks and notarization complement physical tests; neither establishes general app compatibility or native Muse integration.
+
+## October 5 native Muse tests
+
+See [NATIVE_MUSE_ACCEPTANCE.md](NATIVE_MUSE_ACCEPTANCE.md) for the custom connector execution record, command IDs, independently checked desktop effects, owner-verified passes and the interrupted Safari cleanup test.

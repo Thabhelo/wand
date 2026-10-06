@@ -47,12 +47,12 @@ Two kinds of evidence are recorded here and should not be confused.
 
 **Reported by the owner's testing session the same day, not re-run for this record:** through the native connection Muse passed device discovery, capabilities and status; volume changes and mute, restored afterward; opening, focusing and closing Calculator, including the already-open and already-closed results; opening a URL; viewing TextEdit screenshots, clicking at image coordinates, typing, pressing Return and scrolling; rejection of unsafe URLs, unallowlisted Shortcuts and invalid or reused desktop snapshots; and staying authorized past the 15-minute access-token lifetime without a second consent. The owner verified lock, sleep, playback, allowlisted Shortcuts, Focus and reconnect directly.
 
-Open from that session: Safari's native cleanup run was interrupted when Safari was closed, so it is inconclusive (earlier pinned-tab testing passed), and one transient authentication error recovered during polling without a known cause. Exact per-action evidence belongs in [DESKTOP_ACCEPTANCE.md](DESKTOP_ACCEPTANCE.md).
+Open from that session: Safari's native cleanup run was interrupted when Safari was closed, so it is inconclusive (earlier pinned-tab testing passed), and one transient authentication error recovered during polling without a known cause. Exact October 5 per-action evidence is in [NATIVE_MUSE_ACCEPTANCE.md](NATIVE_MUSE_ACCEPTANCE.md); earlier release tests remain in [DESKTOP_ACCEPTANCE.md](DESKTOP_ACCEPTANCE.md).
 
 This was the owner's own Muse account and Mac. It is not Meta's review, a reviewer's Mac or a fresh installation.
 
 ## Facebook
 
-Facebook provider support and explicit account linking remain implemented, but `FACEBOOK_ENABLED=false` keeps it out of the public flow. Google is the public sign-in path. Earlier Facebook testing and its separate business-verification work do not establish a public Facebook launch or Muse approval.
+Facebook provider support and explicit account linking remain implemented, but `FACEBOOK_ENABLED=false` keeps it out of the public flow. Google and confirmed email/password are the public sign-in paths. Earlier Facebook testing and its separate business-verification work do not establish a public Facebook launch or Muse approval.
 
 Before re-enabling Facebook, verify its current provider/publishing state and credential rotation: an app secret was exposed during setup, and the historical setup record did not establish that it was rotated. Never copy secrets into documentation or source. Firebase UID, not a matching email address, identifies the owner of paired devices.

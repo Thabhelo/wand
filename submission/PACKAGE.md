@@ -1,10 +1,10 @@
 # Wand connector review package
 
-Updated September 24, 2026. Public Mac release: **Wand 0.13.1, build 34**, signed and notarized. **The Muse connector application has been submitted and is awaiting review**, as confirmed by the owner on this date. A native Muse OAuth connection from the owner's account was made on October 5; submission is not approval.
+Updated October 5, 2026. Public Mac release: **Wand 0.13.1, build 34**, signed and notarized. **The Muse connector application has been submitted and is awaiting review**, as confirmed by the owner on September 24. A native Muse OAuth connection from the owner's account was made on October 5; submission is not approval.
 
 ## Product
 
-Wand lets an assistant act on a user's own Mac through a menu-bar app. The Mac opens an outbound WebSocket to Wand's relay; no inbound port or separate iPhone app is needed. The intended Muse flow is: install Wand, connect the Mac through Google sign-in, authorize Muse for selected devices/actions, then ask Muse from a phone.
+Wand lets an assistant act on a user's own Mac through a menu-bar app. The Mac opens an outbound WebSocket to Wand's relay; no inbound port or separate iPhone app is needed. The intended Muse flow is: install Wand, connect the Mac through Google or confirmed email/password sign-in, authorize Muse for selected devices/actions, then ask Muse from a phone.
 
 The action catalog includes Mac status, app discovery, sound controls, opening apps and URLs, locking, and browser-tab cleanup. Each device reports its current support, permissions and availability. Poll commands to a terminal result; for desktop input, observe again to verify the requested change. Offline commands fail rather than queue. The acceptance evidence below identifies what has actually been tested on the current release.
 
@@ -59,4 +59,8 @@ Native Muse OAuth authorization has worked from the owner's Muse account since O
 
 ## Submitted review scope
 
-Wand connects an assistant to a user's own Mac through a signed, notarized menu-bar app and an outbound relay connection. The public beta provides Mac status and app controls, plus locally approved desktop observation and input. Owners control device/action consent and can pause or revoke access. We are requesting review of the deployed API, OAuth service, reviewer sandbox and Mac beta, together with verified Muse client/callback requirements so we can complete native authorization and tool-result testing.
+Wand connects an assistant to a user's own Mac through a signed, notarized menu-bar app and an outbound relay connection. The public beta provides Mac status and app controls, plus locally approved desktop observation and input. Owners control device/action consent and can pause or revoke access. We are requesting review of the deployed API, OAuth service, reviewer sandbox and Mac beta, with working native OAuth authorization and action-result evidence. Meta directory approval remains separate.
+
+## October 5 native action evidence
+
+[Native acceptance](../docs/NATIVE_MUSE_ACCEPTANCE.md) records command IDs, independent image/input verification, owner-verified passes and remaining limits. Production authorization records are documented separately in [account and connection evidence](../docs/FIREBASE_CONNECTIONS.md#native-muse-connection-october-5).

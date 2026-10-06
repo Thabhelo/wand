@@ -18,6 +18,8 @@ Updated **October 5, 2026**. This is the current status page; dated acceptance r
 
 ## Latest verified changes
 
+- [Detailed native action acceptance](NATIVE_MUSE_ACCEPTANCE.md): command IDs and independent checks for reversible audio/app controls, URLs and TextEdit images, pixel clicks, typing and scrolling. Lock/sleep and the remaining media, Shortcut, Focus and reconnect passes are attributed to the owner. The interrupted Safari run remains inconclusive.
+
 - October 5: first native Muse connection. Production records show Muse authorizing with client `kqQLjzgKBLLzJ7Ff`, the callback `https://agent.meta.ai/api/hatch/oauth/callback` and the resource `https://api.getwand.app/connector`, with connections approved at 23:00 and 23:48 UTC. That settles the callback and resource questions. The owner's testing session reports the action results; they were not re-run for this entry. [Details](FIREBASE_CONNECTIONS.md#native-muse-connection-october-5).
 
 - October 5: public email and password accounts, a Muse reviewer account and a registered Muse OAuth client. Relay version `3b25b41a-298b-45e5-84fb-05b7acaa8c68`, website version `e1325d55-03dc-4080-abea-34744571a03c`. All **58 cloud tests** and **65 website tests** passed. Live production checks with simulated devices passed sign-up, refusal of unconfirmed accounts at pairing and consent, acceptance after confirmation, isolation between accounts, consent, scope limits and revocation. Not tested: the forms in a real browser, a real confirmation or reset link, account linking and a reviewer's own Mac. [What was set up, the evidence and the limits](FIREBASE_CONNECTIONS.md#email-and-password-accounts).
