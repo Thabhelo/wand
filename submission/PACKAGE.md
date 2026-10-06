@@ -34,9 +34,9 @@ The linked privacy policy and terms are the published legal documents. Their sou
 
 ## Authentication and registration
 
-Production uses Firebase Google sign-in for owners and a separate Wand OAuth server for assistant clients. Authorization code, PKCE S256, state, the resource `https://api.getwand.app/connector`, and action scopes `wand:<action>` are required. Owners choose permitted Macs and actions. Connector tokens cannot administer the owner's account.
+Production uses Firebase sign-in for owners (Google, or a confirmed email and password) and a separate Wand OAuth server for assistant clients. Authorization code, PKCE S256, state, the resource `https://api.getwand.app/connector`, and action scopes `wand:<action>` are required. Owners choose permitted Macs and actions. Connector tokens cannot administer the owner's account.
 
-Client admission is manual; there is no public dynamic registration. We request Meta's verified HTTPS callback and client requirements. We will provision the client, admit its issued ID in `MUSE_CLIENT_IDS`, then test the actual authorization, command-result and image flow. The allowlist remains empty until that exchange. The repository's manifest is an internal description, not a verified Meta import format.
+Client admission is manual; there is no public dynamic registration. One public PKCE client (`kqQLjzgKBLLzJ7Ff`) is provisioned and admitted in `MUSE_CLIENT_IDS`, with the callback `https://agent.meta.ai/api/hatch/oauth/callback` that other connector authors report for Muse. We still request Meta's confirmation of the callback and client requirements, then a test of the actual authorization, command-result and image flow. The repository's manifest is an internal description, not a verified Meta import format.
 
 ## Current evidence
 

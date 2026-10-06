@@ -20,7 +20,7 @@ export default{
  async fetch(request,env,ctx,principal){try{const url=new URL(request.url),path=url.pathname,method=request.method,ip=request.headers.get('CF-Connecting-IP')||'local';
   if(path==='/openapi.json'&&method==='GET')return json(publicSpec(env));
   if(path==='/healthz'&&method==='GET'){const cleanup=await env.CLEANUP.getByName('registry').ensure();const healthy=!cleanup.failures&&(!cleanup.last_success||Date.now()-cleanup.last_success<3*60*60*1000);return json({status:healthy?'ok':'degraded',cleanup},healthy?200:503)}
-  if(path==='/config'&&method==='GET')return json({facebookEnabled:env.FACEBOOK_ENABLED==='true',firebase:{apiKey:env.FIREBASE_API_KEY,authDomain:env.FIREBASE_AUTH_DOMAIN,projectId:env.FIREBASE_PROJECT_ID,appId:env.FIREBASE_APP_ID}});
+  if(path==='/config'&&method==='GET')return json({facebookEnabled:env.FACEBOOK_ENABLED==='true',passwordEnabled:env.PASSWORD_ENABLED==='true',firebase:{apiKey:env.FIREBASE_API_KEY,authDomain:env.FIREBASE_AUTH_DOMAIN,projectId:env.FIREBASE_PROJECT_ID,appId:env.FIREBASE_APP_ID}});
   if(path==='/v1/ws/device'){
    await limit(env,'hello:'+ip,10);
    // A public device ID routes the socket; only the protocol hello grants access.

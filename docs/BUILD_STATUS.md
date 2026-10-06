@@ -1,6 +1,6 @@
 # Wand status
 
-Updated **September 25, 2026**. This is the current status page; dated acceptance records describe the exact build and path tested, not a rolling claim that every action was retested.
+Updated **October 5, 2026**. This is the current status page; dated acceptance records describe the exact build and path tested, not a rolling claim that every action was retested.
 
 ## Shipped
 
@@ -8,15 +8,17 @@ Updated **September 25, 2026**. This is the current status page; dated acceptanc
 | --- | --- |
 | Mac app | **0.13.1, build 34**, Apple-silicon/macOS 26+ public beta; owner Developer ID signing and Apple notarization verified. Direct download, not a Mac App Store listing. |
 | Website and dashboard | Live at [getwand.app](https://getwand.app) and [app.getwand.app](https://app.getwand.app), with the [Wand blog](https://getwand.app/blog/). |
-| Backend | Cloudflare Workers, D1 and per-device Durable Objects at `api.getwand.app`; Firebase Google sign-in. Python/FastAPI is the reference implementation only. |
-| Pairing | Connect in Wand → Google sign-in → approve the Mac. The setup link carries the code; manual code entry is a fallback. |
+| Backend | Cloudflare Workers, D1 and per-device Durable Objects at `api.getwand.app`; Firebase sign-in with Google or with a confirmed email and password. Python/FastAPI is the reference implementation only. |
+| Pairing | Connect in Wand → sign in → approve the Mac. The setup link carries the code; manual code entry is a fallback. |
 | Actions | Status, audio/media, app discovery/open/close, URLs, allowlisted Shortcuts, lock, sleep, browser cleanup, Focus and permissioned desktop tools are implemented. Per-device capabilities determine current availability. |
 | Native permissions | Build 34 retained the owner's signing identity and reconnected after an app restart without new Keychain or privacy prompts in the recorded test. macOS owns permissions; this is not a promise that prompts can never recur. |
 | Release workflow | GitHub signing, notarization and publication succeeded for build 34 using the owner's team. Ebuka's credentials are no longer the current release dependency. |
 | Muse application | **Submitted and awaiting review**, reported by the owner on September 24. This records the owner's confirmation; it is not a Meta approval receipt. |
-| Muse connection | Web-based Muse-to-Mac use has been tested. Raw API/OpenAPI and Wand OAuth exist; official native Muse client registration and connection testing remain pending. |
+| Muse connection | Web-based Muse-to-Mac use has been tested. Raw API/OpenAPI and Wand OAuth exist. One public PKCE client is registered for Muse with the callback other connector authors report; Meta has not confirmed that callback, and no native Muse connection has been made. |
 
 ## Latest verified changes
+
+- October 5: public email and password accounts, a Muse reviewer account and a registered Muse OAuth client. Relay version `3b25b41a-298b-45e5-84fb-05b7acaa8c68`, website version `e1325d55-03dc-4080-abea-34744571a03c`. All **58 cloud tests** and **65 website tests** passed. Live production checks with simulated devices passed sign-up, refusal of unconfirmed accounts at pairing and consent, acceptance after confirmation, isolation between accounts, consent, scope limits and revocation. Not tested: the forms in a real browser, a real confirmation or reset link, account linking, a reviewer's own Mac and a native Muse connection. [What was set up, the evidence and the limits](FIREBASE_CONNECTIONS.md#email-and-password-accounts).
 
 - September 25: published the first [architecture post](https://getwand.app/blog/your-ai-your-mac/) with an interactive command-flow diagram, RSS, canonical/sitemap entries and an X preview image. Desktop and 320/390 px layouts verified; **56 website tests** passed. Blog sources and publishing steps are in `site/README.md`. Native Muse status remains separate from tested web use.
 
@@ -27,7 +29,7 @@ Updated **September 25, 2026**. This is the current status page; dated acceptanc
 
 ## Remaining checks and dependencies
 
-1. Meta's review outcome and verified native OAuth client/callback registration, followed by an actual native Muse connection test. Do not invent callbacks or equate web use with native integration.
+1. Meta's review outcome, Meta's own confirmation of the callback and client requirements, and an actual native Muse connection test. The registered callback comes from third-party reports, and Wand requires a `resource` parameter that Muse may not send. Do not equate web use or the simulated check with native integration.
 2. Fresh-user or second-Mac installation, a full Mac reboot under the current signing identity, and the live 75-second missed-heartbeat/offline interval. The manual wake ended the sleep test before that interval; it was not an unintended wake.
 3. Broader compatibility: Chrome's dedicated cleanup, Safari cleanup without pinned preservation, other macOS versions/locales, and representative app workflows. Existing passes do not certify every app or action combination.
 

@@ -78,3 +78,14 @@ it('existing narrow grants cannot acquire desktop access',async()=>{
  const {code}=await approve(),credentials=await(await exchange(code)).json();
  const r=await request('/connector/v1/commands','POST',{device_id:did,action:'desktop_observe',params:{bundle_id:'com.apple.finder'}},credentials.access_token);expect(r.status).toBe(403);
 });
+it('refuses tokens refreshed after revocation even while the OAuth grant still exists',async()=>{
+ // Simulates the KV delay: the D1 connection is revoked but the stored grant has not been removed yet.
+ const {code}=await approve(),first=await (await exchange(code)).json();
+ expect((await request('/connector/v1/devices','GET',undefined,first.access_token)).status).toBe(200);
+ await env.DB.prepare('UPDATE connections SET revoked_at=? WHERE user_id=?').bind(new Date().toISOString(),'alice').run();
+ const refreshed=await request('/oauth/token','POST',new URLSearchParams({grant_type:'refresh_token',client_id:client.clientId,refresh_token:first.refresh_token}));
+ expect(refreshed.status).toBe(200);const next=await refreshed.json();expect(next.access_token).toBeTruthy();
+ for(const path of ['/connector/v1/devices','/connector/v1/devices/'+did+'/capabilities'])expect((await request(path,'GET',undefined,next.access_token)).status).toBe(401);
+ expect((await request('/connector/v1/commands','POST',{device_id:did,action:'mute',params:{}},next.access_token)).status).toBe(401);
+ expect((await request('/connector/v1/devices','GET',undefined,first.access_token)).status).toBe(401);
+});
