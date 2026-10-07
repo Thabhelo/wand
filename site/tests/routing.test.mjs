@@ -21,3 +21,8 @@ test('account screens stay out of search without blocking public pages',async()=
  const r=await worker.fetch(new Request('https://getwand.app/privacy/'),env);
  assert.equal(r.headers.get('x-robots-tag'),null);
 });
+test('public pages redirect permanently to one https trailing-slash URL',async()=>{
+ const cases=[['http://getwand.app/download/','https://getwand.app/download/'],['https://getwand.app/download','https://getwand.app/download/'],['https://getwand.app/blog/your-ai-your-mac','https://getwand.app/blog/your-ai-your-mac/'],['https://getwand.app/index.html','https://getwand.app/'],['https://getwand.app/privacy/index.html','https://getwand.app/privacy/']];
+ for(const [from,to] of cases){const r=await worker.fetch(new Request(from),env);assert.equal(r.status,301,from);assert.equal(r.headers.get('location'),to)}
+ for(const url of ['https://getwand.app/','https://getwand.app/privacy/','https://getwand.app/blog/','https://getwand.app/releases/Wand.dmg']){const r=await worker.fetch(new Request(url),env);assert.equal(r.status,200,url)}
+});

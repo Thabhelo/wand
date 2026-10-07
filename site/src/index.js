@@ -4,6 +4,10 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.hostname === 'www.getwand.app') { url.hostname='getwand.app'; return Response.redirect(url,308); }
+    // One indexable URL per page: https only, and the trailing-slash form the static assets serve.
+    if (url.protocol === 'http:') { url.protocol='https:'; return Response.redirect(url,301); }
+    const canonicalPath = url.pathname.replace(/\/index\.html$/,'/').replace(/^(\/(?:download|privacy|terms|developers|support|blog|blog\/[^/]+))$/,'$1/');
+    if (canonicalPath !== url.pathname) { url.pathname=canonicalPath; return Response.redirect(url,301); }
     if (url.pathname === '/connect') { return Response.redirect('https://app.getwand.app/',302); }
     if (url.pathname === '/api/support') return support(request,env);
     const dashboard = url.hostname === 'app.getwand.app';
