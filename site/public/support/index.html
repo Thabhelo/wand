@@ -17,6 +17,8 @@
 <label for="support-message">Message</label><textarea id="support-message" name="message" rows="5" minlength="10" maxlength="5000" placeholder="Tell us what happened and what you expected." required></textarea>
 <div hidden aria-hidden="true"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
 <p class="privacy-note">Don’t include passwords or connection codes. We’ll use your email only to reply. <a href="/privacy">Privacy policy</a></p>
+<div class="cf-turnstile" data-sitekey="0x4AAAAAAFayrMZIogTGq9h7" data-action="support" data-size="flexible" data-error-callback="supportCheckFailed" data-expired-callback="supportCheckExpired"></div>
+<p class="privacy-note">If the security check won’t load, email <a href="mailto:support@getwand.app">support@getwand.app</a>.</p>
 <button type="submit">Send message</button><p id="send-status" role="status" aria-live="polite"></p>
 </form></section>
 <section aria-labelledby="help-title"><h2 id="help-title">Common questions</h2>
@@ -50,4 +52,5 @@ This setup uses Wand&#x27;s website. It does not add Wand as a native Muse conne
 <footer class="support-footer"><a href="/">Wand</a><nav aria-label="Footer"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="https://app.getwand.app/">Your Macs ↗</a></nav></footer>
 <script src="/muse-setup.js" defer></script>
 <script src="/support/support.js" defer></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </body></html>

@@ -4,6 +4,7 @@
 
 ## Deployment
 
+- Store the managed Turnstile widget secret as `TURNSTILE_SECRET_KEY`. The widget allows `getwand.app` (including subdomains); the server requires action `support` and the exact support-page hostname.
 - Keep Email Routing enabled for `getwand.app` and the owner's destination verified in Cloudflare.
 - Store the recipient in the Worker's `SUPPORT_RECIPIENT` secret. Never put it in public assets.
 - `SUPPORT_EMAIL` sends from `support@getwand.app` to that fixed recipient. Visitor email is Reply-To, never the recipient.
@@ -22,3 +23,7 @@ Messages are not stored in D1 or application logs. They remain in the support ma
 A test sent through the live support form at **07:23:42 UTC** was independently found in the owner's Gmail inbox with the **INBOX** label. The sender was **Wand Support <support@getwand.app>**, with subject **Wand support: Connection**. The message contained branded HTML and a plain-text alternative. Gmail's authentication results reported **SPF: pass, DKIM: pass, DMARC: pass**.
 
 This confirms inbox delivery and formatting for that test, beyond the form's provider-acceptance response.
+
+### October 18, 2026: bot protection
+
+Managed Turnstile is verified server-side before sending mail. Missing, expired, reused or wrong-site tokens fail closed. The existing free per-IP limit and fixed recipient remain in place. A failed check preserves the message and offers a support-email fallback. All 68 website tests passed, including challenge failures and retries. Production version `3238694e-558a-4da6-9222-a9c7ca71b80e` serves the widget and rejects a tokenless submission. A new human challenge and inbox-delivery test remains unverified.

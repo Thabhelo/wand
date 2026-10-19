@@ -18,6 +18,8 @@ Updated **October 5, 2026**. This is the current status page; dated acceptance r
 
 ## Latest verified changes
 
+- October 18: support-form bot checks deployed; 68 website tests passed and the live endpoint rejects missing challenge tokens. [Scope and remaining human check](SUPPORT_FORM.md#october-18-2026-bot-protection).
+
 - [Detailed native action acceptance](NATIVE_MUSE_ACCEPTANCE.md): command IDs and independent checks for reversible audio/app controls, URLs and TextEdit images, pixel clicks, typing and scrolling. Lock/sleep and the remaining media, Shortcut, Focus and reconnect passes are attributed to the owner. The interrupted Safari run remains inconclusive.
 
 - October 5: first native Muse connection. Production records show Muse authorizing with client `kqQLjzgKBLLzJ7Ff`, the callback `https://agent.meta.ai/api/hatch/oauth/callback` and the resource `https://api.getwand.app/connector`, with connections approved at 23:00 and 23:48 UTC. That settles the callback and resource questions. The owner's testing session reports the action results; they were not re-run for this entry. [Details](FIREBASE_CONNECTIONS.md#native-muse-connection-october-5).

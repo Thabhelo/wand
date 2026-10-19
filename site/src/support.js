@@ -18,6 +18,18 @@ export async function support(request, env) {
     if(typeof email!=='string'||email.length>254||! /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email)||/[\r\n\x00-\x1f]/.test(email)) return reply(400,'Enter a valid email so we can reply.');
     if(typeof name!=='string'||name.length>100||/[\r\n\x00-\x1f]/.test(name)||website||!topics.has(topic)) return reply(400,'Please check the form and try again.');
     if(typeof message!=='string'||message.trim().length<10||message.length>5000) return reply(400,'Write a message between 10 and 5,000 characters.');
+    if (!env.TURNSTILE_SECRET_KEY) return reply(503, 'The security check is temporarily unavailable. Please try again shortly.');
+    const token = data['cf-turnstile-response'];
+    if (typeof token !== 'string' || !token || token.length > 2048) return reply(400, 'Please complete the security check and try again.');
+    const verification = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({secret: env.TURNSTILE_SECRET_KEY, response: token, remoteip: request.headers.get('CF-Connecting-IP') || undefined}),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!verification.ok) return reply(503, 'The security check is temporarily unavailable. Please try again shortly.');
+    const result = await verification.json();
+    if (result.success !== true || result.action !== 'support' || !['getwand.app', 'app.getwand.app'].includes(result.hostname)) return reply(400, 'The security check expired or failed. Please try again.');
     if(!env.SUPPORT_RECIPIENT||!env.SUPPORT_EMAIL) return reply(503,'Support is temporarily unavailable. Please try again shortly.');
     await env.SUPPORT_EMAIL.send({from:{email:'support@getwand.app',name:'Wand Support'},to:env.SUPPORT_RECIPIENT,replyTo:email,subject:`Wand support: ${topic}`,...supportEmail({name,email,topic,message})});
     return reply(200,'Message sent. We’ll reply to your email.');
