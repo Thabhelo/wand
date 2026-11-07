@@ -33,7 +33,7 @@
   rate_limited:'Too many requests. Wait a minute, then try again.',
   unauthorized:'Please sign out and sign in again.',
   result_expired:'This result is no longer available. Check your Mac before trying again.',
-  command_timeout:'Your Mac did not confirm the result in time. Check it before retrying.'
+  command_timeout:'Your Mac did not confirm within 15 seconds. Check it before retrying.'
  });
  const keyNames={return:'Return',tab:'Tab',escape:'Escape',up:'Up arrow',down:'Down arrow',left:'Left arrow',right:'Right arrow',backspace:'Delete',space:'Space',select_all:'Select all',home:'Home',end:'End',page_up:'Page up',page_down:'Page down'};
  const roleNames={AXWindow:'Window',AXButton:'Button',AXCheckBox:'Checkbox',AXRadioButton:'Option',AXTextField:'Text field',AXTextArea:'Text area',AXComboBox:'Combo box',AXStaticText:'Text',AXMenuBar:'Menu bar',AXMenu:'Menu',AXMenuItem:'Menu item',AXScrollArea:'Scroll area',AXWebArea:'Web content',AXLink:'Link',AXImage:'Image',AXGroup:'Group',AXToolbar:'Toolbar',AXSplitGroup:'Split view',AXRow:'Row',AXCell:'Cell',AXSlider:'Slider',AXPopUpButton:'Pop-up menu',AXTabGroup:'Tabs',AXTable:'Table',AXList:'List'};
