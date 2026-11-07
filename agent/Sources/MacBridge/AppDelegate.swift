@@ -305,7 +305,7 @@ import MacBridgeNative
             let handoff = column([label("Sign in and approve this Mac in your browser. Wand will connect automatically.", size: 13, secondary: true), help, fallback, button("Cancel", #selector(cancelPairing))])
             pairingActions = handoff
             add(card("Connect your Mac", subtitle: "Click Connect, sign in, and approve this Mac.", views: [connect, connection, handoff]))
-            add(label("Linking your Wand account prepares this Mac for remote control. Muse authorization requires the official connector; it is not included in this preview.", size: 12, secondary: true))
+            add(label("Linking your Wand account prepares this Mac for remote control.", size: 12, secondary: true))
             phoneQR.setAccessibilityLabel("Scan to open Wand on your phone")
             if phoneQR.constraints.isEmpty {
                 phoneQR.widthAnchor.constraint(equalToConstant: 160).isActive = true
