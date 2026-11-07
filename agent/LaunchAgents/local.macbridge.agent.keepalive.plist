@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<!--
+  Wand's keep-alive job. scripts/package_agent.py copies this file to
+  Wand.app/Contents/Library/LaunchAgents and StartupSettings registers it with
+  SMAppService.agent(plistName:), so it appears under Wand's name in Login Items.
+
+  KeepAlive is plain true, not {SuccessfulExit: false}: Wand's promise is remote
+  reach, so a crash, a force-kill, an accidental quit and an explicit "Quit Wand"
+  from the menu all come back while this setting is on. The only way to keep Wand
+  closed is to turn the startup setting off (which unregisters this job) or to
+  turn Wand off in System Settings, and Wand never re-registers after that.
+
+  MACBRIDGE_KEEPALIVE marks the copy launchd started. A copy started any other way
+  (Finder, open -n) does not carry it and steps aside when a launchd copy is running.
+-->
+<dict>
+	<key>Label</key>
+	<string>local.macbridge.agent.keepalive</string>
+	<key>BundleProgram</key>
+	<string>Contents/MacOS/MacBridge</string>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>ProcessType</key>
+	<string>Interactive</string>
+	<key>AssociatedBundleIdentifiers</key>
+	<array>
+		<string>local.macbridge.agent</string>
+	</array>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>MACBRIDGE_KEEPALIVE</key>
+		<string>1</string>
+	</dict>
+</dict>
+</plist>

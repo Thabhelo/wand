@@ -15,7 +15,7 @@ p.add_argument('--binary',type=Path,required=True,help='SwiftPM-built MacBridge 
 p.add_argument('--identity',default=os.environ.get('WAND_SIGNING_IDENTITY'),help='Apple Development identity for stable local testing, or Developer ID Application for distribution; defaults to WAND_SIGNING_IDENTITY; use explicit - only for disposable ad-hoc tests')
 p.add_argument('--dmg',action='store_true')
 p.add_argument('--upgrade-from',type=Path,help='Installed app whose signing identity must be preserved by this update')
-p.add_argument('--version',default='0.12.0')
+p.add_argument('--version',default='0.13.2')
 p.add_argument('--build-number',default='18')
 p.add_argument('--signing-timeout',type=int,default=60,help='Stop waiting for signing authorization without replacing the installed app')
 p.add_argument('--output',type=Path,default=ROOT/'dist/Wand.app')
@@ -38,8 +38,14 @@ destination.parent.mkdir(parents=True,exist_ok=True)
 staging=Path(tempfile.mkdtemp(prefix='.macbridge-build-',dir=destination.parent))
 app=staging/destination.name
 contents=app/'Contents'
-for folder in ['MacOS','Resources']: (contents/folder).mkdir(parents=True,exist_ok=True)
+for folder in ['MacOS','Resources','Library/LaunchAgents']: (contents/folder).mkdir(parents=True,exist_ok=True)
 shutil.copy2(a.binary,contents/'MacOS/MacBridge')
+# Keep-alive job registered by StartupSettings through SMAppService.agent(plistName:); launchd restarts Wand when it exits.
+keepalive=ROOT/'agent/LaunchAgents/local.macbridge.agent.keepalive.plist'
+with keepalive.open('rb') as f: job=plistlib.load(f)
+if job.get('Label')!=keepalive.stem or job.get('BundleProgram')!='Contents/MacOS/MacBridge' or job.get('AssociatedBundleIdentifiers')!=['local.macbridge.agent']:
+    raise SystemExit('Keep-alive LaunchAgent plist does not match the bundle it ships in')
+shutil.copy2(keepalive,contents/'Library/LaunchAgents'/keepalive.name)
 shutil.copy2(ROOT/'assets/Wand.icns',contents/'Resources/Wand.icns')
 shutil.copy2(ROOT/'contracts/v1.schema.json',contents/'Resources/v1.schema.json')
 shutil.copy2(ROOT/'contracts/actions.json',contents/'Resources/actions.json')

@@ -19,6 +19,7 @@ import MacBridgeNative
     private var window: NSWindow?
     private var statusItem: NSStatusItem?
     private var observation: AnyCancellable?
+    private var showWindowObserver: NSObjectProtocol?
     private var selected = 0
     private var compact = false
     private var responsiveRows: [NSStackView] = []
@@ -45,7 +46,7 @@ import MacBridgeNative
     private var advancedView: NSView?
     private let pairingQR = NSImageView()
     private let phoneQR = NSImageView()
-    private let loginToggle = NSButton(checkboxWithTitle: "Start Wand when I log in", target: nil, action: nil)
+    private let loginToggle = NSButton(checkboxWithTitle: "Start Wand when I log in and keep it running", target: nil, action: nil)
     private let loginStatus = NSTextField(wrappingLabelWithString: "")
     private var phoneSharePicker: NSSharingServicePicker?
     private var phoneHandoff: NSView?
@@ -70,13 +71,24 @@ import MacBridgeNative
     private var activitySnapshot = ""
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        Task { @MainActor [self] in
+            // One Wand per session: a second copy hands off to the running one, or takes over when launchd started it.
+            let claim = await InstanceGuard.claim()
+            guard claim.proceed else { NSApplication.shared.terminate(nil); return }
+            startUp(replacedFrontCopy: claim.showWindow)
+        }
+    }
+    private func startUp(replacedFrontCopy: Bool) {
         ApplicationMenus.install()
         buildWindow(); buildMenu()
         // First launch shows setup; later launches run quietly. The menu icon and
         // reopening the app always provide an explicit way to show the window.
-        if !UserDefaults.standard.bool(forKey: "wand-has-launched") { showWindow() }
+        if replacedFrontCopy || !UserDefaults.standard.bool(forKey: "wand-has-launched") { showWindow() }
         UserDefaults.standard.set(true, forKey: "wand-has-launched")
         StartupSettings.enableOnceIfInstalled()
+        showWindowObserver = DistributedNotificationCenter.default().addObserver(forName: Notification.Name(StartupPolicy.showWindowNotification), object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in self?.showWindow() }
+        }
         add(label("Opening Wand…", size: 28, weight: .semibold))
         add(label("If macOS asks, allow Wand to access its connection keys in Keychain.", secondary: true))
         Task { @MainActor [self] in
@@ -576,14 +588,19 @@ import MacBridgeNative
     }
     @objc private func cancelPairing() { agent?.cancelPairing() }
     @objc private func toggleStartAtLogin() {
-        do { try StartupSettings.setEnabled(loginToggle.state == .on) }
-        catch {
-            let alert = NSAlert()
-            alert.messageText = "Wand couldn’t change its startup setting."
-            alert.informativeText = "Move Wand to Applications if needed, then check General → Login Items in System Settings."
-            alert.runModal()
+        let enabled = loginToggle.state == .on
+        loginToggle.isEnabled = false
+        Task { @MainActor [self] in
+            do { try await StartupSettings.setEnabled(enabled) }
+            catch {
+                let alert = NSAlert()
+                alert.messageText = "Wand couldn’t change its startup setting."
+                alert.informativeText = "Move Wand to Applications if needed, then check General → Login Items in System Settings."
+                alert.runModal()
+            }
+            loginToggle.isEnabled = true
+            render()
         }
-        render()
     }
     @objc private func openLoginSettings() { StartupSettings.openSettings() }
     @objc private func sharePhoneLink(_ sender: NSButton) {
@@ -633,6 +650,8 @@ import MacBridgeNative
     }
     @objc private func showLog() { if let agent { NSWorkspace.shared.activateFileViewerSelecting([agent.directory.appendingPathComponent("commands.jsonl")]) } }
     @objc private func websiteHome() { NSWorkspace.shared.open(URL(string: "https://getwand.app")!) }
+    // While the startup setting is on, launchd's keep-alive job (agent/LaunchAgents) relaunches Wand after
+    // this exit: remote reach is the point. Turning the setting off is how Wand stays closed.
     @objc private func quit() { NSApplication.shared.terminate(nil) }
 }
 
