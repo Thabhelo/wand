@@ -15,5 +15,8 @@ export async function verifyPrincipal(raw,env,keyset){
  const now=Math.floor(Date.now()/1000);
  if(typeof payload.sub!=='string'||!payload.sub.length||payload.sub.length>128||typeof payload.iat!=='number'||payload.iat>now+5||typeof payload.auth_time!=='number'||payload.auth_time>now+5||!providers(env).includes(payload.firebase?.sign_in_provider)||(payload.firebase?.sign_in_provider==='google.com'&&payload.email_verified!==true))throw Error('Invalid Firebase identity');
  if(payload.firebase.sign_in_provider==='password'&&payload.email_verified!==true)throw new Failure('email_not_verified',403);
- return {user_id:payload.sub,client_id:'wand-dashboard',auth_time:payload.auth_time};
+ // The email travels with the principal only so the relay can reach the owner about their own Mac; nothing else keys on it.
+ const principal={user_id:payload.sub,client_id:'wand-dashboard',auth_time:payload.auth_time};
+ if(typeof payload.email==='string'&&payload.email.includes('@')&&payload.email.length<=254){principal.email=payload.email;principal.email_verified=payload.email_verified===true}
+ return principal;
 }

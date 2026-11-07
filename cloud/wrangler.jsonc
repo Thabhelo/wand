@@ -58,8 +58,14 @@
     "FIREBASE_APP_ID": "1:65004035287:web:6d1691580121e8301ce492",
     "MUSE_CLIENT_IDS": "kqQLjzgKBLLzJ7Ff",
     "PASSWORD_ENABLED": "true",
-    "FACEBOOK_ENABLED": "false"
+    "FACEBOOK_ENABLED": "false",
+    "MAIL_FROM": "wand@getwand.app"
   },
+  "send_email": [
+    {
+      "name": "EMAIL"
+    }
+  ],
   "observability": {
     "enabled": false
   },

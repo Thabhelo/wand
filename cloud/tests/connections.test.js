@@ -4,13 +4,14 @@ import {getOAuthApi} from '@cloudflare/workers-oauth-provider';
 import {beforeAll,beforeEach,expect,it,vi} from 'vitest';
 import migration from '../migrations/0001_registry.sql?raw';
 import connectionsMigration from '../migrations/0002_connections.sql?raw';
+import usersMigration from '../migrations/0003_users.sql?raw';
 import worker,{options} from '../src/entry.js';
 import {token} from '../src/common.js';
 vi.mock('../src/auth.js',async()=>{const {Failure}=await import('../src/common.js');return {authenticate:async r=>{const user=r.headers.get('Authorization')?.slice(7);if(!['alice','bob'].includes(user))throw new Failure('unauthorized',401);return {user_id:user,client_id:'wand-dashboard'}}}});
 let bindings,helpers,client,did,other,verifier,challenge;
-beforeAll(async()=>{for(const sql of (migration+connectionsMigration).split(';').filter(s=>s.trim()))await env.DB.prepare(sql).run()});
+beforeAll(async()=>{for(const sql of (migration+connectionsMigration+usersMigration).split(';').filter(s=>s.trim()))await env.DB.prepare(sql).run()});
 beforeEach(async()=>{
- for(const table of ['connections','consent_requests','tokens','pairing','devices','deleting'])await env.DB.prepare('DELETE FROM '+table).run();
+ for(const table of ['connections','consent_requests','tokens','pairing','devices','deleting','users'])await env.DB.prepare('DELETE FROM '+table).run();
  bindings={...env};helpers=getOAuthApi(options,bindings);
  client=await helpers.createClient({clientName:'Muse test peer',redirectUris:['https://muse.example/callback'],tokenEndpointAuthMethod:'none',grantTypes:['authorization_code','refresh_token'],responseTypes:['code']});bindings.MUSE_CLIENT_IDS=client.clientId;
  did=crypto.randomUUID();other=crypto.randomUUID();for(const d of [did,other])await env.DB.prepare('INSERT INTO devices VALUES(?,?,?,?,?,?,?,NULL)').bind(d,'alice','mac','Test Mac','test',null,new Date().toISOString()).run();
