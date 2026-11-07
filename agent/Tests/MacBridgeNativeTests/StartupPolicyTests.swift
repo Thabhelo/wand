@@ -19,8 +19,13 @@ final class StartupPolicyTests: XCTestCase {
                        StartupPolicy.Migration(unregisterLoginItem: false, registerAgent: true))
         XCTAssertEqual(StartupPolicy.migration(loginItem: .notRegistered, attempted: true, migrated: false),
                        StartupPolicy.Migration(unregisterLoginItem: false, registerAgent: false))
+    }
+    func testAnUpdateWhoseOldLoginItemIsGoneTurnsTheAgentOn() {
+        // After the bundle is replaced the old login item reports notFound; the user had startup on, so keep it on.
         XCTAssertEqual(StartupPolicy.migration(loginItem: .notFound, attempted: true, migrated: false),
-                       StartupPolicy.Migration(unregisterLoginItem: false, registerAgent: false))
+                       StartupPolicy.Migration(unregisterLoginItem: false, registerAgent: true))
+        XCTAssertEqual(StartupPolicy.migration(loginItem: .notFound, attempted: false, migrated: false),
+                       StartupPolicy.Migration(unregisterLoginItem: false, registerAgent: true))
     }
     func testOnlyTheLaunchdCopySurvivesADoubleStart() {
         XCTAssertEqual(StartupPolicy.launchDecision(managedByLaunchd: false, otherInstances: 0), .proceed)
@@ -34,6 +39,8 @@ final class StartupPolicyTests: XCTestCase {
         XCTAssertEqual(Set(messages).count, statuses.count)
         XCTAssertTrue(StartupPolicy.message(for: .enabled).contains("comes back"))
         XCTAssertTrue(StartupPolicy.message(for: .notRegistered).hasPrefix("Off."))
+        XCTAssertTrue(StartupPolicy.message(for: .notFound).hasPrefix("Off."))
+        XCTAssertFalse(StartupPolicy.message(for: .notFound).contains("Move Wand"))
     }
     func testBundledLaunchAgentMatchesThePolicy() throws {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()

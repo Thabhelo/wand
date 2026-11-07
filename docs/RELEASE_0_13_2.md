@@ -36,3 +36,5 @@ Install over the existing `~/Applications/Wand.app` and open Wand once by hand. 
 7. **Second copy.** With Wand running, run `~/Applications/Wand.app/Contents/MacOS/MacBridge` from Terminal. It exits within a second and the running copy shows its window.
 
 Only a real install proves items 1 to 7. In particular, whether unregistering the agent stops the running launchd copy, and so whether the hand-off in step 5 is needed, is launchd behaviour this change handles both ways but could not observe locally.
+
+Update behaviour checked on the owner's Mac on 7 November 2026 with build 35: after the bundle was replaced, the old login item reported `notFound`, so build 36 treats `notFound` as "startup was on" and registers the keep-alive agent during the one-time migration; the off-state text no longer tells users in either Applications folder to move the app. Quit relaunched the app in 3 seconds and a force kill in 9.

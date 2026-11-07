@@ -28,11 +28,15 @@ public enum StartupPolicy {
     /// Startup stays on only if the user had it on. A login item the user turned off in System Settings
     /// (`requiresApproval`) is removed without replacing it, and a toggle the user turned off in Wand
     /// (`notRegistered` after an attempt) stays off: Wand never re-enables itself after the user says no.
+    /// `notFound` is what an update leaves behind: the old login item pointed at a bundle that has since been
+    /// replaced, so the user had startup on and the agent takes over. A user who said no shows `requiresApproval`
+    /// or `notRegistered`, never `notFound`.
     public static func migration(loginItem: SMAppService.Status, attempted: Bool, migrated: Bool) -> Migration? {
         guard !migrated else { return nil }
         switch loginItem {
         case .enabled: return Migration(unregisterLoginItem: true, registerAgent: true)
         case .requiresApproval: return Migration(unregisterLoginItem: true, registerAgent: false)
+        case .notFound: return Migration(unregisterLoginItem: false, registerAgent: true)
         default: return Migration(unregisterLoginItem: false, registerAgent: !attempted)
         }
     }
@@ -56,7 +60,8 @@ public enum StartupPolicy {
         case .enabled: return "Starts when you log in and comes back by itself if it quits or crashes."
         case .requiresApproval: return "Allow Wand in System Settings → General → Login Items so it can stay running."
         case .notRegistered: return "Off. Wand stays closed after a quit or restart until you open it yourself."
-        case .notFound: return "Move Wand to Applications, then turn this setting on."
+        // For the agent, `notFound` is simply "not registered yet"; registering works from either Applications folder.
+        case .notFound: return "Off. Turn this on so Wand starts when you log in and comes back if it quits or crashes."
         @unknown default: return "Check Wand in System Settings → General → Login Items."
         }
     }
