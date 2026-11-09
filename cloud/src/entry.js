@@ -24,7 +24,7 @@ export const options={
  authorizeEndpoint:'/authorize',tokenEndpoint:'/oauth/token',
  tokenExchangeCallback:({props,requestedScope})=>({accessTokenProps:{...props,actions:requestedScope.filter(s=>s.startsWith('wand:')).map(s=>s.slice(5))}}),
  onError:()=>{},clientIdMetadataDocumentEnabled:false,
- accessTokenTTL:900,refreshTokenTTL:2592000,scopesSupported:SCOPES,
+ accessTokenTTL:3600,refreshTokenTTL:2592000,scopesSupported:SCOPES,
  allowPlainPKCE:false,allowImplicitFlow:false,
  resourceMetadata:{resource:RESOURCE,authorization_servers:['https://api.getwand.app'],scopes_supported:SCOPES,resource_name:'Wand Mac control'}
 };
