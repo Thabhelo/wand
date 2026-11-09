@@ -1,8 +1,5 @@
 name: Muse verification deployment
 on:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/muse-verification-deploy.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -24,6 +21,10 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '24'
+      - name: Check deployment credential is configured
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: test -n "$CLOUDFLARE_API_TOKEN" || { echo 'Configure the existing Cloudflare deployment secret before running this manual workflow.'; exit 1; }
       - run: npm ci --no-audit --no-fund
       - run: npm run build:contracts
       - run: npm test
