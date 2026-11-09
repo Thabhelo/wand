@@ -47,7 +47,7 @@ Local packaging defaults to an ad-hoc development signature. Public builds use t
 
 ## Review and security
 
-November 9 review: the Muse portal reports business verification **Approved**. Data processing and technical validation remain open. The new host-challenge support and callback-update script are prepared for deployment; see [current status](docs/BUILD_STATUS.md). Repository tests and dependency audits do not establish operational MFA, backup encryption, penetration testing or final connector approval.
+November 9 review: the Muse portal reports business verification **Approved**. Data processing and technical validation remain open. The expiring host challenge and the portal's two OAuth callbacks are live. Muse's host check returns an uncertain-result error, and the new sign-in test awaits owner consent. Deployment automation lacks its GitHub Cloudflare secret and is manual-only; see [current status](docs/BUILD_STATUS.md). Repository tests and dependency audits do not establish operational MFA, backup encryption, penetration testing or final connector approval.
 
 The hosted [review sandbox](https://app.getwand.app/review/) uses real authentication and relay transport with a clearly labeled simulated Mac. See [reviewer instructions](submission/REVIEWER-ACCESS.md). Simulation does not prove physical-device behavior.
 
