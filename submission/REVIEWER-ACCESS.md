@@ -2,6 +2,10 @@
 
 Updated October 5, 2026. Public Mac release: **0.13.1, build 34**, signed and notarized. The owner confirms the Muse connector application has been submitted and is awaiting review.
 
+## Portal reviewer credentials, November 9
+
+The portal now requires two distinct OAuth test users. Its credential draft contains the original reviewer account plus a separate empty Firebase Email/Password test identity under a developer-controlled email alias. The new identity's actual email-verification link was opened and its dashboard successfully showed no devices. Neither test account is paired to the owner's Mac. Passwords are stored only in the portal credential draft, never in Git. Reviewers pair their own disposable test Mac or use the simulator below. The revised credential draft cannot be submitted until Muse's API host-verification check passes. A status-only OAuth sign-in test passed with the approved one-hour access-token lifetime; this is not full tool QA or directory approval.
+
 ## Browser sandbox
 
 Open https://app.getwand.app/review/ and sign in with your own Google account. No shared password or developer account is needed. Choose **Create test Mac**. The device exists only for your account; its credential stays in page memory.
