@@ -37,7 +37,7 @@ it('binds review to the signed-in user and prevents privilege widening',async()=
  expect((await request('/v1/connections/consent','POST',{id,decision:'allow',device_ids:[crypto.randomUUID()],actions:['mute']})).status).toBe(404);
 });
 it('exchanges a real code and enforces device, action, admin and revoke boundaries',async()=>{
- const {id,code}=await approve(),response=await exchange(code);expect(response.status).toBe(200);const credentials=await response.json();expect(credentials.access_token).toBeTruthy();
+ const {id,code}=await approve(),response=await exchange(code);expect(response.status).toBe(200);const credentials=await response.json();expect(credentials.access_token).toBeTruthy();expect(credentials.expires_in).toBe(3600);
  expect((await request('/v1/connections/consent','POST',{id,decision:'allow',device_ids:[did],actions:['mute']})).status).toBe(410);
  const bearer=credentials.access_token;
  const caps=await request('/connector/v1/devices/'+did+'/capabilities','GET',undefined,bearer);expect(caps.status).toBe(200);const report=await caps.json();expect(report.actions.find(a=>a.name==='mute').authorized).toBe(true);expect(report.actions.find(a=>a.name==='get_state').authorized).toBe(false);
