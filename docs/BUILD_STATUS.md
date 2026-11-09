@@ -18,6 +18,8 @@ Updated **October 5, 2026**. This is the current status page; dated acceptance r
 
 ## Latest verified changes
 
+- November 9: Muse portal shows **business verification Approved**, with data processing and technical details still outstanding. The portal OAuth test returned `invalid_authorization_request`; its request used a new callback and omitted the required resource parameter. Source now supports an expiring public host challenge and includes a script to append the two portal callbacks to the existing client without removing its previous callback. These fixes are **prepared, not production-verified**. The 70 relay tests passed locally after compatible development dependency updates; dependency audit reports no advisories. Cloudflare sign-in is required to deploy, inspect operational controls and finish native sign-in testing. This does not revoke the previously recorded October connection or establish current directory approval.
+
 - October 18: support-form bot checks deployed; 68 website tests passed and the live endpoint rejects missing challenge tokens. [Scope and remaining human check](SUPPORT_FORM.md#october-18-2026-bot-protection).
 
 - [Detailed native action acceptance](NATIVE_MUSE_ACCEPTANCE.md): command IDs and independent checks for reversible audio/app controls, URLs and TextEdit images, pixel clicks, typing and scrolling. Lock/sleep and the remaining media, Shortcut, Focus and reconnect passes are attributed to the owner. The interrupted Safari run remains inconclusive.

@@ -47,6 +47,8 @@ Local packaging defaults to an ad-hoc development signature. Public builds use t
 
 ## Review and security
 
+November 9 review: the Muse portal reports business verification **Approved**. Data processing and technical validation remain open. The new host-challenge support and callback-update script are prepared for deployment; see [current status](docs/BUILD_STATUS.md). Repository tests and dependency audits do not establish operational MFA, backup encryption, penetration testing or final connector approval.
+
 The hosted [review sandbox](https://app.getwand.app/review/) uses real authentication and relay transport with a clearly labeled simulated Mac. See [reviewer instructions](submission/REVIEWER-ACCESS.md). Simulation does not prove physical-device behavior.
 
 Actions use a closed catalog, validated parameters, expiry and revocation. Desktop control can read app contents, capture app-window images and send input after local consent and macOS permissions. It is broader than the minimized status endpoint; it can operate a terminal, so it must not be described as unable to run code. No dedicated arbitrary-shell or remote-unlock endpoint exists. The relay can read payloads in this version. Read the [security model](submission/SECURITY.md).

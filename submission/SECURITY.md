@@ -2,6 +2,12 @@
 
 Updated September 24, 2026. Describes the current Cloudflare/Firebase implementation and Wand 0.13.1, build 34. The repository also retains an older FastAPI reference; its Auth0 and process-local limiter descriptions do not describe the deployed service.
 
+## November 9 verification evidence
+
+The current relay source was reviewed for authentication separation, PKCE/resource/callback validation, device/action scope enforcement, revocation, input validation, rate limits and retention. Its 70 automated tests passed locally, including the new exact-match and expiry tests for Muse's public host-control challenge. This is a code review and automated regression check, not a penetration test or certification. A dependency audit initially found advisories in development tooling; compatible lockfile updates removed them. Both production and development packages are included in the audit. Re-run the checks before deployment and inspect CI results rather than treating this dated record as a permanent assurance.
+
+Do not infer operational controls from application code: administrator MFA enforcement, actual account membership and access reviews, provider audit-log settings, backup configuration, local-disk encryption and a tested operational incident-response plan require separate evidence. Nothing here establishes SOC 2, an independent penetration test, end-to-end payload encryption or independent step-up authorization. The existing containment tests exercise connection/device revocation in an isolated test runtime; they do not establish that an operational incident-response exercise has been completed.
+
 ## Identity and access
 
 Owners sign in through Firebase Authentication with Google or with an email and password. A password account is refused everywhere until its email is confirmed, and accounts are never joined by matching email. Assistant clients use a separate OAuth authorization-code flow with PKCE S256, exact registered HTTPS callbacks, state, resource binding, and device/action consent. Only manually admitted clients can authorize. Firebase tokens cannot call connector endpoints; connector tokens cannot administer accounts. Access tokens last 15 minutes; refresh grants last 30 days. Wand checks current D1 ownership, grants and revocation on commands. Hosted Firebase session revocation can take up to ID-token expiry.
