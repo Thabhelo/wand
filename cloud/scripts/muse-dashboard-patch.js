@@ -1,4 +1,4 @@
-// Exact temporary append applied to the existing e11c2728 dashboard bundle on November 9.
+// Exact temporary append applied to the existing e11c2728 dashboard bundle on November 9; challenge renewed November 10 in ec29fd65.
 // The canonical build uses src/muse-verification.js with wrangler vars instead.
 
 // Public proof of host control, never an authentication credential.
@@ -21,4 +21,4 @@ function museVerification(request, env, now = Date.now()) {
 }
 
 const musePreviousFetch = entry_default.fetch;
-entry_default.fetch = (request, env, ctx) => museVerification(request, {...env, MUSE_VERIFICATION_CHALLENGE: '418da93af2297ca7bf7b8dff7f618e63a20fb5d9e380b5be48c233b6bad5e926', MUSE_VERIFICATION_EXPIRES: '2026-11-10T07:57:00Z'}) || musePreviousFetch(request, env, ctx);
+entry_default.fetch = (request, env, ctx) => museVerification(request, {...env, MUSE_VERIFICATION_CHALLENGE: '8536d9b2b03c7be6592de4efde8c2f99cca4ffa26246b1df60ffa3d5e00c84ca', MUSE_VERIFICATION_EXPIRES: '2026-11-12T01:19:00Z'}) || musePreviousFetch(request, env, ctx);
